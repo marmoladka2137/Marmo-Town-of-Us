@@ -2,6 +2,14 @@
 
 The publication ZIP is **plugin-only**. It does not bundle the loader, runtime libraries, game files, another TownOfUsMira plugin or other mods from the owner's installation. Use upstream distributions subject to their licenses; a complete dependency pack is not cleared by this review.
 
+## Steam installer baseline — 2026-11-18
+
+The optional Steam installer uses the unchanged MTOU 1.1.0.13 DLL and downloads selected files directly from the official [TOU Mira 1.7.9-beta1 Windows x64 archive](https://github.com/AU-Avengers/TOU-Mira/releases/tag/1.7.9-beta1). It selects BepInEx be.753, its core/runtime, Reactor 2.5.1, CorsacCosmetics 4.0.0 and **MiraAPI 0.6.0**. It does not install the separate TownOfUsMira plugin, AchievementsAPI or other optional mods. The dependency archive is not included in the installer ZIP.
+
+The MiraAPI DLL from that TOU release has SHA-256 `337CB6D8C2B75105578A05EC48A2364BF006E9EEE9BBF0D753E59B2105F92E9D`; it differs from the earlier local 0.5.0-dev build and from the separately published MiraAPI 0.6.0 asset. The complete archive and all 233 selected files are pinned in [installer-manifest.json](tools/SteamInstaller/installer-manifest.json). Never substitute an arbitrary latest library.
+
+A real Steam copy was installed from these public files, generated fresh wrappers and reached the native main menu with MTOU and the public MiraAPI 0.6.0 loaded. Current MTOU source also compiles against this API. This resolves the earlier lack of a publicly obtainable startup baseline for this installer; it does not establish full role, match or host/client compatibility. See [installer tests](STEAM_INSTALLER_TESTS.md). The table below remains the historical development baseline.
+
 ## Observed startup baseline
 
 | Component | Exact observed version / source | Packaging and reproducibility |

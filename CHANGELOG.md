@@ -1,6 +1,11 @@
 # Changelog
 
-## Unreleased — text revision 1.1.0.13
+## 1.1.0-beta.13 — Steam installer and text revision 1.1.0.13
+
+- Add a Windows Steam installer that creates a separate local game copy and downloads pinned official dependencies.
+- Refuse existing destinations, unsupported game builds and mismatched files; exclude unrelated mods and user settings.
+- Verify filesystem/archive rules, installation from a real Steam game and native main-menu startup with public MiraAPI 0.6.0.
+- Keep the game plugin's C# mechanics and DLL unchanged from text revision 1.1.0.13. Installer source is included.
 
 - Shorten English role and modifier descriptions to abilities, goals and essential limits.
 - Replace repetitive role catalogs with compact tables; preserve all 111 role variants and 51 assignable modifier variants.

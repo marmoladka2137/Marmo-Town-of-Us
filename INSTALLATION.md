@@ -1,5 +1,7 @@
 # Test installation
 
+For the new Steam installer, see [tools/SteamInstaller/README.md](tools/SteamInstaller/README.md). It creates a separate copy from a supported, already installed Steam game and obtains pinned dependencies automatically. The instructions below describe manual plugin-only installation.
+
 This is an all-client plugin-only candidate, not a complete Among Us installer or a certified SUS Modder package. This new original-resource beta candidate is prepared for owner review; see RELEASE_CHECKLIST.md for unverified tests.
 
 1. Create a separate copy of your legally owned compatible Among Us PC installation. Keep your normal game and configuration backed up.

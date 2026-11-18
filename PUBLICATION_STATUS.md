@@ -2,6 +2,8 @@
 
 Public repository: https://github.com/marmoladka2137/Marmo-Town-of-Us
 
+Steam installer revision: a separate installer creates a local game copy, downloads pinned official dependencies and installs the unchanged 1.1.0.13 plugin. Installation and native startup with public MiraAPI 0.6.0 passed; full match/multiplayer testing remains unverified. No Among Us game files or dependency implementations are included in the installer archive. See [installer evidence](STEAM_INSTALLER_TESTS.md).
+
 Current source adds the text-only revision 1.1.0.13: concise English role/modifier descriptions and compact catalogs. Gameplay C# is unchanged. The existing `v1.1.0-beta` download remains revision 1.1.0.12; its matching tagged source and archives are preserved. See [text verification](TEXT_UPDATE_TESTS.md).
 
 The 1.1.0-beta publication is a public beta with complete code, original-resource sources, documentation and plugin-only artifacts. Public label: 1.1.0 Beta; internal assembly revision: 1.1.0.12. Plugin identity is unchanged. The Source Code menu link now points to this repository.
