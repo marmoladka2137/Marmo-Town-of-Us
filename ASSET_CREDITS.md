@@ -1,5 +1,9 @@
 # Asset credits — current runtime-motion candidate
 
+## Launcher icon
+
+The app uses the existing MTOU Discord application artwork `mtou_logo`, selected by Marmo for the launcher. PNG SHA-256: `ECF5A2A9811591013DE650A55235C255752C3B2B76216B01A275F12131293AC1`. Source: https://cdn.discordapp.com/app-assets/1571528434805510255/1571542621472423986.png . Preferred source: tools/Launcher/DiscordLogo.png; tools/Launcher/Build-Icon.ps1 converts it to a multi-resolution Windows ICO. This is separate from the red Marmo wordmark. Existing original MTOU artwork attribution/CC BY 4.0 terms and Innersloth IP notices remain applicable.
+
 ## Original MTOU graphics
 
 **Original MTOU artwork — created by Marmo. CC BY 4.0.** Keep attribution, license reference and modification notices. The owner selected these terms; no foreign resource is relicensed by that choice.

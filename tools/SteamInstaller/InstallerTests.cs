@@ -47,6 +47,7 @@ public static class InstallerTests
             Put(Path.Combine(library, "steamapps", "appmanifest_945360.acf"), "\"AppState\"\n{\n \"appid\" \"945360\"\n \"installdir\" \"Among Us\"\n}");
             string package = Path.Combine(root, "installer package");
             Put(Path.Combine(package, "Payload", "TOU-Marmo.dll"), "fixture mod");
+            Put(Path.Combine(package, "Marmo Town of Us.exe"), "fixture launcher");
             Put(Path.Combine(package, "Notices", "LICENSE"), "fixture notice");
             string zip = Zip("dependencies.zip", new Dictionary<string, string> {
                 {"pack/BepInEx/core/Loader.dll", "fixture loader"},
@@ -64,7 +65,8 @@ public static class InstallerTests
                 Version = "test", AssemblyRevision = "test", SourceCommit = "test",
                 GameAssemblySha256 = InstallerCore.Hash(Path.Combine(source, "GameAssembly.dll")),
                 ArchiveSha256 = InstallerCore.Hash(zip), ArchivePrefix = "pack", ArchiveUrl = "http://invalid.invalid/never-requested",
-                Payload = Pin(Path.Combine(package, "Payload", "TOU-Marmo.dll"), "Payload/TOU-Marmo.dll"), RuntimeFiles = pins.ToArray()
+                Payload = Pin(Path.Combine(package, "Payload", "TOU-Marmo.dll"), "Payload/TOU-Marmo.dll"), RuntimeFiles = pins.ToArray(),
+                Launcher = Pin(Path.Combine(package, "Marmo Town of Us.exe"), "Marmo Town of Us.exe")
             };
             var engine = new InstallerCore(manifest, package);
             Check(InstallerCore.Full(InstallerCore.GameInLibrary(library)) == InstallerCore.Full(source), "Steam manifest resolves a folder with spaces");
@@ -89,6 +91,7 @@ public static class InstallerTests
             Check(!File.Exists(Path.Combine(destination, "BepInEx", "plugins", "AUnlocker.dll")), "Exclude unselected downloaded plugins");
             Check(File.ReadAllText(Path.Combine(destination, "BepInEx", "plugins", "TOU-Marmo.dll")) == "fixture mod", "Install the verified MTOU payload");
             Check(File.Exists(Path.Combine(destination, "MTOU Notices", "LICENSE")), "Install notices");
+            Check(File.ReadAllText(Path.Combine(destination, "Marmo Town of Us.exe")) == "fixture launcher", "Install the pinned MTOU launcher");
             Check(File.ReadAllText(Path.Combine(destination, "steam_appid.txt")).Trim() == "945360", "Write the Steam AppID without modifying DRM");
             Reject(() => engine.Install(source, destination, zip), "Never overwrite a completed installation");
             Check(InstallerCore.Hash(Path.Combine(source, "Among Us.exe")) == originalGameHash, "Steam source remains unchanged");
@@ -107,6 +110,9 @@ public static class InstallerTests
             Check(!Directory.Exists(Path.Combine(root, "incomplete")), "A partial install is never published as ready");
             Check(Directory.GetDirectories(root, "incomplete.installing-*").Length == 1, "Retain only the explicitly marked incomplete staging folder");
             manifest.ArchiveSha256 = archiveHash;
+            Put(Path.Combine(package, "Marmo Town of Us.exe"), "modified launcher");
+            Reject(() => engine.Install(source, Path.Combine(root, "bad-launcher"), zip), "Reject a modified launcher");
+            Put(Path.Combine(package, "Marmo Town of Us.exe"), "fixture launcher");
             Put(Path.Combine(package, "Payload", "TOU-Marmo.dll"), "corrupt payload");
             Reject(() => engine.Install(source, Path.Combine(root, "bad-payload"), zip), "Reject a modified MTOU payload");
             Console.WriteLine("PASS: " + checks + " installer checks. Fixtures retained at " + root);

@@ -29,6 +29,7 @@ namespace Marmo.SteamInstaller
         public string ArchivePrefix { get; set; }
         public string GameAssemblySha256 { get; set; }
         public FilePin Payload { get; set; }
+        public FilePin Launcher { get; set; }
         public FilePin[] RuntimeFiles { get; set; }
         public static InstallerManifest Read(string filename)
         {
@@ -254,6 +255,7 @@ namespace Marmo.SteamInstaller
             source = Full(source); destination = Full(destination);
             ValidateSource(source); ValidateDestination(source, destination, PackageRoot);
             CheckPin(SafePath(PackageRoot, Manifest.Payload.Path), Manifest.Payload);
+            if (Manifest.Launcher != null) CheckPin(SafePath(PackageRoot, Manifest.Launcher.Path), Manifest.Launcher);
             var files = GameFiles(source);
             long size = files.Sum(f => new FileInfo(f).Length) + Manifest.RuntimeFiles.Sum(f => f.Bytes) + Manifest.Payload.Bytes;
             var drive = new DriveInfo(Path.GetPathRoot(destination));
@@ -279,6 +281,12 @@ namespace Marmo.SteamInstaller
                 Directory.CreateDirectory(Path.GetDirectoryName(plugin));
                 File.Copy(SafePath(PackageRoot, Manifest.Payload.Path), plugin, false);
                 CheckPin(plugin, Manifest.Payload);
+                if (Manifest.Launcher != null)
+                {
+                    string launcher = Path.Combine(stage, "Marmo Town of Us.exe");
+                    File.Copy(SafePath(PackageRoot, Manifest.Launcher.Path), launcher, false);
+                    CheckPin(launcher, Manifest.Launcher);
+                }
                 File.WriteAllText(Path.Combine(stage, "steam_appid.txt"), "945360\n", Encoding.ASCII);
                 File.WriteAllText(Path.Combine(stage, "Play MTOU.cmd"), "@echo off\r\ncd /d \"%~dp0\"\r\nstart \"\" \"%~dp0Among Us.exe\"\r\n", Encoding.ASCII);
                 string notices = Path.Combine(PackageRoot, "Notices");

@@ -107,7 +107,7 @@ namespace Marmo.SteamInstaller
             play.Visible = false; Controls.Add(play);
             play.Click += delegate
             {
-                try { Process.Start(new ProcessStartInfo(Path.Combine(installed, "Among Us.exe")) { WorkingDirectory = installed }); }
+                try { string entry = File.Exists(Path.Combine(installed, "Marmo Town of Us.exe")) ? "Marmo Town of Us.exe" : "Among Us.exe"; Process.Start(new ProcessStartInfo(Path.Combine(installed, entry)) { WorkingDirectory = installed }); }
                 catch (Exception error) { MessageBox.Show(this, error.Message, "Cannot start MTOU"); }
             };
             start.Click += StartInstall;
@@ -203,7 +203,9 @@ namespace Marmo.SteamInstaller
                 shell = Activator.CreateInstance(Type.GetTypeFromProgID("WScript.Shell"));
                 dynamic dynamicShell = shell; link = dynamicShell.CreateShortcut(filename);
                 dynamic dynamicLink = link;
-                dynamicLink.TargetPath = Path.Combine(folder, "Among Us.exe");
+                string entry = File.Exists(Path.Combine(folder, "Marmo Town of Us.exe")) ? "Marmo Town of Us.exe" : "Among Us.exe";
+                dynamicLink.TargetPath = Path.Combine(folder, entry);
+                dynamicLink.IconLocation = Path.Combine(folder, entry) + ",0";
                 dynamicLink.WorkingDirectory = folder; dynamicLink.Description = "Marmo Town of Us — keep Steam running";
                 dynamicLink.Save();
             }

@@ -1,5 +1,16 @@
 # Steam installer verification — 2026-11-18
 
+## App launcher follow-up
+
+The additional app ZIP supplies `Marmo Town of Us.exe` with the existing Discord `mtou_logo` icon. The installed desktop shortcut targets the launcher; first use without a game opens the included installer. No mod DLL or gameplay C# changed.
+
+- Updated installer checks: **36 passed**, including launcher pin verification and copying.
+- Launcher checks: **14 passed**, including installation discovery, rejecting an unmodded/conflicting folder, starting a real fixture child through the compiled launcher and preserving its working directory.
+- The launcher started the isolated native MTOU copy and reached the main menu with MTOU 1.1.0.13 and public MiraAPI 0.6.0. The six existing game save/settings files stayed unchanged. Unity wrote its normal Player.log, so the first harness's overbroad profile guard reported a log-file difference. Optional diagnostic log redirection was then added and covered by launcher tests. A further native repeat was intentionally skipped because the owner had started their game.
+- The owner's existing desktop shortcut was backed up, then updated to the app executable and its embedded icon. The installed game/plugin files were not replaced.
+
+No launcher multiplayer test or second-PC test was performed. The historical installer checks below retain their original scope and results.
+
 ## Artifact scope
 
 MTOU 1.1.0 Beta, plugin assembly 1.1.0.13; Windows x64 installer 1.0.0.0. The installer contains the unchanged text-update plugin, its own C# sources, a pinned manifest and license notices. It downloads dependencies directly from an official upstream archive during installation. No Among Us game files, generated wrappers, external plugin implementations, private configuration or QA probes are distributed.

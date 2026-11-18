@@ -3,7 +3,7 @@
 ## Instalacja po polsku
 
 1. Kup i zainstaluj Among Us na Steamie. Rozpakuj caly ZIP instalatora.
-2. Uruchom `MTOU Installer.exe`. Instalator powinien znalezc gre automatycznie.
+2. Uruchom `Marmo Town of Us.exe`. Jesli mod jest juz zainstalowany, aplikacja od razu otworzy gre. W przeciwnym razie otworzy instalator, ktory powinien znalezc Steam automatycznie.
 3. Wybierz nowy folder na kopie z modem i kliknij **Install MTOU**.
 4. Poczekaj na pobranie bibliotek i skopiowanie swojej gry. Steamowa instalacja pozostaje bez zmian.
 5. Zostaw Steam uruchomiony. Uzywaj skrotu Marmo Town of Us lub `Play MTOU.cmd` w nowym folderze.
@@ -16,7 +16,7 @@ Obslugiwany punkt odniesienia: Among Us 2026.9.29, Windows x64. Instalator spraw
 
 ## English
 
-Extract the entire archive and run **MTOU Installer.exe**. It detects your Steam installation, checks the supported game build, creates a separate modded copy, downloads required dependencies directly from the official upstream release and installs MTOU. Keep Steam running when playing. Every participant needs the same compatible setup.
+Extract the entire app archive and run **Marmo Town of Us.exe**. It launches an installed MTOU copy directly, or opens the included installer on first use. The installer detects Steam, checks the game build, creates a separate modded copy, downloads pinned official dependencies and installs MTOU. The desktop shortcut uses the app and its Discord artwork icon. Keep Steam running when playing. Every participant needs the same compatible setup.
 
 The installer never overwrites an existing destination, Steam game, player profile or cosmetics settings. It copies only game files from your own Steam installation. It does not copy unrelated plugins, cosmetics caches, logs, user configuration or pre-generated game wrappers. A failed copy stays in a clearly marked `.installing-*` folder instead of being presented as ready.
 
@@ -27,7 +27,7 @@ The archive contains MTOU 1.1.0 Beta (assembly 1.1.0.13), installer source and n
 - Required loader/runtime and MiraAPI 0.6.0, Reactor 2.5.1, CorsacCosmetics 4.0.0: selected files from the official TOU Mira 1.7.9-beta1 Windows x64 release, downloaded at installation time. The source archive and all selected files are pinned by SHA-256 in installer-manifest.json; unselected plugins are not extracted.
 - Official dependency archive: https://github.com/AU-Avengers/TOU-Mira/releases/tag/1.7.9-beta1
 - Plugin source matching the included DLL: https://github.com/marmoladka2137/Marmo-Town-of-Us/tree/53221dd705fe5454c3de7a9423390613f0ab3912
-- Installer source: the InstallerSource folder in the ZIP and tools/SteamInstaller in the repository.
+- Installer and launcher source: Source/SteamInstaller and Source/Launcher in the app ZIP; tools/SteamInstaller and tools/Launcher in the repository.
 - Community: https://dc.gg/mtou
 
 Internet access is needed for initial dependencies and first-launch generation. The verified dependency ZIP is cached in LocalAppData/MTOU/InstallerCache; logs are stored in LocalAppData/MTOU/InstallerLogs. No account credentials or telemetry are collected.
