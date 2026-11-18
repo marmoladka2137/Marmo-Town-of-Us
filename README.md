@@ -56,6 +56,10 @@ Development reference: **Among Us 2026.9.29, Unity 2022.3.44f1, Windows x64**. T
 
 Use the [beta release](https://github.com/marmoladka2137/Marmo-Town-of-Us/releases/tag/v1.1.0-beta) and [INSTALLATION.md](INSTALLATION.md). The thin archive places `TOU-Marmo.dll` in `BepInEx/plugins`. Install prerequisites separately and use the same version on every client. No game files, loader libraries or separate original TOU plugin are bundled.
 
+
+
+**Steam version (Windows):** [Download the Steam mod package](https://github.com/marmoladka2137/Marmo-Town-of-Us/releases/download/v1.1.0-beta/MTOU-1.1.0-beta-Steam.zip) · [Steam instructions](INSTALLATION_STEAM.md). Requires your own Steam copy of Among Us and separately installed compatible dependencies; the base game is not included.
+
 ## Requirements
 
 A legally owned compatible Among Us PC installation, BepInEx IL2CPP, Reactor, MiraAPI and CorsacCosmetics. Exact observed versions and external-source uncertainties: [DEPENDENCIES.md](DEPENDENCIES.md). AchievementsAPI is not required. Perfect Comms is an optional integration.
