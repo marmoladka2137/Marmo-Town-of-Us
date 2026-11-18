@@ -1,0 +1,32 @@
+﻿using MiraAPI.GameOptions;
+using TownOfUs.Options.Modifiers;
+using UnityEngine;
+
+namespace TownOfUs.Modifiers.HnsGame.Crewmate;
+
+public sealed class HnsObliviousModifier : HnsGameModifier
+{
+    public override ModifierUiConfiguration Configuration => new(
+        TownOfUsColors.Bait,
+        TmpSpriteUtils.CreateSpriteAsset(TouModifierIcons.Bait.LoadAsset(),
+            "TouMira.Modifier.HnS.Hider.Oblivious", 1.45f));
+    public override string IdPart => "Oblivious";
+    public override LoadableAsset<Sprite>? ModifierIcon => TouModifierIcons.Bait;
+    public override ModifierFaction FactionType => ModifierFaction.HiderPassive;
+
+    public override bool IsModifierValidOn(RoleBehaviour role)
+    {
+        return base.IsModifierValidOn(role) && role.IsCrewmate();
+    }
+
+
+    public override int GetAssignmentChance()
+    {
+        return (int)OptionGroupSingleton<HnsCrewmateModifierOptions>.Instance.ObliviousChance;
+    }
+
+    public override int GetAmountPerGame()
+    {
+        return (int)OptionGroupSingleton<HnsCrewmateModifierOptions>.Instance.ObliviousAmount;
+    }
+}

@@ -1,0 +1,903 @@
+using System.Collections;
+using System.Reflection;
+using System.Reflection.Emit;
+using System.Text;
+using BepInEx;
+using BepInEx.Unity.IL2CPP;
+using CorsacCosmetics.Cosmetics;
+using HarmonyLib;
+using Il2CppInterop.Runtime;
+using MiraAPI;
+using MiraAPI.Events;
+using MiraAPI.GameOptions;
+using MiraAPI.Hud;
+using MiraAPI.Patches.Hud;
+using Reactor.Utilities;
+using Reactor.Utilities.Extensions;
+using TownOfUs.Cosmetics;
+using TownOfUs.Integrations;
+using TownOfUs.Modules.Components;
+using TownOfUs.Options.Maps;
+using TownOfUs.Roles;
+using UnityEngine;
+using Random = UnityEngine.Random;
+using Version = SemanticVersioning.Version;
+
+namespace TownOfUs.Modules;
+
+public static class ModCompatibility
+{
+    public static bool CommandModsInstalled => BauLoaded;
+    public static string InternalModList = "???";
+    public const string SubmergedGuid = "Submerged";
+    public const ShipStatus.MapType SubmergedMapType = (ShipStatus.MapType)6;
+
+    public const string LevelImpostorGuid = "com.DigiWorm.LevelImposter";
+    public const ShipStatus.MapType LevelImpostorMapType = (ShipStatus.MapType)7;
+
+    private static MethodInfo rpcRequestChangeFloor;
+    private static MethodInfo registerFloorOverride;
+    private static MethodInfo getFloorHandler;
+
+    private static PropertyInfo inTransition;
+    private static PropertyInfo submarineOxygenSystemInstance;
+    private static MethodInfo repairDamage;
+
+    private static MethodInfo getInElevator;
+    private static MethodInfo getMovementStageFromTime;
+    private static FieldInfo getSubElevatorSystem;
+
+    private static FieldInfo upperDeckIsTargetFloor;
+
+    private static FieldInfo submergedInstance;
+    private static FieldInfo submergedElevators;
+
+    // public static FieldInfo lastMapID;
+
+    private static PropertyInfo currentMap;
+    private static PropertyInfo elements;
+
+    private static PropertyInfo liElementType;
+    private static PropertyInfo liElementName;
+
+    // public static Type MapObjectData;
+
+    public static Version SubVersion { get; private set; }
+    public static bool SubLoaded { get; private set; }
+    public static BasePlugin SubPlugin { get; private set; }
+    public static Assembly SubAssembly { get; private set; }
+    public static Type[] SubTypes { get; private set; }
+    public static Dictionary<string, Type> SubInjectedTypes { get; private set; }
+
+    public static Type SubmarineStatusType;
+    public static Type SubmarineSurvillanceMinigameType;
+    public static Type SubmarineSecuritySabotageSystemType;
+
+    public static TaskTypes RetrieveOxygenMask { get; private set; }
+
+    public static bool LILoaded { get; private set; }
+    private static BasePlugin LIPlugin { get; set; }
+    private static Assembly LIAssembly { get; set; }
+    private static Type[] LITypes { get; set; }
+    public static bool IsWikiButtonOffset { get; set; }
+
+
+    public const string LaunchpadGuid = "dev.xtracube.launchpad";
+    public static Version LaunchpadVersion { get; private set; }
+    public static bool LaunchpadLoaded { get; private set; }
+    public static BasePlugin LaunchpadPlugin { get; private set; }
+    public static Assembly LaunchpadAssembly { get; private set; }
+    public static Type[] LaunchpadTypes { get; private set; }
+    public static Type LaunchpadTagManager { get; private set; }
+
+
+    public const string BetterAuGuid = "com.d1gq.betteramongus";
+    public static Version BauVersion { get; private set; }
+    public static bool BauLoaded { get; private set; }
+    public static BasePlugin BauPlugin { get; private set; }
+    public static Assembly BauAssembly { get; private set; }
+
+    public static Type[] BauTypes { get; private set; }
+    /*private static PropertyInfo bauCommandPrefix;
+    public static bool TweakForBauCommands => bauCommandPrefix.GetValue(null)*/
+
+
+    public const string CrowdedGuid = "xyz.crowdedmods.crowdedmod";
+    public static Version CrowdedVersion { get; private set; }
+    public static bool CrowdedLoaded { get; private set; }
+    public static BasePlugin CrowdedPlugin { get; private set; }
+    public static Assembly CrowdedAssembly { get; private set; }
+
+
+    public const string AleLuduGuid = "pl.townofus.aleludu";
+    public static Version AleLuduVersion { get; private set; }
+    public static bool AleLuduLoaded { get; private set; }
+    public static BasePlugin AleLuduPlugin { get; private set; }
+    public static Assembly AleLuduAssembly { get; private set; }
+
+
+    public const string MciGuid = "auavengers.tou.mci";
+    public static Version MciVersion { get; private set; }
+    public static bool MciLoaded { get; private set; }
+    public static BasePlugin MciPlugin { get; private set; }
+    public static Assembly MciAssembly { get; private set; }
+
+    public const string PerfectCommsGuid = "com.edgetel.perfectcomms";
+    public static readonly Dictionary<Type, List<MiraEventWrapper>> ExposedEventWrappers = [];
+    public static BasePlugin ApiPlugin { get; private set; }
+    public static Assembly ApiAssembly { get; private set; }
+    public static Type[] ApiTypes { get; private set; }
+
+    public static void Initialize()
+    {
+        InitApiExposing();
+        InitBetterAmongUs();
+        InitSubmerged();
+        InitLevelImpostor();
+        InitCrowded();
+        InitAleLudu();
+        InitMci();
+        InitLaunchpad();
+        InitCorsac();
+        InitPerfectComms();
+
+        var sBuilder = new StringBuilder();
+
+        var mods = IL2CPPChainloader.Instance.Plugins;
+        sBuilder.Append("\nBepInEx " + Paths.BepInExVersion.WithoutBuild());
+        foreach (var mod in mods)
+        {
+            sBuilder.Append(TownOfUsPlugin.Culture, $"\n{mod.Value.Metadata.Name}: {mod.Value.Metadata.Version}");
+        }
+
+        InternalModList = sBuilder.ToString();
+    }
+
+    private static void InitApiExposing()
+    {
+        if (!IL2CPPChainloader.Instance.Plugins.TryGetValue(MiraApiPlugin.Id, out var value))
+        {
+            return;
+        }
+
+        ApiPlugin = (value.Instance as BasePlugin)!;
+        ApiAssembly = ApiPlugin.GetType().Assembly;
+        ApiTypes = AccessTools.GetTypesFromAssembly(ApiAssembly);
+        var staticClassType = typeof(MiraEventManager);
+        var dictField = staticClassType.GetField("EventWrappers", BindingFlags.NonPublic | BindingFlags.Static);
+
+        if (dictField != null)
+        {
+            // 3. Extract the dictionary object from the instance
+            var dictionaryObject = dictField.GetValue(null);
+
+            var dictionary = dictionaryObject as Dictionary<Type, List<MiraEventWrapper>>;
+
+            if (dictionary != null)
+            {
+                Info($"Successfully found api event wrappers");
+                foreach (var pair in dictionary)
+                {
+                    ExposedEventWrappers.Add(pair.Key, pair.Value);
+                }
+            }
+        }
+
+        // This is done to fix locale icons.
+        foreach (var locale in MiraLocaleManager.LangList)
+        {
+            var dict = MiraLocaleManager.Locale[locale.Key];
+            dict["TouOptionDoubleShotAmount.Imp"] = "<sprite name=\"AmongUs.Role.Impostor.Masked\"> " +
+                                                    MiraLocaleManager.Get(locale.Key, "TouOptionDoubleShotAmount");
+            dict["TouOptionDoubleShotChance.Imp"] = "<sprite name=\"AmongUs.Role.Impostor.Masked\"> " +
+                                                    MiraLocaleManager.Get(locale.Key, "TouOptionDoubleShotChance");
+            dict["TouOptionDoubleShotAmount.Neut"] = "<sprite name=\"AmongUs.Role.Neutral.Masked\"> " +
+                                                     MiraLocaleManager.Get(locale.Key, "TouOptionDoubleShotAmount");
+            dict["TouOptionDoubleShotChance.Neut"] = "<sprite name=\"AmongUs.Role.Neutral.Masked\"> " +
+                                                     MiraLocaleManager.Get(locale.Key, "TouOptionDoubleShotChance");
+            dict["TouOptionOverclockerAmount.Imp"] = "<sprite name=\"AmongUs.Role.Impostor.Masked\"> " +
+                                                     MiraLocaleManager.Get(locale.Key, "TouOptionOverclockerAmount");
+            dict["TouOptionOverclockerChance.Imp"] = "<sprite name=\"AmongUs.Role.Impostor.Masked\"> " +
+                                                     MiraLocaleManager.Get(locale.Key, "TouOptionOverclockerChance");
+            dict["TouOptionOverclockerAmount.Neut"] = "<sprite name=\"AmongUs.Role.Neutral.Masked\"> " +
+                                                      MiraLocaleManager.Get(locale.Key, "TouOptionOverclockerAmount");
+            dict["TouOptionOverclockerChance.Neut"] = "<sprite name=\"AmongUs.Role.Neutral.Masked\"> " +
+                                                      MiraLocaleManager.Get(locale.Key, "TouOptionOverclockerChance");
+        }
+    }
+
+    private static void InitPerfectComms()
+    {
+        if (!IL2CPPChainloader.Instance.Plugins.ContainsKey(PerfectCommsGuid))
+        {
+            return;
+        }
+
+        PerfectCommsRuntime.Register();
+    }
+
+#pragma warning disable S3011
+    private static void InitLaunchpad()
+    {
+        if (!IL2CPPChainloader.Instance.Plugins.TryGetValue(LaunchpadGuid, out var value))
+        {
+            return;
+        }
+
+        LaunchpadPlugin = (value.Instance as BasePlugin)!;
+        LaunchpadAssembly = LaunchpadPlugin.GetType().Assembly;
+        LaunchpadVersion = value.Metadata.Version;
+
+        LaunchpadTypes = AccessTools.GetTypesFromAssembly(LaunchpadAssembly);
+
+        LaunchpadTagManager = LaunchpadTypes.First(x => x.Name == "PlayerTagManager");
+
+        LaunchpadLoaded = true;
+        IsWikiButtonOffset = true;
+        Message("Launchpad Reloaded was detected");
+        /*
+        var harmony = new Harmony("tou.launchpad.patch");
+
+        RenameRole(LaunchpadTypes, harmony, "MedicRole", "Practitioner");
+        RenameRole(LaunchpadTypes, harmony, "LpDetectiveRole", "Sherlock");
+        DisableRole(LaunchpadTypes, harmony, "SheriffRole");
+        DisableRole(LaunchpadTypes, harmony, "BurrowerRole");
+        DisableRole(LaunchpadTypes, harmony, "ExecutionerRole");
+        DisableRole(LaunchpadTypes, harmony, "JesterRole");*/
+    }
+
+    public static void RenameRole(Type[] modTypes, Harmony harmony, string roleType, string roleName)
+    {
+        var compatType = typeof(ModCompatibility);
+        var types = new[] { typeof(string), typeof(bool) };
+        var role = modTypes.First(t => t.Name == roleType);
+        var detConstruct = role.GetConstructor(
+            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
+            null,
+            types,
+            null
+        );
+        SelectedRoleName = roleName;
+        harmony.Patch(detConstruct, new HarmonyMethod(AccessTools.Method(compatType, nameof(AdjustRoleBehaviour))));
+    }
+
+    public static void DisableRole(Type[] modTypes, Harmony harmony, string roleType)
+    {
+        var compatType = typeof(ModCompatibility);
+        var types = new[] { typeof(string), typeof(bool) };
+        var role = modTypes.First(t => t.Name == roleType);
+        var detConstruct = role.GetConstructor(
+            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
+            null,
+            types,
+            null
+        );
+        SelectedRoleStatus = false;
+        harmony.Patch(detConstruct, new HarmonyMethod(AccessTools.Method(compatType, nameof(AdjustRoleBehaviour))));
+    }
+#pragma warning restore S3011
+    public static string StarlightPath => Environment.GetEnvironmentVariable("STAR_DATA_PATH")!;
+
+    public static string BasePath { get; } = Path.Combine(
+        OperatingSystem.IsAndroid() ? StarlightPath : Paths.GameRootPath,
+        "CorsacCosmetics"
+    );
+
+    public static string BundlePath { get; } = Path.Combine(BasePath, "Bundles");
+
+    public static readonly string[] CosmeticsArray =
+    [
+        "15Streamers",
+        "Atony",
+        "GhostEjims",
+        "HannahTheBeef",
+        "Kazumai",
+        "LittleDooDoo",
+        "OneOffs",
+        "Ophidian",
+        "PhasmoFireGod",
+        "Pigoletto",
+        "Ressnie",
+        "Rum",
+        "Sarinjin",
+        "SugaNope",
+        "Sweetrolled",
+        "TheLastShaymin",
+        "Tori"
+    ];
+
+    public static readonly CorsacUtils.QuickPetMetadata[] Pets =
+    {
+        new ("Black Minipostor", "BlackMinipostorPet.prefab", false),
+        new ("Flopster", "FlopsterPet.prefab", false),
+        new ("Tortellini", "TortelliniPet.prefab", false)
+    };
+    public static void InitCorsac()
+    {
+        if (TownOfUsPlugin.AutoDownloadCosmetics.Value)
+        {
+            Message("Attempting to add ToU Cosmetics and Pets.");
+            Directory.CreateDirectory(BundlePath);
+
+            foreach (var cosmetic in CosmeticsArray)
+            {
+                CorsacUtils.TryDownloadCosmeticBundle(Path.Combine(BundlePath, $"TownOfUs.{cosmetic}.ccb"),
+                    $"https://github.com/AU-Avengers/TownOfUs-Cosmetics/raw/refs/heads/main/Bundles/TownOfUs.{cosmetic}.ccb");
+            }
+        }
+        else
+        {
+            Message("Attempting to load ToU Pets.");
+        }
+        CorsacUtils.AddMultiplePets("TouPetsSource", "Atony", Pets, TouAssets.MainBundle);
+    }
+
+    public static void InitSubmerged()
+    {
+        if (!IL2CPPChainloader.Instance.Plugins.TryGetValue(SubmergedGuid, out var plugin))
+        {
+            return;
+        }
+
+        SubPlugin = (plugin!.Instance as BasePlugin)!;
+        SubVersion = plugin.Metadata.Version;
+
+        SubAssembly = SubPlugin.GetType().Assembly;
+        SubTypes = AccessTools.GetTypesFromAssembly(SubAssembly);
+
+        SubInjectedTypes = (Dictionary<string, Type>)AccessTools
+            .PropertyGetter(SubTypes.FirstOrDefault(t => t.Name == "ComponentExtensions"), "RegisteredTypes")
+            .Invoke(null, null)!;
+
+        SubmarineStatusType = SubTypes.First(t => t.Name == "SubmarineStatus");
+        submergedInstance = AccessTools.Field(SubmarineStatusType, "instance");
+        submergedElevators = AccessTools.Field(SubmarineStatusType, "elevators");
+
+        var floorHandler = SubTypes.First(t => t.Name == "FloorHandler");
+        getFloorHandler = AccessTools.Method(floorHandler, "GetFloorHandler", [typeof(PlayerControl)]);
+        rpcRequestChangeFloor = AccessTools.Method(floorHandler, "RpcRequestChangeFloor", [typeof(bool)]);
+        registerFloorOverride = AccessTools.Method(floorHandler, "RegisterFloorOverride");
+
+        var ventPatchData = SubTypes.First(t => t.Name == "VentPatchData");
+        inTransition = AccessTools.Property(ventPatchData, "InTransition");
+
+        var customTaskTypes = SubTypes.First(t => t.Name == "CustomTaskTypes");
+        var retrieveOxygenMask = AccessTools.Field(customTaskTypes, "RetrieveOxygenMask");
+        var retTaskType = AccessTools.Field(customTaskTypes, "taskType");
+        RetrieveOxygenMask = (TaskTypes)retTaskType.GetValue(retrieveOxygenMask.GetValue(null))!;
+
+        var submarineOxygenSystem = SubTypes.First(t => t.Name == "SubmarineOxygenSystem");
+        submarineOxygenSystemInstance = AccessTools.Property(submarineOxygenSystem, "Instance");
+        repairDamage = AccessTools.Method(submarineOxygenSystem, "RepairDamage");
+        var rpcOxygenDeath = AccessTools.Method(submarineOxygenSystem, "RpcOxygenDeath");
+        var submergedExileController = SubTypes.First(t => t.Name == "SubmergedExileController");
+        var submergedExileWrapUp = AccessTools.Method(submergedExileController, "WrapUpAndSpawn");
+
+        var submarineElevator = SubTypes.First(t => t.Name == "SubmarineElevator");
+        getInElevator = AccessTools.Method(submarineElevator, "GetInElevator", [typeof(PlayerControl)]);
+        getMovementStageFromTime = AccessTools.Method(submarineElevator, "GetMovementStageFromTime");
+        getSubElevatorSystem = AccessTools.Field(submarineElevator, "system");
+
+        var elevatorConsole = SubTypes.First(t => t.Name == "ElevatorConsole");
+        var canUse = AccessTools.Method(elevatorConsole, "CanUse");
+
+        var submarineElevatorSystem = SubTypes.First(t => t.Name == "SubmarineElevatorSystem");
+        upperDeckIsTargetFloor = AccessTools.Field(submarineElevatorSystem, "upperDeckIsTargetFloor");
+
+        SubmarineSurvillanceMinigameType = SubTypes.FirstOrDefault(t => t.Name == "SubmarineSurvillanceMinigame")!;
+        SubmarineSecuritySabotageSystemType = SubTypes.FirstOrDefault(t => t.Name == "SubmarineSecuritySabotageSystem")!;
+        
+        var floorButtonPatch = SubTypes.First(t => t.Name == "ChangeFloorButtonPatches");
+        var floorButtonStyleMethod = AccessTools.Method(floorButtonPatch, "SetButtonStyle", [typeof(bool)]);
+
+        var types = new[] { typeof(float) };
+        var oxyConstruct = submarineOxygenSystem.GetConstructor(
+#pragma warning disable S3011
+            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
+#pragma warning restore S3011
+            null,
+            types,
+            null
+        );
+            
+        var compatType = typeof(ModCompatibility);
+        var harmony = new Harmony("tou.submerged.patch");
+
+        harmony.Patch(submergedExileWrapUp, null,
+            new HarmonyMethod(AccessTools.Method(compatType, nameof(ExileRoleChangePostfix))));
+
+        harmony.Patch(rpcOxygenDeath, null,
+            new HarmonyMethod(AccessTools.Method(compatType, nameof(OxygenDeathPostfix))));
+
+        harmony.Patch(oxyConstruct, null,
+            new HarmonyMethod(AccessTools.Method(compatType, nameof(SetOxygenDuration))));
+        harmony.Patch(canUse, null, null,
+            new HarmonyMethod(compatType, nameof(SubmergedElevatorTranspilerPatch)));
+        harmony.Patch(floorButtonStyleMethod,
+            new HarmonyMethod(AccessTools.Method(compatType, nameof(FloorStylePrefix))));
+
+        SubLoaded = true;
+        Message("Submerged was detected");
+    }
+
+    public static bool FloorStylePrefix(bool isMovingUp)
+    {
+        var hoverRend = MiraHudHelper.SubmergedFloorButtonRendererHover;
+        var basicRend = MiraHudHelper.SubmergedFloorButtonRenderer;
+        if (basicRend && hoverRend)
+        {
+            if (isMovingUp)
+            {
+                basicRend.sprite = TouAssets.SubmergedFloorUp.LoadAsset();
+                hoverRend.sprite = TouAssets.SubmergedFloorUpHover.LoadAsset();
+            }
+            else
+            {
+                basicRend.sprite = TouAssets.SubmergedFloorDown.LoadAsset();
+                hoverRend.sprite = TouAssets.SubmergedFloorDownHover.LoadAsset();
+            }
+        }
+
+        return false;
+    }
+
+    public static IEnumerable<CodeInstruction> SubmergedElevatorTranspilerPatch(
+        IEnumerable<CodeInstruction> instructions)
+    {
+        var found = false;
+        foreach (var instruction in instructions)
+        {
+            if (instruction.opcode == OpCodes.Callvirt &&
+                instruction.operand is MethodInfo { Name: "get_IsDead", DeclaringType.Name: "NetworkedPlayerInfo" })
+            {
+                found = true;
+                yield return new CodeInstruction(OpCodes.Call,
+                    AccessTools.Method(typeof(Utilities.Extensions), nameof(Utilities.Extensions.IsGhostDead)));
+            }
+            else
+            {
+                yield return instruction;
+            }
+        }
+
+        if (!found)
+        {
+            Error("Failed to find the IsDead call in SubmergedElevator transpiler");
+        }
+    }
+
+    public static void CheckOutOfBoundsElevator(PlayerControl player)
+    {
+        if (!SubLoaded)
+        {
+            return;
+        }
+
+        if (!IsSubmerged())
+        {
+            return;
+        }
+
+        var elevator = GetPlayerElevator(player);
+        if (!elevator.Item1)
+        {
+            return;
+        }
+
+        var currentFloor =
+            (bool)upperDeckIsTargetFloor.GetValue(
+                getSubElevatorSystem.GetValue(elevator.Item2))!; // true is top, false is bottom
+        var playerFloor = player.transform.position.y > -7f; // true is top, false is bottom
+
+        if (currentFloor != playerFloor)
+        {
+            ChangeFloor(currentFloor);
+        }
+    }
+
+    public static void MoveDeadPlayerElevator(PlayerControl player)
+    {
+        if (!IsSubmerged())
+        {
+            return;
+        }
+
+        var elevator = GetPlayerElevator(player);
+        if (!elevator.Item1)
+        {
+            return;
+        }
+
+        var movementStage = (int)getMovementStageFromTime.Invoke(elevator.Item2, null)!;
+        if (movementStage >= 5)
+        {
+            // Fade to clear
+            var topFloorTarget =
+                (bool)upperDeckIsTargetFloor.GetValue(
+                    getSubElevatorSystem.GetValue(elevator.Item2))!; // true is top, false is bottom
+            var topIntendedTarget = player.transform.position.y > -7f; // true is top, false is bottom
+            if (topFloorTarget != topIntendedTarget)
+            {
+                ChangeFloor(!topIntendedTarget);
+            }
+        }
+    }
+
+    public static Tuple<bool, object> GetPlayerElevator(PlayerControl player)
+    {
+        if (!IsSubmerged())
+        {
+            return Tuple.Create(false, (object)null!);
+        }
+
+        var elevatorList = (IList)submergedElevators.GetValue(submergedInstance.GetValue(null))!;
+        foreach (var elevator in elevatorList)
+        {
+            if ((bool)getInElevator.Invoke(elevator, [player])!)
+            {
+                return Tuple.Create(true, elevator);
+            }
+        }
+
+        return Tuple.Create(false, (object)null!);
+    }
+
+    public static void OxygenDeathPostfix(PlayerControl player)
+    {
+        GameHistory.UpdatePlayerDeathData(player.PlayerId, MiraLocaleManager.Get("DiedToSubmergedOxygen"),
+            0f, HudManagerHelper.Instance.CurrentRound, DeathHandlerOverride.SetTrue,
+            lockInfo: DeathHandlerOverride.SetTrue);
+    }
+
+public static string SelectedRoleName;
+    public static bool SelectedRoleStatus = true;
+    public static void AdjustRoleBehaviour(object __instance, ref bool __state)
+    {
+        if (SelectedRoleName != "")
+        {
+            var nameField = __instance.GetType().GetField("RoleName", BindingFlags.Public | BindingFlags.Instance);
+            nameField?.SetValue(__instance, SelectedRoleName);
+        }
+        if (!SelectedRoleStatus)
+        {
+            var nameField = __instance.GetType().GetField("CanSpawnOnCurrentMode", BindingFlags.Public | BindingFlags.Instance);
+            nameField?.SetValue(__instance, false);
+        }
+
+        SelectedRoleName = "";
+        SelectedRoleStatus = true;
+        __state = false;
+    }
+
+    public static void SetOxygenDuration(object __instance, float duration)
+    {
+        var subOpts = OptionGroupSingleton<BetterSubmergedOptions>.Instance;
+        if (subOpts.ChangeSaboTimers)
+        {
+            var field = __instance.GetType().GetField("duration", BindingFlags.Public | BindingFlags.Instance);
+            field?.SetValue(__instance, subOpts.SaboCountdownOxygen.Value);
+        }
+    }
+
+    public static void ExileRoleChangePostfix()
+    {
+        Coroutines.Start(WaitMeeting(ResetTimers));
+        Coroutines.Start(WaitMeeting(GhostRoleBegin));
+    }
+
+    public static IEnumerator WaitMeeting(Action next)
+    {
+        while (!PlayerControl.LocalPlayer.moveable)
+        {
+            yield return null;
+        }
+
+        yield return new WaitForSeconds(0.5f);
+
+        while (HudManager.Instance.PlayerCam.transform.Find("SpawnInMinigame(Clone)") != null)
+        {
+            yield return null;
+        }
+
+        next();
+    }
+
+    public static void ResetTimers()
+    {
+        ButtonResetPatches.ResetCooldowns();
+    }
+
+    public static void GhostRoleBegin()
+    {
+        if (!PlayerControl.LocalPlayer.Data.IsDead)
+        {
+            return;
+        }
+
+        if (PlayerControl.LocalPlayer.Data.Role is IGhostRole ghost && !ghost.Caught)
+        {
+            var startingVent =
+                ShipStatus.Instance.AllVents[Random.RandomRangeInt(0, ShipStatus.Instance.AllVents.Count)];
+
+            while (startingVent == ShipStatus.Instance.AllVents[0] || startingVent == ShipStatus.Instance.AllVents[14])
+            {
+                startingVent =
+                    ShipStatus.Instance.AllVents[Random.RandomRangeInt(0, ShipStatus.Instance.AllVents.Count)];
+            }
+
+            var pos = new Vector2(startingVent.transform.position.x, startingVent.transform.position.y + 0.3636f);
+
+            PlayerControl.LocalPlayer.RpcSetPos(pos);
+            PlayerControl.LocalPlayer.MyPhysics.RpcEnterVent(startingVent.Id);
+
+            ghost.Setup = true;
+
+            ChangeFloor(PlayerControl.LocalPlayer.GetTruePosition().y > -7);
+        }
+    }
+
+    public static void GhostRoleFix(PlayerPhysics __instance)
+    {
+        if (SubLoaded && __instance.myPlayer.Data != null && __instance.myPlayer.Data.IsDead)
+        {
+            var player = __instance.myPlayer;
+
+            if (player.Data.Role is IGhostRole ghost && ghost.GhostActive)
+            {
+                if (player.AmOwner)
+                {
+                    MoveDeadPlayerElevator(player);
+                }
+                else
+                {
+                    player.Collider.enabled = false;
+                }
+
+                var transform = __instance.transform;
+                var position = transform.position;
+                position.z = position.y / 1000;
+
+                transform.position = position;
+                __instance.myPlayer.gameObject.layer = 8;
+            }
+        }
+    }
+
+    public static MonoBehaviour AddSubmergedComponent(this GameObject obj, string typeName)
+    {
+        if (!SubLoaded)
+        {
+            return obj.AddComponent<MissingBehaviour>();
+        }
+
+        var validType = SubInjectedTypes.TryGetValue(typeName, out var type);
+
+        return validType
+            ? obj.AddComponent(Il2CppType.From(type)).TryCast<MonoBehaviour>()!
+            : obj.AddComponent<MissingBehaviour>();
+    }
+
+    public static void ChangeFloor(bool toUpper)
+    {
+        if (!SubLoaded)
+        {
+            return;
+        }
+
+        var handler = getFloorHandler.Invoke(null, [PlayerControl.LocalPlayer])!;
+        rpcRequestChangeFloor.Invoke(handler, [toUpper]);
+        registerFloorOverride.Invoke(handler, [toUpper]);
+    }
+
+    public static bool GetInTransition()
+    {
+        if (!SubLoaded)
+        {
+            return false;
+        }
+
+        return (bool)inTransition.GetValue(null)!;
+    }
+
+    public static void RepairSubOxygen()
+    {
+        if (!IsSubmerged())
+        {
+            return;
+        }
+
+        try
+        {
+            ShipStatus.Instance.RpcUpdateSystem((SystemTypes)130, 64);
+            repairDamage.Invoke(submarineOxygenSystemInstance.GetValue(null), [PlayerControl.LocalPlayer, 64]);
+        }
+        catch
+        {
+            // ignored
+        }
+    }
+
+    public static bool IsSubmerged()
+    {
+        return SubLoaded && ShipStatus.Instance && ShipStatus.Instance.Type == SubmergedMapType;
+    }
+
+    public static bool IsLevelImpostor()
+    {
+        var map = GameOptionsManager.Instance.CurrentGameOptions.MapId;
+        return LILoaded && ShipStatus.Instance && map == 7;
+    }
+
+    private static void InitLevelImpostor()
+    {
+        if (!IL2CPPChainloader.Instance.Plugins.TryGetValue(LevelImpostorGuid, out var value))
+        {
+            return;
+        }
+
+        LIPlugin = (value.Instance as BasePlugin)!;
+        LIAssembly = LIPlugin.GetType().Assembly;
+
+        LITypes = AccessTools.GetTypesFromAssembly(LIAssembly);
+
+        var gameConfig = LITypes.First(x => x.Name == "GameConfiguration");
+        //lastMapID = AccessTools.Field(gameConfig, "_lastMapID"); // Unused? (Also, only accessible through CurrentMap.ID)
+        currentMap = AccessTools.Property(gameConfig, "CurrentMap");
+
+        var liMap = LITypes.First(x => x.Name == "LIMap");
+        elements = AccessTools.Property(liMap, "elements");
+
+        var liElement = LITypes.First(x => x.Name == "LIElement");
+        liElementType = AccessTools.Property(liElement, "type");
+        liElementName = AccessTools.Property(liElement, "name");
+
+        var liDeathArea = LITypes.First(x => x.Name == "LIDeathArea");
+        var killAllPlayersMethod = AccessTools.Method(liDeathArea, "KillAllPlayers");
+
+        var console = LITypes.First(x => x.Name == "TriggerConsole");
+        var canUseMethod = AccessTools.Method(console, "CanUse");
+
+        // MapObjectData = LITypes.First(x => x.Name == "MapObjectData");
+
+        var compatType = typeof(ModCompatibility);
+        var harmony = new Harmony("tou.levelimposter.patch");
+        harmony.Patch(killAllPlayersMethod,
+            new HarmonyMethod(AccessTools.Method(compatType, nameof(KillAllPlayersPrefix))));
+        harmony.Patch(canUseMethod, new HarmonyMethod(AccessTools.Method(compatType, nameof(TriggerPrefix))),
+            new HarmonyMethod(AccessTools.Method(compatType, nameof(TriggerPostfix))));
+
+        LILoaded = true;
+        Message("LevelImpostor was detected");
+    }
+
+    private static void InitBetterAmongUs()
+    {
+        if (!IL2CPPChainloader.Instance.Plugins.TryGetValue(BetterAuGuid, out var value))
+        {
+            return;
+        }
+
+        BauPlugin = (value.Instance as BasePlugin)!;
+        BauAssembly = BauPlugin.GetType().Assembly;
+        BauVersion = value.Metadata.Version;
+        BauTypes = AccessTools.GetTypesFromAssembly(BauAssembly);
+
+        // var pluginBase = BauTypes.First(t => t.Name == "BAUPlugin");
+        /*bauCommandPrefix = AccessTools.Property(pluginBase, "CommandPrefix");
+        Traverse.Create(entry).Property("Value").GetValue<string>();*/
+
+
+        BauLoaded = true;
+        Message("Better Among Us was detected");
+    }
+
+    private static void InitCrowded()
+    {
+        if (!IL2CPPChainloader.Instance.Plugins.TryGetValue(CrowdedGuid, out var value))
+        {
+            return;
+        }
+
+        CrowdedPlugin = (value.Instance as BasePlugin)!;
+        CrowdedAssembly = CrowdedPlugin.GetType().Assembly;
+        CrowdedVersion = value.Metadata.Version;
+
+        // var pluginBase = BauTypes.First(t => t.Name == "BAUPlugin");
+        /*bauCommandPrefix = AccessTools.Property(pluginBase, "CommandPrefix");
+        Traverse.Create(entry).Property("Value").GetValue<string>();*/
+
+
+        CrowdedLoaded = true;
+        Message("Crowded was detected");
+    }
+
+    private static void InitAleLudu()
+    {
+        if (!IL2CPPChainloader.Instance.Plugins.TryGetValue(AleLuduGuid, out var value))
+        {
+            return;
+        }
+
+        AleLuduPlugin = (value.Instance as BasePlugin)!;
+        AleLuduAssembly = AleLuduPlugin.GetType().Assembly;
+        AleLuduVersion = value.Metadata.Version;
+
+        // var pluginBase = BauTypes.First(t => t.Name == "BAUPlugin");
+        /*bauCommandPrefix = AccessTools.Property(pluginBase, "CommandPrefix");
+        Traverse.Create(entry).Property("Value").GetValue<string>();*/
+
+
+        AleLuduLoaded = true;
+        Message("AleLuduMod was detected");
+    }
+
+    private static void InitMci()
+    {
+        if (!IL2CPPChainloader.Instance.Plugins.TryGetValue(MciGuid, out var value))
+        {
+            return;
+        }
+
+        MciPlugin = (value.Instance as BasePlugin)!;
+        MciAssembly = MciPlugin.GetType().Assembly;
+        MciVersion = value.Metadata.Version;
+
+        MciLoaded = true;
+        Message("ToU MCI was detected.");
+    }
+
+    public static string GetLIVentType(Vent vent)
+    {
+        if (!IsLevelImpostor() || vent == null)
+        {
+            return string.Empty;
+        }
+
+        var map = currentMap.GetValue(null);
+        var elems = (object[])elements.GetValue(map)!;
+        var child = elems.FirstOrDefault(x => (string)liElementName.GetValue(x)! == vent.name);
+
+        if (child == null)
+        {
+            return string.Empty;
+        }
+
+        return (string)liElementType.GetValue(child)!;
+    }
+
+    public static void TriggerPrefix(NetworkedPlayerInfo playerInfo, ref bool __state)
+    {
+        var playerControl = playerInfo.Object;
+
+        if (playerControl.Data.Role is not IGhostRole { GhostActive: true })
+        {
+            return;
+        }
+
+        playerInfo.IsDead = false;
+        __state = true;
+    }
+
+    public static void TriggerPostfix(NetworkedPlayerInfo playerInfo, ref bool __state)
+    {
+        if (__state)
+        {
+            playerInfo.IsDead = true;
+        }
+    }
+
+    public static void KillAllPlayersPrefix(dynamic __instance)
+    {
+        if (!AmongUsClient.Instance.AmHost)
+        {
+            return;
+        }
+
+        var playersToDie = __instance.CurrentPlayersIDs as List<byte>;
+
+        if (playersToDie?.Count is null or 0)
+        {
+            return;
+        }
+    }
+}

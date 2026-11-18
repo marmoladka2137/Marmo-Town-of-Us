@@ -1,0 +1,4 @@
+"Name","Url","Status","Bytes","SHA256","Error"
+"Liberation-OFL","https://raw.githubusercontent.com/liberationfonts/liberation-fonts/main/LICENSE","200","4414","93FED46019C38BBE566B479D22148E2E8A1E85ADA614ACCB0211C37B2C61C19B",""
+"Liberation-tags","https://api.github.com/repos/liberationfonts/liberation-fonts/tags?per_page=100","200","4123","8F03039C47850D1A7A857B32650DF730416B4B2582AB4F36B72495DC58153463",""
+"OFL-official","https://openfontlicense.org/open-font-license-official-text/","200","11286","F355304EE759FA69FD29E67B1FF92310A97F87DD9573E95F007EF95235EEFCA3",""

@@ -1,0 +1,173 @@
+// MTOU publication snapshot prepared 2026-11-17.
+// Modified relative to TOU Mira b56f24a0; original credits retained. See SOURCE_PROVENANCE.md.
+using AmongUs.GameOptions;
+using Il2CppInterop.Runtime.Attributes;
+using MiraAPI.GameOptions;
+using MiraAPI.Hud;
+using MiraAPI.Modifiers;
+using MiraAPI.Patches.Stubs;
+using MiraAPI.Roles;
+using MiraAPI.Utilities;
+using TownOfUs.Buttons;
+using TownOfUs.Interfaces;
+using TownOfUs.Modifiers;
+using TownOfUs.Modifiers.Game.Universal;
+using TownOfUs.Options.Roles.Neutral;
+using TownOfUs.Modules;
+using TownOfUs.Roles.Crewmate;
+using UnityEngine;
+
+namespace TownOfUs.Roles.Neutral;
+
+public sealed class JesterRole(IntPtr cppPtr)
+    : NeutralRole(cppPtr), ITownOfUsRole, IWikiDiscoverable, IDoomable, ICrewVariant, IGuessable, IAnnounceableKill
+{
+    public void AnnounceKill(PlayerControl source, PlayerControl victim)
+    {
+        var text = !OptionGroupSingleton<JesterOptions>.Instance.JestAnnounceWin.Value
+            ? MiraLocaleManager.Get("TownOfUsMira.Role.AnonymousVictoryKillNotif").Replace("<source>", source.Data.PlayerName)
+            : MiraLocaleManager.Get("TownOfUsMira.Role.JesterHauntNotif");
+        var notif = Helpers.CreateAndShowNotification(
+            $"<b>{text.Replace("<victim>", victim.Data.PlayerName)}</b>",
+            Color.white, new Vector3(0f, 2f, -20f), spr: TouRoleIcons.Jester.LoadAsset());
+        notif.AdjustNotification();
+        notif.alphaTimer = 5f;
+    }
+    [HideFromIl2Cpp]
+    public bool CanModifierContinueGame(BaseModifier modifier)
+    {
+        return modifier is TiebreakerModifier;
+    }
+    public override void SpawnTaskHeader(PlayerControl playerControl)
+    {
+        if (!playerControl.AmOwner)
+        {
+            return;
+        }
+        ImportantTextTask orCreateTask = PlayerTask.GetOrCreateTask<ImportantTextTask>(playerControl, 0);
+        orCreateTask.Text = $"{TownOfUsColors.Neutral.ToTextColor()}{MiraLocaleManager.Get("NeutralEvilTaskHeader")}</color>";
+        orCreateTask.name = "NeutralRoleText";
+    }
+
+    public bool Voted { get; set; }
+    public bool AboutToWin { get; set; }
+    public bool SentWinMsg { get; set; }
+
+    [HideFromIl2Cpp] public List<byte> Voters { get; } = [];
+
+    public RoleBehaviour CrewVariant => RoleManager.Instance.GetRole((RoleTypes)RoleId.Get<EngineerTouRole>());
+
+    public bool? ForceShowRoleOnWiki => CanBeGuessed ? true : null;
+    // This is so the role can be guessed without requiring it to be enabled normally
+    public bool CanBeGuessed =>
+        (MiscUtils.GetPotentialRoles()
+             .Contains(RoleManager.Instance.GetRole((RoleTypes)RoleId.Get<FairyRole>())) &&
+         OptionGroupSingleton<FairyOptions>.Instance.OnTargetDeath is BecomeOptions.Jester)
+        || (MiscUtils.GetPotentialRoles()
+                .Contains(RoleManager.Instance.GetRole((RoleTypes)RoleId.Get<ExecutionerRole>())) &&
+            OptionGroupSingleton<ExecutionerOptions>.Instance.OnTargetDeath is BecomeOptions.Jester);
+
+    public DoomableType DoomHintType => DoomableType.Trickster;
+    public string IdPart => "Jester";
+    public string RoleMedDescriptionLocale => $"TownOfUsMira.Role.{IdPart}.TabDescription";
+
+    public string GetAdvancedDescription()
+    {
+        return
+            MiraLocaleManager.Get($"TownOfUsMira.Role.{IdPart}.WikiDescription") +
+            MiscUtils.AppendOptionsText(GetType());
+    }
+
+    [HideFromIl2Cpp]
+    public List<AdvancedWikiAbilityDescription> WikiAbilities
+    {
+        get
+        {
+            return
+            [
+                new(MiraLocaleManager.Get($"TownOfUsMira.Role.{IdPart}Poke", "Poke"),
+                    MiraLocaleManager.Get("MiraApi.AbilityType.Interaction"),
+                    MiraLocaleManager.Get($"TownOfUsMira.Role.{IdPart}Poke.WikiDescription"),
+                    TouNeutAssets.JesterPokeSprite)
+            ];
+        }
+    }
+
+    public Color RoleColor => TownOfUsColors.Jester;
+    public ModdedRoleTeams Team => ModdedRoleTeams.Custom;
+    public RoleAlignment RoleAlignment => RoleAlignment.NeutralEvil;
+
+    public CustomRoleConfiguration Configuration => new(this)
+    {
+        IconTmp = TmpSpriteUtils.CreateSpriteAsset(TouRoleIcons.Jester.LoadAsset(), "TouMira.Role.Neutral.Jester", 1.45f),
+        GetsVentData = OptionGroupSingleton<JesterOptions>.Instance.CanVent.Value,
+        IntroSound = TouAudio.NoisemakerIntroSound,
+        GhostRole = (RoleTypes)RoleId.Get<NeutralGhostRole>(),
+        OptionsScreenshot = TouBanners.JesterRoleBanner,
+        Icon = TouRoleIcons.Jester
+    };
+
+    public bool MetWinCon => TouMarmo.Modules.Jester.JesterExileRuntime.HasWon(Player);
+
+    public bool HasImpostorVision => OptionGroupSingleton<JesterOptions>.Instance.ImpostorVision;
+
+    public bool WinConditionMet() => TouMarmo.Modules.Jester.JesterExileRuntime.EndsGame(Player);
+
+    public override void Initialize(PlayerControl player)
+    {
+        RoleBehaviourStubs.Initialize(this, player);
+
+        if (!OptionGroupSingleton<JesterOptions>.Instance.CanButton)
+        {
+            player.RemainingEmergencies = 0;
+        }
+
+        if (Player.AmOwner)
+        {
+            if (OptionGroupSingleton<JesterOptions>.Instance.ScatterOn.Value)
+            {
+                Player.AddModifier<ScatterModifier>(OptionGroupSingleton<JesterOptions>.Instance.ScatterTimer.Value);
+            }
+
+            if (OptionGroupSingleton<JesterOptions>.Instance.CanVent.Value)
+            {
+                CustomButtonSingleton<FakeVentButton>.Instance.Show = false;
+            }
+        }
+    }
+
+    public override void Deinitialize(PlayerControl targetPlayer)
+    {
+        RoleBehaviourStubs.Deinitialize(this, targetPlayer);
+        TouRoleUtils.ClearTaskHeader(Player);
+
+        if (Player.AmOwner)
+        {
+            if (OptionGroupSingleton<JesterOptions>.Instance.ScatterOn.Value)
+            {
+                Player.RemoveModifier<ScatterModifier>();
+            }
+
+            CustomButtonSingleton<FakeVentButton>.Instance.Show = true;
+        }
+
+        if (!Player.HasModifier<BasicGhostModifier>() && Voted)
+        {
+            Player.AddModifier<BasicGhostModifier>();
+        }
+    }
+
+    public override bool CanUse(IUsable usable)
+    {
+        if (!GameManager.Instance.LogicUsables.CanUse(usable, Player))
+        {
+            return false;
+        }
+
+        var console = usable.TryCast<Console>()!;
+        return console == null || console.AllowImpostor;
+    }
+
+    public override bool DidWin(GameOverReason gameOverReason) => TouMarmo.Modules.Jester.JesterExileRuntime.HasWon(Player);
+}
+

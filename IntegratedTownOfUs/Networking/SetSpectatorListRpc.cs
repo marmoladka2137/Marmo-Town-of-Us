@@ -1,0 +1,62 @@
+// MTOU publication snapshot prepared 2026-11-17.
+// Modified relative to TOU Mira b56f24a0; original credits retained. See SOURCE_PROVENANCE.md.
+using Hazel;
+using Reactor.Networking.Attributes;
+using Reactor.Networking.Rpc;
+using TownOfUs.Patches.Misc;
+using TownOfUs.Roles.Other;
+
+namespace TownOfUs.Networking;
+
+[RegisterCustomRpc((uint)TownOfUsRpc.SetSpectatorList)]
+public sealed class SetSpectatorListRpc(TouMarmo.TouMarmoPlugin plugin, uint id)
+    : PlayerCustomRpc<TouMarmo.TouMarmoPlugin, Dictionary<byte, string>>(plugin, id)
+{
+    public override RpcLocalHandling LocalHandling => RpcLocalHandling.Before;
+
+    public override void Write(MessageWriter writer, Dictionary<byte, string>? data)
+    {
+        if (data == null)
+        {
+            writer.Write((byte)0);
+            return;
+        }
+
+        writer.Write((byte)data.Count);
+        foreach (var kvp in data)
+        {
+            writer.Write(kvp.Key);
+            writer.Write(kvp.Value);
+        }
+    }
+
+    public override Dictionary<byte, string> Read(MessageReader reader)
+    {
+        var count = reader.ReadByte();
+        var data = new Dictionary<byte, string>(count);
+        for (var i = 0; i < count; i++)
+        {
+            var key = reader.ReadByte();
+            var value = reader.ReadString();
+            data[key] = value;
+        }
+
+        return data;
+    }
+
+    public override void Handle(PlayerControl innerNetObject, Dictionary<byte, string>? data)
+    {
+        if (data == null)
+        {
+            return;
+        }
+
+        if (data.Count == 0)
+        {
+            SpectatorRole.TrackedSpectators.Clear();
+            return;
+        }
+
+        ChatPatches.SetSpectatorList(data);
+    }
+}

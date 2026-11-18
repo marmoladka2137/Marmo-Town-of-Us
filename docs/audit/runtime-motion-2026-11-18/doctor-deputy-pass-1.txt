@@ -1,0 +1,45 @@
+Native IL2CPP local fixtures, not gameplay or multiplayer.
+PASS: Native medical coat loaded
+PASS: Head mirror loaded
+PASS: Medical mask loaded
+PASS: No Mayor animation clip
+PASS: Doctor effect does not intercept input
+PASS: Doctor independent cleanup restores icon
+PASS: Doctor stationary timeline rendered across three phases
+Shooter skin=skin_None; native matches=skin_None
+PASS: Original effect initialized for case 0
+PASS: No remaining effect after shot case 0
+PASS: Visible recoil in case 0
+Shooter skin=skin_None; native matches=skin_None
+PASS: Original effect initialized for case 1
+PASS: No remaining effect after shot case 1
+PASS: Visible recoil in case 1
+PASS: Repeated RPC deduplicated
+Shooter skin=skin_None; native matches=skin_None
+PASS: Original effect initialized for case 2
+PASS: No remaining effect after shot case 2
+Shooter skin=skin_None; native matches=skin_None
+PASS: Original effect initialized for case 3
+PASS: No remaining effect after shot case 3
+Shooter skin=skin_None; native matches=skin_None
+PASS: Original effect initialized for case 4
+PASS: No remaining effect after shot case 4
+Shooter skin=skin_None; native matches=skin_None
+PASS: Original effect initialized for case 5
+PASS: No remaining effect after shot case 5
+Shooter skin=skin_None; native matches=skin_None
+PASS: Original effect initialized for case 6
+PASS: No remaining effect after shot case 6
+Shooter skin=skin_None; native matches=skin_None
+PASS: Original effect initialized for case 7
+PASS: No remaining effect after shot case 7
+PASS: Visible recoil in case 7
+Shooter skin=skin_None; native matches=skin_None
+PASS: Original effect initialized for case 8
+PASS: No remaining effect after shot case 8
+PASS: Visible recoil in case 8
+PASS: Distinct queued effects all complete
+Shooter skin=skin_None; native matches=skin_None
+PASS: Original effect initialized for case 9
+PASS: No remaining effect after shot case 9
+PASS: 33 native assertions. No multiplayer match or role mechanics exercised.

@@ -1,0 +1,13 @@
+﻿using MiraAPI.GameOptions;
+using MiraAPI.GameOptions.Attributes;
+using TownOfUs.Roles.Crewmate;
+
+namespace TownOfUs.Options.Roles.Crewmate;
+
+public sealed class SwapperOptions : AbstractRoleOptionGroup<SwapperRole>
+{
+    public override string GroupName => MiraLocaleManager.Get("TownOfUsMira.Role.Swapper", "Swapper");
+
+    [ModdedToggleOption("TouOptionSwapperCanCallButton")]
+    public bool CanButton { get; set; } = true;
+}

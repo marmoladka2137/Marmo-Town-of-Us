@@ -1,0 +1,126 @@
+// MTOU publication snapshot prepared 2026-11-17.
+// Modified relative to TOU Mira b56f24a0; original credits retained. See SOURCE_PROVENANCE.md.
+using MiraAPI.Events;
+using MiraAPI.Events.Mira;
+using MiraAPI.Events.Vanilla.Gameplay;
+using MiraAPI.GameOptions;
+using MiraAPI.Hud;
+using MiraAPI.Modifiers;
+using MiraAPI.Utilities;
+using TownOfUs.Buttons;
+using TownOfUs.Modifiers;
+using TownOfUs.Modifiers.Game.Alliance;
+using TownOfUs.Options;
+using TownOfUs.Options.Roles.Crewmate;
+using TownOfUs.Roles.Crewmate;
+using UnityEngine;
+
+namespace TownOfUs.Events.Crewmate;
+
+public static class MonarchEvents
+{
+    [RegisterEvent]
+    public static void OnKnightKilled(AfterMurderEvent @event)
+    {
+        var deadPlayer = @event.Target;
+
+        if (!OptionGroupSingleton<MonarchOptions>.Instance.InformWhenKnightDies)
+            return;
+
+        if (!deadPlayer.HasModifier<KnightedModifier>())
+            return;
+
+        var monarch = PlayerControl.AllPlayerControls
+            .ToArray()
+            .FirstOrDefault(p => !p.HasDied() && p.Data.Role is MonarchRole);
+
+        if (monarch == null || !monarch.AmOwner)
+            return;
+
+        var notif = Helpers.CreateAndShowNotification(
+            $"<b>{MiraLocaleManager.Get("TownOfUsMira.Role.MonarchKnightFallenFeedback").Replace("<player>", deadPlayer.Data.PlayerName)}</b>",
+            Color.white,
+            new Vector3(0f, 1f, -20f),
+            spr: TouRoleIcons.Monarch.LoadAsset());
+
+        notif.Text.SetOutlineThickness(0.4f);
+    }
+
+    [RegisterEvent]
+    public static void MiraButtonClickEventHandler(MiraButtonClickEvent @event)
+    {
+        var button = @event.Button as CustomActionButton<PlayerControl>;
+        var target = button?.Target;
+
+        if (target == null || button == null || button is not IKillButton || !button.CanClick())
+            return;
+
+        if (PlayerControl.LocalPlayer == target || @event is ExtendedMiraButtonClickEvent { IgnoreDefense: true })
+        {
+            return;
+        }
+
+        if (CheckForMonarchImmunity(@event, target))
+        {
+            ResetButtonTimer(PlayerControl.LocalPlayer, button);
+        }
+    }
+
+    [RegisterEvent]
+    public static void BeforeMurderEventHandler(BeforeMurderEvent @event)
+    {
+        var source = @event.Source;
+        var target = @event.Target;
+
+        if (source == target || @event.IgnoreDefense)
+        {
+            return;
+        }
+        if (CheckForMonarchImmunity(@event, target))
+        {
+            ResetButtonTimer(source);
+        }
+    }
+
+    private static bool CheckForMonarchImmunity(MiraCancelableEvent? @event, PlayerControl target)
+    {
+        if (!OptionGroupSingleton<MonarchOptions>.Instance.CrewKnightsGrantKillImmunity)
+            return false;
+
+        if (MeetingHud.Instance || ExileController.Instance)
+            return false;
+
+        if (target.Data?.Role is not MonarchRole)
+            return false;
+
+        var allowEvilKnights = target.HasModifier<EgotistModifier>();
+
+        var knightedAlive = Helpers.GetAlivePlayers()
+            .Any(p =>
+                p.HasModifier<KnightedModifier>() &&
+                (allowEvilKnights || p.IsCrewmate())
+            );
+
+        if (!knightedAlive)
+            return false;
+
+        if (@event == null) return !ProtectionRuntime.Bypass(target);
+        if (!ProtectionRuntime.MayDefend(@event, target)) return false;
+        var source = @event is BeforeMurderEvent m ? m.Source : PlayerControl.LocalPlayer;
+        if (!ProtectionRuntime.Block(@event, source, target, ProtectionKind.Monarch)) return false;
+        return true;
+    }
+
+    private static void ResetButtonTimer(PlayerControl source, CustomActionButton<PlayerControl>? button = null)
+    {
+        if (!source.AmOwner)
+        {
+            return;
+        }
+
+        var reset = OptionGroupSingleton<GeneralOptions>.Instance.TempSaveCdReset;
+
+        button?.SetTimer(reset);
+        source.SetKillTimer(reset);
+    }
+}

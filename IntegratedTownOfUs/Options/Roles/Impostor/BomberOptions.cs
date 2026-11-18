@@ -1,0 +1,33 @@
+﻿using MiraAPI.GameOptions;
+using MiraAPI.GameOptions.Attributes;
+using MiraAPI.GameOptions.OptionTypes;
+using MiraAPI.Utilities;
+using TownOfUs.Roles.Impostor;
+
+namespace TownOfUs.Options.Roles.Impostor;
+
+public sealed class BomberOptions : AbstractRoleOptionGroup<BomberRole>
+{
+    public override string GroupName => MiraLocaleManager.Get("TownOfUsMira.Role.Bomber", "Bomber");
+
+    [ModdedNumberOption("TouOptionBomberBombUsesPerGame", 0f, 15f, 1f, MiraNumberSuffixes.None, "0", true)]
+    public float MaxBombs { get; set; } = 3f;
+
+    [ModdedNumberOption("TouOptionBomberDetonateDelay", 1f, 15f, 1f, MiraNumberSuffixes.Seconds)]
+    public float DetonateDelay { get; set; } = 5f;
+
+    [ModdedNumberOption("TouOptionBomberDetonateRadius", 0.05f, 1f, 0.05f, MiraNumberSuffixes.Distance, "0.00")]
+    public float DetonateRadius { get; set; } = 0.25f;
+
+    [ModdedNumberOption("TouOptionBomberMAxKillsInDetonation", 1f, 15f, 1f, MiraNumberSuffixes.None, "0")]
+    public float MaxKillsInDetonation { get; set; } = 5f;
+
+    [ModdedToggleOption("TouOptionBomberAllImpostorsSeeBomb")]
+    public bool AllImpsSeeBomb { get; set; } = true;
+
+    [ModdedToggleOption("TouOptionBomberAllowBombinginFirstRound")]
+    public bool CanBombFirstRound { get; set; } = true;
+
+    [ModdedToggleOption("TouOptionBomberCanVent")]
+    public bool CanVent { get; set; } = true;
+}

@@ -1,0 +1,89 @@
+﻿using MiraAPI.Events;
+using MiraAPI.GameOptions;
+using MiraAPI.Roles;
+using TownOfUs.Events.TouEvents;
+using TownOfUs.Options;
+using TownOfUs.Options.Roles.Neutral;
+using TownOfUs.Roles.Neutral;
+using UnityEngine;
+using Object = UnityEngine.Object;
+
+namespace TownOfUs.Modifiers.Neutral;
+
+public sealed class GuardianAngelProtectModifier(PlayerControl guardianAngel) : BaseShieldModifier
+{
+    public override float Duration => OptionGroupSingleton<FairyOptions>.Instance.ProtectDuration;
+    public override string ModifierName => "Protected";
+    public override LoadableAsset<Sprite>? ModifierIcon => TouRoleIcons.Fairy;
+  public override string ShieldDescription => MiraLocaleManager.Get("TownOfUsMira.Modifier.GuardianAngelProtectedDescription");
+    public override bool AutoStart => true;
+    public PlayerControl Guardian => guardianAngel;
+
+    public override bool HideOnUi
+    {
+        get
+        {
+            var showProtect = OptionGroupSingleton<FairyOptions>.Instance.ShowProtect;
+            return !LocalSettingsTabSingleton<TouLocalTabButtons>.Instance.ShowShieldHudToggle.Value ||
+                   !OptionGroupSingleton<FairyOptions>.Instance.FairyTargetKnows ||
+                   showProtect is ProtectOptions.Fairy;
+        }
+    }
+
+    public override void OnActivate()
+    {
+        var touAbilityEvent = new TouAbilityEvent(AbilityType.FairyProtect, Guardian, Player);
+        MiraEventManager.InvokeEvent(touAbilityEvent);
+
+        var genOpt = OptionGroupSingleton<GeneralOptions>.Instance;
+        var showProtect = OptionGroupSingleton<FairyOptions>.Instance.ShowProtect;
+        var ga = CustomRoleUtils.GetActiveRolesOfType<FairyRole>().FirstOrDefault(x => x.Target == Player);
+
+        var showProtectEveryone = showProtect == ProtectOptions.Everyone;
+        var showProtectSelf = PlayerControl.LocalPlayer.PlayerId == Player.PlayerId &&
+                              showProtect is ProtectOptions.SelfAndFairy &&
+                              OptionGroupSingleton<FairyOptions>.Instance.FairyTargetKnows;
+        var showProtectFairy = PlayerControl.LocalPlayer.PlayerId == ga?.Player.PlayerId &&
+                            showProtect is ProtectOptions.Fairy or ProtectOptions.SelfAndFairy;
+
+        var body = UnityEngine.Object.FindObjectsOfType<DeadBody>().FirstOrDefault(x =>
+            x.ParentId == PlayerControl.LocalPlayer.PlayerId && !TutorialManager.InstanceExists);
+            var fakePlayer = !TutorialManager.InstanceExists ? MiscUtils.GetFakePlayer(PlayerControl.LocalPlayer.PlayerId) : null;
+
+        if (showProtectEveryone || showProtectSelf || showProtectFairy || (PlayerControl.LocalPlayer.HasDied() &&
+                                                                        genOpt.TheDeadKnow && !body &&
+                                                                        !fakePlayer?.body))
+        {
+            var roleEffectAnimation = Object.Instantiate(RoleManager.Instance.protectLoopAnim,
+                Player.gameObject.transform);
+            roleEffectAnimation
+                .SetMaterialColor(7); // This is white, if it's not, make sure it is set to white from the int
+            roleEffectAnimation.SetMaskLayerBasedOnWhoShouldSee(true);
+            roleEffectAnimation.Play(Player, new Action(OnDeactivate), Player.cosmetics.FlipX,
+                RoleEffectAnimation.SoundType.Local, Duration);
+        }
+    }
+
+    public override void OnDeactivate()
+    {
+        for (var i = Player.currentRoleAnimations.Count - 1; i >= 0; i--)
+        {
+            if (Player.currentRoleAnimations[i] != null && Player.currentRoleAnimations[i].effectType ==
+                RoleEffectAnimation.EffectType.ProtectLoop)
+            {
+                Object.Destroy(Player.currentRoleAnimations[i].gameObject);
+                Player.currentRoleAnimations.RemoveAt(i);
+            }
+        }
+    }
+
+    public override void OnMeetingStart()
+    {
+        ModifierComponent?.RemoveModifier(this);
+    }
+
+    public override void OnDeath(DeathReason reason)
+    {
+        ModifierComponent?.RemoveModifier(this);
+    }
+}

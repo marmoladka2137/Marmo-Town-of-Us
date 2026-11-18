@@ -1,0 +1,122 @@
+// MTOU publication snapshot prepared 2026-11-17.
+// Modified relative to TOU Mira b56f24a0; original credits retained. See SOURCE_PROVENANCE.md.
+using AmongUs.GameOptions;
+using MiraAPI.GameOptions;
+using MiraAPI.Modifiers;
+using MiraAPI.Patches.Hud;
+using MiraAPI.Roles;
+using MiraAPI.Utilities;
+using Reactor.Networking.Attributes;
+using TownOfUs.Interfaces;
+using TownOfUs.Modifiers.Game.Alliance;
+using TownOfUs.Modifiers.Game.Assailant;
+using TownOfUs.Modifiers.Neutral;
+using TownOfUs.Options;
+using TownOfUs.Options.Roles.Impostor;
+using TownOfUs.Roles.Crewmate;
+using TownOfUs.Roles.Impostor;
+using TownOfUs.Roles.Other;
+using UnityEngine;
+using Random = System.Random;
+
+namespace TownOfUs.Modifiers.Crewmate;
+
+public sealed class ToBecomeTraitorModifier : ExcludedGameModifier, IAssignableTargets, IContinuesGame
+{
+    public bool ContinuesGame => !Player.HasDied() && Helpers.GetAlivePlayers().Count >
+                                 (int)OptionGroupSingleton<TraitorOptions>.Instance.LatestSpawn - 1;
+    public override string ModifierName => "Possible Traitor";
+    public override bool HideOnUi => true;
+
+    public int Priority { get; set; } = 3;
+    public override Color FreeplayFileColor => new Color32(255, 25, 25, 255);
+
+    public void AssignTargets()
+    {
+        if (!RoleOptions.GetIsClassicRoleAssignment() || !PlayerControl.LocalPlayer.IsHost())
+        {
+            return;
+        }
+
+        if (GameOptionsManager.Instance.CurrentGameOptions.RoleOptions
+                .GetNumPerGame((RoleTypes)RoleId.Get<TraitorRole>()) == 0 || ModifierUtils.GetActiveModifiers<CrewpostorModifier>().HasAny())
+        {
+            return;
+        }
+
+        Random rnd = new();
+        var chance = rnd.Next(1, 101);
+
+        if (chance <=
+            GameOptionsManager.Instance.CurrentGameOptions.RoleOptions.GetChancePerGame(
+                (RoleTypes)RoleId.Get<TraitorRole>()))
+        {
+            var filtered = PlayerControl.AllPlayerControls.ToArray()
+                .Where(x => x.IsCrewmate() &&
+                            !x.HasDied() &&
+                            !x.HasModifier<ExecutionerTargetModifier>() &&
+                            !x.HasModifier<EgotistModifier>() &&
+                            !SpectatorRole.TrackedSpectators.Contains(x.Data.PlayerName) &&
+                            (x.Data.Role is not ILoyalCrewmate loyalCrew || loyalCrew.CanBeTraitor)).ToList();
+
+            if (filtered.Count == 0)
+            {
+                return;
+            }
+
+            var randomTarget = filtered[rnd.Next(0, filtered.Count)];
+
+            randomTarget.RpcAddModifier<ToBecomeTraitorModifier>();
+        }
+    }
+
+    public override int GetAmountPerGame()
+    {
+        return 0;
+    }
+
+    public override int GetAssignmentChance()
+    {
+        return 0;
+    }
+
+    public void Clear()
+    {
+        AssignTargets();
+        ModifierComponent?.RemoveModifier(this);
+    }
+
+    [MethodRpc((uint)TownOfUsRpc.SetTraitor)]
+    public static void RpcSetTraitor(PlayerControl player)
+    {
+        if (LobbyBehaviour.Instance)
+        {
+            MiscUtils.RunAnticheatWarning(player);
+            return;
+        }
+        if (!player.HasModifier<ToBecomeTraitorModifier>() && !player.HasModifier<CrewpostorModifier>())
+        {
+            return;
+        }
+
+        player.ChangeRole(RoleId.Get<TraitorRole>());
+        if (player.HasModifier<ToBecomeTraitorModifier>())
+        {
+            player.RemoveModifier<ToBecomeTraitorModifier>();
+        }
+
+        if (OptionGroupSingleton<TraitorOptions>.Instance.TraitorCanAssassin.Value)
+        {
+            player.AddModifier<AssassinModifier>();
+        }
+
+        CustomRoleUtils.GetActiveRolesOfType<SnitchRole>().ToList()
+            .ForEach(snitch => snitch.AddSnitchTraitorArrows());
+
+        if (player.AmOwner)
+        {
+            ButtonResetPatches.ResetCooldowns();
+            player.SetKillTimer(player.GetKillCooldown());
+        }
+    }
+}

@@ -1,0 +1,1 @@
+PASS: 54 vent-spike assertions. This tests replicated state, not live network transport.

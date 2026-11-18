@@ -1,0 +1,314 @@
+
+using AmongUs.GameOptions;
+using HarmonyLib;
+using Il2CppInterop.Runtime.Attributes;
+using MiraAPI.Events;
+using MiraAPI.GameOptions;
+using MiraAPI.Modifiers;
+using MiraAPI.Patches.Stubs;
+using MiraAPI.Roles;
+using MiraAPI.Utilities;
+using Reactor.Networking.Attributes;
+using TownOfUs.Achievements;
+using TownOfUs.Events.TouEvents;
+using TownOfUs.Interfaces;
+using TownOfUs.Modifiers;
+using TownOfUs.Modifiers.Game;
+using TownOfUs.Modifiers.Game.Assailant;
+using TownOfUs.Modifiers.Neutral;
+using TownOfUs.Modules;
+using TownOfUs.Options.Roles.Neutral;
+using TownOfUs.Roles.Crewmate;
+using UnityEngine;
+
+namespace TownOfUs.Roles.Neutral;
+
+public sealed class AmnesiacRole(IntPtr cppPtr)
+    : NeutralRole(cppPtr), ITownOfUsRole, IWikiDiscoverable, IDoomable, IGuessable, ICrewVariant, IUnbribable
+{
+    public bool CanBeBribed => false;
+    public override void SpawnTaskHeader(PlayerControl playerControl)
+    {
+        if (!playerControl.AmOwner)
+        {
+            return;
+        }
+        ImportantTextTask orCreateTask = PlayerTask.GetOrCreateTask<ImportantTextTask>(playerControl, 0);
+        orCreateTask.Text = $"{TownOfUsColors.Neutral.ToTextColor()}{MiraLocaleManager.Get("NeutralBenignTaskHeader")}</color>";
+        orCreateTask.name = "NeutralRoleText";
+    }
+
+    public RoleBehaviour CrewVariant => RoleManager.Instance.GetRole((RoleTypes)RoleId.Get<MysticRole>());
+    public DoomableType DoomHintType => DoomableType.Death;
+    public string IdPart => "Amnesiac";
+    public string RoleMedDescriptionLocale => $"TownOfUsMira.Role.{IdPart}.TabDescription";
+
+    public string GetAdvancedDescription()
+    {
+        return
+            MiraLocaleManager.Get($"TownOfUsMira.Role.{IdPart}.WikiDescription") +
+            MiscUtils.AppendOptionsText(GetType());
+    }
+
+    [HideFromIl2Cpp]
+    public List<CustomButtonWikiDescription> Abilities
+    {
+        get
+        {
+            return
+            [
+                new(MiraLocaleManager.Get($"TownOfUsMira.Role.{IdPart}Remember", "Remember"),
+                    MiraLocaleManager.Get($"TownOfUsMira.Role.{IdPart}Remember.WikiDescription"),
+                    TouNeutAssets.RememberButtonSprite)
+            ];
+        }
+    }
+
+    [HideFromIl2Cpp]
+    public List<AdvancedWikiAbilityDescription> WikiAbilities
+    {
+        get
+        {
+            return
+            [
+                new(MiraLocaleManager.Get($"TownOfUsMira.Role.{IdPart}Remember", "Remember"),
+                    MiraLocaleManager.Get("MiraApi.AbilityType.Basic"),
+                    MiraLocaleManager.Get($"TownOfUsMira.Role.{IdPart}Remember.WikiDescription"),
+                    TouNeutAssets.RememberButtonSprite)
+            ];
+        }
+    }
+
+    public Color RoleColor => TownOfUsColors.Amnesiac;
+    public ModdedRoleTeams Team => ModdedRoleTeams.Custom;
+
+    public RoleAlignment RoleAlignment => RoleAlignment.NeutralBenign;
+
+    public bool? ForceShowRoleOnWiki => CanBeGuessed ? true : null;
+    // This is so the role can be guessed without requiring it to be enabled normally
+    public bool CanBeGuessed =>
+        (MiscUtils.GetPotentialRoles()
+             .Contains(RoleManager.Instance.GetRole((RoleTypes)RoleId.Get<FairyRole>())) &&
+         OptionGroupSingleton<FairyOptions>.Instance.OnTargetDeath is BecomeOptions.Amnesiac)
+        || (MiscUtils.GetPotentialRoles()
+                .Contains(RoleManager.Instance.GetRole((RoleTypes)RoleId.Get<ExecutionerRole>())) &&
+            OptionGroupSingleton<ExecutionerOptions>.Instance.OnTargetDeath is BecomeOptions.Amnesiac);
+
+    public CustomRoleConfiguration Configuration => new(this)
+    {
+        IconTmp = TmpSpriteUtils.CreateSpriteAsset(TouRoleIcons.Amnesiac.LoadAsset(), "TouMira.Role.Neutral.Amnesiac", 1.45f),
+        IntroSound = TouAudio.MediumIntroSound,
+        OptionsScreenshot = TouBanners.NeutralRoleBanner,
+        GhostRole = (RoleTypes)RoleId.Get<NeutralGhostRole>(),
+        Icon = TouRoleIcons.Amnesiac
+    };
+
+    public override void Deinitialize(PlayerControl targetPlayer)
+    {
+        RoleBehaviourStubs.Deinitialize(this, targetPlayer);
+        TouRoleUtils.ClearTaskHeader(Player);
+
+        if (Player.HasModifier<AmnesiacArrowModifier>())
+        {
+            var mods = Player.GetModifiers<AmnesiacArrowModifier>();
+
+            mods.Do([HideFromIl2Cpp](x) => Player.RemoveModifier(x.UniqueId));
+        }
+    }
+
+    public override bool DidWin(GameOverReason gameOverReason)
+    {
+        return false;
+    }
+
+    [MethodRpc((uint)TownOfUsRpc.Remember)]
+    public static void RpcRemember(PlayerControl player, PlayerControl target)
+    {
+        if (LobbyBehaviour.Instance)
+        {
+            MiscUtils.RunAnticheatWarning(player);
+            return;
+        }
+        if (player.Data.Role is not AmnesiacRole)
+        {
+            Error("RpcRemember - Invalid amnesiac");
+            return;
+        }
+
+        var opts = OptionGroupSingleton<AmnesiacOptions>.Instance;
+        var roleWhenAlive = target.GetRoleWhenAlive();
+
+        if (roleWhenAlive is AmnesiacRole)
+        {
+            if (player.AmOwner)
+            {
+                var text = MiraLocaleManager.Get("TownOfUsMira.Role.AmnesiacRememberFailNotif").Replace("<player>", target.Data.PlayerName);
+                var notif1 = Helpers.CreateAndShowNotification(
+                    $"<b>{text.Replace("<role>", $"{roleWhenAlive.TeamColor.ToTextColor()}{roleWhenAlive.GetRoleName()}</color>")}</b>",
+                    Color.white, new Vector3(0f, 1f, -20f), spr: TouRoleIcons.Amnesiac.LoadAsset());
+                notif1.AdjustNotification();
+AchievementsAPIHelper.Unlock(TouAchievements.AmnesiaSquared);
+            }
+
+            return;
+        }
+
+        if (player.GetModifiers<PlayerTargetModifier>().Any(x => x.OwnerId == target.PlayerId))
+        {
+            if (player.AmOwner)
+            {
+                var text = MiraLocaleManager.Get("TownOfUsMira.Role.AmnesiacRememberFailTargetNotif").Replace("<player>", target.Data.PlayerName);
+                var notif1 = Helpers.CreateAndShowNotification(
+                    $"<b>{text}</b>", Color.white, new Vector3(0f, 1f, -20f), spr: TouRoleIcons.Amnesiac.LoadAsset());
+                notif1.AdjustNotification();
+AchievementsAPIHelper.Unlock(TouAchievements.AmnesiaSquared);
+            }
+
+            return;
+        }
+
+        var touAbilityEvent = new TouAbilityEvent(AbilityType.AmnesiacPreRemember, player, target);
+        MiraEventManager.InvokeEvent(touAbilityEvent);
+
+        player.ChangeRole((ushort)roleWhenAlive.Role);
+        if (player.Data.Role is InquisitorRole inquis)
+        {
+            var newTargets = new Dictionary<PlayerControl, RoleBehaviour>();
+            foreach (var heretic in ModifierUtils.GetActiveModifiers<InquisitorHereticModifier>()
+                         .Where(x => x.Player != player).OrderBy([HideFromIl2Cpp](x) => x.TargetRole.GetRoleName()))
+            {
+                newTargets.Add(heretic.Player, heretic.TargetRole);
+            }
+
+            inquis.Targets = newTargets;
+        }
+        else if (player.Data.Role is PlaguebearerRole || player.Data.Role is PestilenceRole)
+        {
+            ModifierUtils.GetActiveModifiers<PlaguebearerInfectedModifier>()
+                .Do(x => x.ModifierComponent?.RemoveModifier(x));
+            player.AddModifier<PlaguebearerInfectedModifier>(player.PlayerId);
+        }
+        else if (player.Data.Role is ArsonistRole)
+        {
+            ModifierUtils.GetActiveModifiers<ArsonistDousedModifier>().Do(x => x.ModifierComponent?.RemoveModifier(x));
+        }
+        else if (player.Data.Role is MayorRole mayor)
+        {
+            mayor.Revealed = false;
+        }
+        else if (player.Data.Role is FairyRole fairy)
+        {
+            var fairyMod = ModifierUtils.GetActiveModifiers<GuardianAngelTargetModifier>()
+                .FirstOrDefault(x => x.OwnerId == target.PlayerId);
+
+            if (fairyMod != null)
+            {
+                fairy.Target = fairyMod.Player;
+                fairyMod.OwnerId = player.PlayerId;
+            }
+        }
+        else if (player.Data.Role is ExecutionerRole exe)
+        {
+            var exeMod = ModifierUtils.GetActiveModifiers<ExecutionerTargetModifier>()
+                .FirstOrDefault(x => x.OwnerId == target.PlayerId);
+
+            if (exeMod != null)
+            {
+                exe.Target = exeMod.Player;
+                exeMod.OwnerId = player.PlayerId;
+            }
+        }
+        else if (player.Data.Role is VampireRole)
+        {
+            if (target.HasModifier<VampireBittenModifier>())
+            {
+                // Makes the amne stay with the bitten modifier
+                player.AddModifier<VampireBittenModifier>();
+            }
+            else
+            {
+                // Makes the og vampire a bitten vampire so to speak, yes it makes it more confusing, but that's how it is, deal with it - Atony
+                target.AddModifier<VampireBittenModifier>();
+            }
+        }
+
+        if (player.AmOwner)
+        {
+            var text = MiraLocaleManager.Get("TownOfUsMira.Role.AmnesiacRememberNotif").Replace("<player>", target.Data.PlayerName);
+            var notif1 = Helpers.CreateAndShowNotification(
+                $"<b>{text.Replace("<role>", $"{player.Data.Role.TeamColor.ToTextColor()}{player.Data.Role.GetRoleName()}</color>")}</b>",
+                Color.white, new Vector3(0f, 1f, -20f), spr: TouRoleIcons.Amnesiac.LoadAsset());
+            notif1.AdjustNotification();
+        }
+
+        if (roleWhenAlive is not VampireRole && (roleWhenAlive.MaxCount <= 1 || (roleWhenAlive.MaxCount <= PlayerControl
+                .AllPlayerControls
+                .ToArray().Count(x => x.Data.Role.Role == roleWhenAlive.Role))))
+        {
+            if (target.IsCrewmate())
+            {
+                target.ChangeRole((ushort)RoleTypes.Crewmate);
+                target.ChangeRole((ushort)RoleTypes.CrewmateGhost, false);
+            }
+            else if (target.IsImpostor())
+            {
+                target.ChangeRole((ushort)RoleTypes.Impostor);
+                target.ChangeRole((ushort)RoleTypes.ImpostorGhost, false);
+            }
+            /*else if (target.IsNeutral() && player.Data.Role is ITownOfUsRole touRole)
+            {
+                switch (touRole.RoleAlignment)
+                {
+                    default:
+                        target.ChangeRole(RoleId.Get<SurvivorRole>());
+                        break;
+                    case RoleAlignment.NeutralEvil:
+                        target.ChangeRole(RoleId.Get<JesterRole>());
+                        break;
+                    case RoleAlignment.NeutralKilling:
+                        target.ChangeRole(RoleId.Get<MercenaryRole>());
+                        player.AddModifier<MercenaryBribedModifier>(target)!.alerted = true;
+                        break;
+                }
+            }*/
+            else
+            {
+                target.ChangeRole(RoleId.Get<MercenaryRole>());
+                player.AddModifier<MercenaryBribedModifier>(target)!.alerted = true;
+
+                if (!target.HasModifier<BasicGhostModifier>())
+                {
+                    target.AddModifier<BasicGhostModifier>();
+                }
+                target.ChangeRole(RoleId.Get<NeutralGhostRole>(), false);
+            }
+        }
+
+        var playerIsAssassin = target.HasModifier<AssassinModifier>();
+        var assassinModeImp = (AssassinRemember)opts.AmneTurnImpAssassin.Value;
+        var assassinModeNeut = (AssassinRemember)opts.AmneTurnNeutAssassin.Value;
+        var amneIsAssassin = false;
+
+        if ((player.IsImpostor() && (assassinModeImp is AssassinRemember.Always ||
+                                     assassinModeImp is AssassinRemember.IfAssassin && playerIsAssassin))
+            ||
+            player.IsNeutral() && player.Is(RoleAlignment.NeutralKilling) &&
+            (assassinModeNeut is AssassinRemember.Always ||
+             assassinModeNeut is AssassinRemember.IfAssassin && playerIsAssassin))
+        {
+            amneIsAssassin = true;
+            player.AddModifier<AssassinModifier>();
+        }
+
+        // Doesn't give Double Shot if Assassin isn't available
+        var modifier = target.GetModifiers<TouGameModifier>().FirstOrDefault(x => x is not AssassinModifier &&
+            (x is not DoubleShotModifier || amneIsAssassin));
+        if (opts.InheritFactionModifier && modifier != null)
+        {
+            player.AddModifier(modifier.GetType());
+        }
+
+        var touAbilityEvent2 = new TouAbilityEvent(AbilityType.AmnesiacPostRemember, player, target);
+        MiraEventManager.InvokeEvent(touAbilityEvent2);
+    }
+}

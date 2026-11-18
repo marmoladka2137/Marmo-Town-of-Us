@@ -1,0 +1,62 @@
+using System.Collections;
+using MiraAPI.GameOptions;
+using MiraAPI.Hud;
+using MiraAPI.Modifiers;
+using Reactor.Utilities;
+using TownOfUs.Modifiers.Neutral;
+using TownOfUs.Options.Modifiers.Alliance;
+using TownOfUs.Options.Roles.Neutral;
+using TownOfUs.Roles.Neutral;
+using UnityEngine;
+
+namespace TownOfUs.Buttons.Neutral;
+
+public sealed class ArsonistDouseButton : TownOfUsRoleButton<ArsonistRole, PlayerControl>, ILegacyCapable
+{
+    public override string Name => MiraLocaleManager.Get("TownOfUsMira.Role.ArsonistDouse", "Douse");
+    public override BaseKeybind Keybind => Keybinds.SecondaryAction;
+    public override Color TextOutlineColor => TownOfUsColors.Arsonist;
+    public override float Cooldown => Math.Clamp(OptionGroupSingleton<ArsonistOptions>.Instance.DouseCooldown + MapCooldown, 5f, 120f);
+    public override int MaxUses => (int)OptionGroupSingleton<ArsonistOptions>.Instance.DouseUses.Value;
+    public override bool ZeroIsInfinite => true;
+    public override LoadableAsset<Sprite> Sprite => LegacyAssets.IsLegacy ? LegacyNeutAssets.DouseButtonSprite : TouNeutAssets.DouseButtonSprite;
+
+    protected override void OnClick()
+    {
+        if (Target == null)
+        {
+            Error("Arsonist Attack: Target is null");
+            return;
+        }
+
+        Target.RpcAddModifier<ArsonistDousedModifier>(PlayerControl.LocalPlayer.PlayerId);
+
+        CustomButtonSingleton<ArsonistIgniteButton>.Instance.SetTimer(CustomButtonSingleton<ArsonistIgniteButton>
+            .Instance.Cooldown);
+        Coroutines.Start(CoSetDouses());
+    }
+
+    public static IEnumerator CoSetDouses()
+    {
+        yield return new WaitForSeconds(0.01f);
+        
+        ArsonistRole.SetDouseUses();
+    }
+
+    public override bool IsTargetValid(PlayerControl? target)
+    {
+        return base.IsTargetValid(target) && !target!.HasModifier<ArsonistDousedModifier>();
+    }
+
+    public override PlayerControl? GetTarget()
+    {
+        if (!OptionGroupSingleton<LoversOptions>.Instance.LoversKillEachOther && PlayerControl.LocalPlayer.IsLover())
+        {
+            return PlayerControl.LocalPlayer.GetClosestLivingPlayer(true, Distance, false,
+                x => !x.IsLover() && !x.HasModifier<ArsonistDousedModifier>());
+        }
+
+        return PlayerControl.LocalPlayer.GetClosestLivingPlayer(true, Distance,
+            predicate: x => !x.HasModifier<ArsonistDousedModifier>());
+    }
+}

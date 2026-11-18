@@ -1,0 +1,155 @@
+// MTOU publication snapshot prepared 2026-11-17.
+// Modified relative to TOU Mira b56f24a0; original credits retained. See SOURCE_PROVENANCE.md.
+using MiraAPI.Utilities;
+using UnityEngine;
+
+namespace TownOfUs;
+
+public static class TownOfUsColors
+{
+    public static bool UseBasic { get; set; } =
+        LocalSettingsTabSingleton<TouLocalTabPlayers>.Instance.UseCrewmateTeamColorToggle.Value;
+
+    public static Color HaunterRevealed => new Color32(150, 50, 50, 255);
+    public static Color CrewmateWiki => new Color32(80, 225, 255, 255);
+    public static Color ImpWiki => new Color32(214, 32, 32, 255);
+    public static Color NeutralWiki => new Color32(155, 155, 155, 255);
+    public static Color Crewmate => Palette.CrewmateRoleBlue;
+    public static Color Impostor => Palette.ImpostorRed;
+    public static Color ImpSoft => new Color32(214, 64, 66, 255);
+    public static Color Neutral => Color.gray;
+    public static Color Other => Color.gray.DarkenColor();
+    // Town of Polus Colors
+    public static Color PolusEngineer => UseBasic ? Palette.CrewmateBlue : new Color32(248, 191, 21, 255);
+    public static Color PolusSwooper => UseBasic ? Palette.ImpostorRed : new Color32(150, 150, 150, 255);
+    public static Color PolusSerialKiller => new Color32(255, 84, 124, 255);
+
+    // Crew Colors
+    public static Color Aurial => UseBasic ? Palette.CrewmateBlue : new Color32(179, 77, 153, 255);
+    public static Color Chameleon => UseBasic ? Palette.CrewmateBlue : new Color32(81, 180, 154, 255);
+    public static Color Detective => UseBasic ? Palette.CrewmateBlue : new Color32(255, 198, 159, 255);
+    public static Color Forensic => UseBasic ? Palette.CrewmateBlue : new Color32(77, 77, 255, 255);
+    public static Color Investigator => UseBasic ? Palette.CrewmateBlue : new Color32(0, 179, 179, 255);
+    public static Color Lookout => UseBasic ? Palette.CrewmateBlue : new Color32(51, 255, 102, 255);
+    public static Color Mystic => UseBasic ? Palette.CrewmateBlue : new Color32(77, 153, 230, 255);
+    public static Color Seer => UseBasic ? Palette.CrewmateBlue : new Color32(255, 204, 128, 255);
+    public static Color Snitch => UseBasic ? Palette.CrewmateBlue : new Color32(212, 176, 56, 255);
+    public static Color Sonar => UseBasic ? Palette.CrewmateBlue : new Color32(78, 207, 136, 255);
+    public static Color Spy => UseBasic ? Palette.CrewmateBlue : new Color32(204, 163, 204, 255);
+    public static Color Tracker => UseBasic ? Palette.CrewmateBlue : new Color32(0, 153, 0, 255);
+    public static Color Trapper => UseBasic ? Palette.CrewmateBlue : new Color32(166, 209, 179, 255);
+
+    public static Color Deputy => UseBasic ? Palette.CrewmateBlue : new Color32(255, 204, 0, 255);
+    public static Color Composter => UseBasic ? Palette.CrewmateBlue : new Color32(112, 143, 54, 255);
+    public static Color Hunter => UseBasic ? Palette.CrewmateBlue : new Color32(41, 171, 135, 255);
+    public static Color Officer => UseBasic ? Palette.CrewmateBlue : new Color32(55, 101, 219, 255);
+    public static Color Sheriff => UseBasic ? Palette.CrewmateBlue : new Color32(255, 255, 0, 255);
+    public static Color Veteran => UseBasic ? Palette.CrewmateBlue : new Color32(153, 128, 64, 255);
+    public static Color Vigilante => UseBasic ? Palette.CrewmateBlue : new Color32(255, 255, 153, 255);
+
+    public static Color Jailor => UseBasic ? Palette.CrewmateBlue : new Color32(166, 166, 166, 255);
+    public static Color Mayor => UseBasic ? Palette.CrewmateBlue : new Color32(112, 79, 168, 255);
+    public static Color Monarch => UseBasic ? Palette.CrewmateBlue : new Color32(234, 83, 91, 255);
+    public static Color Politician => UseBasic ? Palette.CrewmateBlue : new Color32(102, 0, 153, 255);
+    public static Color Prosecutor => UseBasic ? Palette.CrewmateBlue : new Color32(179, 128, 0, 255);
+    public static Color Swapper => UseBasic ? Palette.CrewmateBlue : new Color32(102, 230, 102, 255);
+    public static Color Marshal => UseBasic ? Palette.CrewmateBlue : new Color32(53, 64, 166, 255);
+
+    public static Color Altruist => UseBasic ? Palette.CrewmateBlue : new Color32(102, 0, 0, 255);
+    public static Color Cleric => UseBasic ? Palette.CrewmateBlue : new Color32(0, 255, 179, 255);
+    public static Color Medic => UseBasic ? Palette.CrewmateBlue : new Color32(0, 102, 0, 255);
+    public static Color Mirrorcaster => UseBasic ? Palette.CrewmateBlue : new Color32(144, 162, 195, 255);
+    public static Color Oracle => UseBasic ? Palette.CrewmateBlue : new Color32(191, 0, 191, 255);
+    public static Color Warden => UseBasic ? Palette.CrewmateBlue : new Color32(153, 0, 255, 255);
+    public static Color Benefactor => UseBasic ? Palette.CrewmateBlue : new Color32(19, 144, 150, 255);
+
+    public static Color Engineer => UseBasic ? Palette.CrewmateBlue : new Color32(255, 166, 10, 255);
+    public static Color Imitator => UseBasic ? Palette.CrewmateBlue : new Color32(179, 217, 77, 255);
+    public static Color Medium => UseBasic ? Palette.CrewmateBlue : new Color32(166, 128, 255, 255);
+    public static Color Noisemaker => UseBasic ? Palette.CrewmateBlue : new Color32(232, 105, 158, 255);
+    public static Color Plumber => UseBasic ? Palette.CrewmateBlue : new Color32(204, 102, 0, 255);
+    public static Color Scientist => UseBasic ? Palette.CrewmateBlue : new Color32(0, 199, 105, 255);
+    public static Color Sentry => UseBasic ? Palette.CrewmateBlue : new Color32(100, 150, 200, 255);
+    public static Color TimeLord => UseBasic ? Palette.CrewmateBlue : new Color32(135, 137, 211, 255);
+    public static Color Transporter => UseBasic ? Palette.CrewmateBlue : new Color32(0, 237, 255, 255);
+    public static Color Catalyst => UseBasic ? Palette.CrewmateBlue : new Color32(255, 53, 224, 255);
+    public static Color Barkeeper => UseBasic ? Palette.CrewmateBlue : new Color32(227, 212, 119, 255);
+
+    public static Color Haunter => UseBasic ? Palette.CrewmateBlue : new Color32(212, 212, 212, 255);
+    public static Color GuardianAngel => UseBasic ? Palette.CrewmateBlue : new Color32(102, 170, 243, 255);
+    // Neutral Colors
+    public static Color Admirer => new Color32(232, 65, 138, 255);
+    public static Color Amnesiac => new Color32(128, 179, 255, 255);
+    public static Color Fairy => new Color32(179, 255, 255, 255);
+    public static Color Lawyer => new Color32(237, 179, 140, 255);
+    public static Color Mercenary => new Color32(140, 102, 153, 255);
+    public static Color Survivor => new Color32(255, 230, 77, 255);
+    public static Color Shifter => new Color32(153, 153, 153, 255);
+
+    public static Color Doomsayer => new Color32(0, 255, 128, 255);
+    public static Color Executioner => new Color32(99, 59, 31, 255);
+    public static Color Jester => new Color32(255, 191, 204, 255);
+    public static Color SoulCollector => new Color32(153, 255, 204, 255);
+    public static Color Death => new Color32(76, 76, 84, 255);
+    public static Color Ghostwalker => new Color32(43, 86, 155, 255);
+
+    public static Color Arsonist => new Color32(255, 77, 0, 255);
+    public static Color Glitch => Color.green;
+    public static Color Martian => new Color32(133, 188, 110, 255);
+    public static Color Juggernaut => new Color32(140, 0, 77, 255);
+    public static Color Plaguebearer => new Color32(230, 255, 179, 255);
+    public static Color Pestilence => new Color32(77, 77, 77, 255);
+    public static Color Medusa => new Color32(120, 62, 220, 255);
+    public static Color Vampire => new Color32(163, 41, 41, 255);
+    public static Color Werewolf => new Color32(168, 102, 41, 255);
+
+    public static Color Inquisitor => new Color32(217, 66, 145, 255);
+    public static Color Jackal => new Color32(82, 80, 100, 255);
+    public static Color Chef => new Color32(218, 162, 103, 255);
+
+    public static Color Spectre => new Color32(102, 41, 97, 255);
+
+    // Other (Misc Roles) Colors
+    public static Color Spectator => new Color32(128, 128, 128, 255);
+
+    // Alliance Modifiers
+    public static Color Egotist => new Color32(102, 153, 102, 255);
+    public static Color Lover => new Color32(255, 102, 204, 255);
+
+    // Assailant Modifiers
+    public static Color Assassin => new Color32(161, 62, 83, 255);
+    public static Color DoubleShot => new Color32(126, 112, 143, 255);
+    public static Color Ricochet => new Color32(255, 178, 153, 255);
+    public static Color Overclocker => new Color32(252, 145, 46, 255);
+
+    // Universal Modifiers
+    public static Color ButtonBarry => new Color32(179, 51, 204, 255);
+    public static Color Flash => new Color32(255, 128, 128, 255);
+    public static Color Giant => new Color32(255, 179, 77, 255);
+    public static Color Immovable => new Color32(230, 230, 204, 255);
+    public static Color Mini => new Color32(204, 255, 230, 255);
+    public static Color Radar => new Color32(255, 0, 128, 255);
+    public static Color Satellite => new Color32(0, 153, 204, 255);
+    public static Color Shy => new Color32(255, 179, 204, 255);
+    public static Color SixthSense => new Color32(217, 255, 140, 255);
+    public static Color Sleuth => new Color32(128, 51, 51, 255);
+    public static Color Tiebreaker => new Color32(153, 230, 153, 255);
+
+    // Crewmate Modifiers
+    public static Color Aftermath => new Color32(166, 255, 166, 255);
+    public static Color Bait => new Color32(51, 179, 179, 255);
+    public static Color Bloody => new Color32(127, 51, 51, 255);
+    public static Color Celebrity => new Color32(255, 153, 153, 255);
+    public static Color Diseased => Color.grey;
+    public static Color Frosty => new Color32(153, 255, 255, 255);
+    public static Color Multitasker => new Color32(255, 128, 77, 255);
+    public static Color Operative => new Color32(153, 8, 18, 255);
+    public static Color Rotting => new Color32(171, 128, 105, 255);
+    public static Color Scout => new Color32(69, 97, 87, 255);
+    public static Color Taskmaster => new Color32(148, 214, 237, 255);
+    public static Color Torch => new Color32(255, 255, 153, 255);
+    public static Color Drunk => new Color32(127, 201, 154, 255);
+
+    // Neutral Modifiers
+    public static Color Camouflaged => Color.gray;
+}

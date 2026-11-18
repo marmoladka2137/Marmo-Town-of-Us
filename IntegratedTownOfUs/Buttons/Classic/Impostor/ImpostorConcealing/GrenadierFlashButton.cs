@@ -1,0 +1,77 @@
+﻿using MiraAPI.GameOptions;
+using MiraAPI.Modifiers;
+using MiraAPI.Utilities;
+using TownOfUs.Achievements;
+using TownOfUs.Modifiers.Impostor;
+using TownOfUs.Modules;
+using TownOfUs.Options.Roles.Impostor;
+using TownOfUs.Roles.Impostor;
+using UnityEngine;
+
+namespace TownOfUs.Buttons.Impostor;
+
+public sealed class GrenadierFlashButton : TownOfUsRoleButton<GrenadierRole>, IAftermathableButton, ILegacyCapable
+{
+    public override string Name => MiraLocaleManager.Get("TownOfUsMira.Role.GrenadierFlash", "Flash");
+    public override BaseKeybind Keybind => Keybinds.SecondaryAction;
+    public override Color TextOutlineColor => TownOfUsColors.Impostor;
+    public override float Cooldown => Math.Clamp(OptionGroupSingleton<GrenadierOptions>.Instance.GrenadeCooldown + MapCooldown, 5f, 120f);
+    public override float EffectDuration => OptionGroupSingleton<GrenadierOptions>.Instance.GrenadeDuration;
+    public override int MaxUses => (int)OptionGroupSingleton<GrenadierOptions>.Instance.MaxFlashes;
+    public override LoadableAsset<Sprite> Sprite => LegacyAssets.IsLegacy ? LegacyImpAssets.FlashSprite : TouImpAssets.FlashSprite;
+
+    public override bool ZeroIsInfinite { get; set; } = true;
+
+    public override bool CanUse()
+    {
+        if (OptionGroupSingleton<GrenadierOptions>.Instance.SabotageFlashing)
+        {
+            return base.CanUse();
+        }
+        var system = ShipStatus.Instance.Systems[SystemTypes.Sabotage].Cast<SabotageSystemType>();
+
+        return base.CanUse() && system is { AnyActive: false };
+    }
+
+    public void AftermathHandler()
+    {
+        ClickHandler();
+    }
+
+    protected override void OnClick()
+    {
+        var flashRadius = OptionGroupSingleton<GrenadierOptions>.Instance.FlashRadius;
+        var flashedPlayers =
+            Helpers.GetClosestPlayers(PlayerControl.LocalPlayer, flashRadius * ShipStatus.Instance.MaxLightRadius);
+
+        foreach (var player in flashedPlayers)
+        {
+            player.RpcAddModifier<GrenadierFlashModifier>(PlayerControl.LocalPlayer);
+            if (!player.IsImpostorAligned())
+            {
+                if (Role.PlayersFlashedInARow.ContainsKey(player.PlayerId))
+                {
+                    Role.PlayersFlashedInARow[player.PlayerId]++;
+                    if (Role.PlayersFlashedInARow[player.PlayerId] == 3)
+                    {
+                        AchievementsAPIHelper.Unlock(TouAchievements.BlindFoEva);
+                    }
+                }
+                else
+                {
+                    Role.PlayersFlashedInARow.Add(player.PlayerId, 1);
+                }
+            }
+        }
+
+        PlayerControl.LocalPlayer.RpcAddModifier<GrenadierFlashModifier>(PlayerControl.LocalPlayer);
+        HudManager.Instance.StartCoroutine(HudManager.Instance.PlayerCam.CoShakeScreen(0.2f, 2f));
+        var notif1 = Helpers.CreateAndShowNotification(
+            $"<b>{TownOfUsColors.ImpSoft.ToTextColor()}{MiraLocaleManager.Get("TownOfUsMira.Role.GrenadierFlashNotif")}</color></b>",
+            Color.white, new Vector3(0f, 1f, -150f),
+            spr: TouRoleIcons.Grenadier.LoadAsset());
+        notif1.AdjustNotification();
+
+        SoundManager.Instance.PlaySound(TouAudio.GrenadeSound.LoadAsset(), false);
+    }
+}

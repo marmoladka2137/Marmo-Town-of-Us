@@ -1,0 +1,160 @@
+﻿using HarmonyLib;
+using MiraAPI.GameModes;
+using MiraAPI.GameOptions;
+using Reactor.Utilities.Extensions;
+using TMPro;
+using TownOfUs.Options;
+using UnityEngine;
+using Object = UnityEngine.Object;
+
+namespace TownOfUs.Patches;
+
+[HarmonyPatch]
+public static class GameTimerPatch
+{
+    public static GameObject GameTimerObj;
+    public static GameObject TimerSpriteObj;
+    public static SpriteRenderer TimerSprite;
+    public static AspectPosition TimerAspectPos;
+    public static bool Enabled { get; set; }
+    public static bool TriggerEndGame { get; set; }
+    public static float GameTimer { get; set; }
+
+    private static void CreateGameTimer(HudManager instance)
+    {
+        var pingTracker = Object.FindObjectOfType<PingTracker>(true);
+        GameTimerObj = Object.Instantiate(pingTracker.gameObject, instance.transform);
+        GameTimerObj.GetComponent<PingTracker>().Destroy();
+        GameTimerObj.name = "GameTimerText";
+
+        TimerAspectPos = GameTimerObj.GetComponent<AspectPosition>();
+        TimerAspectPos.DistanceFromEdge = new Vector3(-0.6f, 5.5f);
+        TimerAspectPos.Alignment = AspectPosition.EdgeAlignments.Bottom;
+
+        TimerSpriteObj = new GameObject("TimerSprite");
+        TimerSpriteObj.transform.SetParent(GameTimerObj.transform);
+        TimerSpriteObj.transform.localPosition = new Vector3(-1f, -0.4f, 1f);
+        TimerSpriteObj.gameObject.layer = GameTimerObj.gameObject.layer;
+        TimerSpriteObj.SetActive(true);
+
+        TimerSprite = TimerSpriteObj.AddComponent<SpriteRenderer>();
+        TimerSprite.sprite = TouAssets.TimerDrawSprite.LoadAsset();
+
+        var ts = TimeSpan.FromSeconds(GameTimer);
+
+        var timerText = GameTimerObj.GetComponent<TextMeshPro>();
+        var timeText = MiraLocaleManager.Get(
+            "TouGameTimerTime",
+            "Time");
+
+        timerText.text = $"<size=200%>{timeText}:{ts.ToString(@"mm\:ss", TownOfUsPlugin.Culture)}</size>";
+        timerText.alignment = TextAlignmentOptions.TopLeft;
+        timerText.verticalAlignment = VerticalAlignmentOptions.Top;
+
+        GameTimerObj.SetActive(false);
+    }
+
+    public static void UpdateGameTimer(HudManager instance)
+    {
+        var timeOpt = OptionGroupSingleton<GameTimerOptions>.Instance;
+        if (GameTimerObj)
+        {
+            GameTimerObj.SetActive(false);
+        }
+
+        if (!timeOpt.GameTimerEnabled || !CustomGameModeManager.IsClassic() || GameOptionsManager.Instance.CurrentGameOptions.GameMode is AmongUs.GameOptions.GameModes.HideNSeek
+                or AmongUs.GameOptions.GameModes.SeekFools)
+        {
+            return;
+        }
+
+        if (!GameTimerObj)
+        {
+            CreateGameTimer(instance);
+        }
+
+        if (!GameTimerObj)
+        {
+            return;
+        }
+
+        var inMeeting = MeetingHud.Instance || ExileController.Instance;
+
+        if (Enabled && GameTimer > 0 && (!inMeeting ||
+                                         GameTimer > (timeOpt.PauseInMeetings.Value * 60f)))
+        {
+            GameTimer -= Time.deltaTime;
+            GameTimer = Math.Max(GameTimer, 0);
+
+            if (AmongUsClient.Instance.AmHost && GameTimer <= 0)
+            {
+                EndGame();
+            }
+        }
+
+        var ts = TimeSpan.FromSeconds(GameTimer);
+
+        var timerText = GameTimerObj.GetComponent<TextMeshPro>();
+
+        var colour = GameTimer switch
+        {
+            < 30f => Color.red,
+            < 60f => Color.yellow,
+            _ => Color.green
+        };
+
+        var timeText = MiraLocaleManager.Get(
+                    "TouGameTimerTime",
+                    "Time");
+
+        if (!MeetingHud.Instance)
+        {
+            TimerAspectPos.DistanceFromEdge = new Vector3(-0.6f, 5.5f);
+            TimerAspectPos.Alignment = AspectPosition.EdgeAlignments.Bottom;
+            timerText.text =
+                $"<size=200%>{timeText}:{colour.ToTextColor()}{ts.ToString(@"mm\:ss", TownOfUsPlugin.Culture)}</color></size>";
+            TimerSpriteObj.transform.localPosition = new Vector3(-1f, -0.4f, 1f);
+        }
+        else
+        {
+            TimerAspectPos.DistanceFromEdge = new Vector3(-0.25f, 0.9f);
+            TimerAspectPos.Alignment = AspectPosition.EdgeAlignments.Bottom;
+            timerText.text =
+                $"<size=130%>{timeText}:{colour.ToTextColor()}{ts.ToString(@"mm\:ss", TownOfUsPlugin.Culture)}</color></size>";
+            TimerSpriteObj.transform.localPosition = new Vector3(-1f, -0.25f, 1f);
+        }
+
+        GameTimerObj.SetActive(!ExileController.Instance);
+    }
+
+    private static void EndGame()
+    {
+        Enabled = false;
+        TriggerEndGame = true;
+        GameManager.Instance.ShouldCheckForGameEnd = true;
+    }
+
+    public static void ResetTimer()
+    {
+        GameTimer = OptionGroupSingleton<GameTimerOptions>.Instance.GameTimeLimit.GetFloatData() * 60f;
+        TriggerEndGame = false;
+        Enabled = false;
+    }
+
+    public static void BeginTimer()
+    {
+        GameTimer = OptionGroupSingleton<GameTimerOptions>.Instance.GameTimeLimit.GetFloatData() * 60f;
+
+        if ((GameTimerType)OptionGroupSingleton<GameTimerOptions>.Instance.TimerEndOption.Value is GameTimerType
+                .Impostors)
+        {
+            TimerSprite.sprite = TouAssets.TimerImpSprite.LoadAsset();
+        }
+        else
+        {
+            TimerSprite.sprite = TouAssets.TimerDrawSprite.LoadAsset();
+        }
+        TriggerEndGame = false;
+        Enabled = true;
+    }
+}

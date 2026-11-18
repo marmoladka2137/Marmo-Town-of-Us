@@ -1,0 +1,1 @@
+PASS: 5670 assertions on production timelines, frame rates, and viewport scaling.

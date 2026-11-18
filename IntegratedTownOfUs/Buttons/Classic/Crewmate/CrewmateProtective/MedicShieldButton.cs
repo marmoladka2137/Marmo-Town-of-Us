@@ -1,0 +1,45 @@
+﻿using MiraAPI.GameOptions;
+using TownOfUs.Options.Roles.Crewmate;
+using TownOfUs.Roles.Crewmate;
+using UnityEngine;
+
+namespace TownOfUs.Buttons.Crewmate;
+
+public sealed class MedicShieldButton : TownOfUsRoleButton<MedicRole, PlayerControl>, ILegacyCapable
+{
+    public bool CanChangeTarget = true;
+    public override string Name => MiraLocaleManager.Get("TownOfUsMira.Role.MedicShield", "Shield");
+    public override BaseKeybind Keybind => Keybinds.SecondaryAction;
+    public override Color TextOutlineColor => TownOfUsColors.Medic;
+
+    public override int MaxUses => OptionGroupSingleton<MedicOptions>.Instance.ChangeTarget
+        ? (int)OptionGroupSingleton<MedicOptions>.Instance.MedicShieldUses
+        : 1;
+
+    public override bool ZeroIsInfinite { get; set; } = true;
+
+    public override float Cooldown => Math.Clamp(MapCooldown, 0.001f, 120f);
+    public override LoadableAsset<Sprite> Sprite => LegacyAssets.IsLegacy ? LegacyCrewAssets.MedicSprite : TouCrewAssets.MedicSprite;
+
+    public override bool CanUse()
+    {
+        return base.CanUse() && (Role is { Shielded: null } || CanChangeTarget);
+    }
+
+    public override PlayerControl? GetTarget()
+    {
+        return PlayerControl.LocalPlayer.GetClosestLivingPlayer(true, Distance);
+    }
+
+    protected override void OnClick()
+    {
+        if (Target == null)
+        {
+            Error("Medic Shield: Target is null");
+            return;
+        }
+
+        MedicRole.RpcMedicShield(PlayerControl.LocalPlayer, Target);
+        CanChangeTarget = false;
+    }
+}

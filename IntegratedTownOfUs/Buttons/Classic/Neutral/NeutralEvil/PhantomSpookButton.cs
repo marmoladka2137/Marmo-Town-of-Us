@@ -1,0 +1,70 @@
+// MTOU publication snapshot prepared 2026-11-17.
+// Modified relative to TOU Mira b56f24a0; original credits retained. See SOURCE_PROVENANCE.md.
+using MiraAPI.Hud;
+using MiraAPI.Modifiers;
+using TownOfUs.Modifiers;
+using TownOfUs.Modifiers.Neutral;
+using TownOfUs.Networking;
+using UnityEngine;
+
+namespace TownOfUs.Buttons.Neutral;
+
+public sealed class PhantomSpookButton : TownOfUsButton
+{
+    public override string Name => MiraLocaleManager.Get("TownOfUsMira.Role.SpectreSpook", "Spook");
+    public override BaseKeybind Keybind => Keybinds.PrimaryAction;
+    public override Color TextOutlineColor => TownOfUsColors.Spectre;
+    public override float Cooldown => 0.01f;
+    public override LoadableAsset<Sprite> Sprite => TouNeutAssets.PhantomSpookSprite;
+    public override ButtonLocation Location => ButtonLocation.BottomRight;
+    public override bool ShouldPauseInVent => false;
+    public override bool UsableInDeath => true;
+    public bool Show { get; set; }
+
+    public override bool Enabled(RoleBehaviour? role)
+    {
+        return Show && ModifierUtils.GetActiveModifiers<MisfortuneTargetModifier>().HasAny();
+    }
+
+    protected override void OnClick()
+    {
+        if (Minigame.Instance)
+        {
+            return;
+        }
+
+        var playerMenu = CustomPlayerMenu.Create();
+        playerMenu.PhoneUI.GetChild(0).GetComponent<SpriteRenderer>().material =
+            PlayerControl.LocalPlayer.cosmetics.currentBodySprite.BodySprite.material;
+        playerMenu.PhoneUI.GetChild(1).GetComponent<SpriteRenderer>().material =
+            PlayerControl.LocalPlayer.cosmetics.currentBodySprite.BodySprite.material;
+        playerMenu.Begin(
+            plr => !plr.HasDied() && plr.HasModifier<MisfortuneTargetModifier>() &&
+                   (ProtectionRuntime.Bypass(plr) || !plr.HasModifier<InvulnerabilityModifier>()) && !plr.AmOwner,
+            plr =>
+            {
+                playerMenu.ForceClose();
+
+                if (plr != null && ModifierUtils.GetActiveModifiers<MisfortuneTargetModifier>().HasAny())
+                {
+                    PlayerControl.LocalPlayer.RpcGhostRoleMurder(plr);
+                    foreach (var mod in ModifierUtils.GetActiveModifiers<MisfortuneTargetModifier>())
+                    {
+                        mod.ModifierComponent?.RemoveModifier(mod);
+                    }
+
+                    Show = false;
+                }
+            });
+    }
+
+    public override bool CanUse()
+    {
+        if (HudManager.Instance.Chat.IsOpenOrOpening || MeetingHud.Instance)
+        {
+            return false;
+        }
+
+        return ModifierUtils.GetActiveModifiers<MisfortuneTargetModifier>().HasAny();
+    }
+}

@@ -1,0 +1,11 @@
+# Publication status — 1.1.0-beta
+
+Public repository: https://github.com/marmoladka2137/Marmo-Town-of-Us
+
+The 1.1.0-beta publication is a public beta with complete code, original-resource sources, documentation and plugin-only artifacts. Public label: 1.1.0 Beta; internal assembly revision: 1.1.0.12. Plugin identity is unchanged. The Source Code menu link now points to this repository.
+
+The former animation/audio/shader-content hold was resolved for this candidate through original replacements. See LICENSE_AUDIT.md, ASSET_CREDITS.md and the exact manifests. Code GPLv3, original MTOU graphics CC BY 4.0, retained font OFL-1.1; third-party notices remain separate.
+
+Local Release compilation, native presentation/resource fixtures and deterministic state tests passed. Full gameplay, host/client transport, clean public dependency installation, additional platforms, official-server behavior and SUS Modder installation/acceptance remain unverified. A public beta is not certification of every role or a legal/moderator approval.
+
+The release does not contain a complete game or external loader/dependency implementation DLLs. Do not add unreviewed third-party payload or older resource-bearing DLLs to it. The original local working installation was not overwritten.

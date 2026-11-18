@@ -1,0 +1,90 @@
+{
+  "UnityPyVersion": "1.25.2",
+  "Bundles": [
+    {
+      "Bundle": "legacy-assets-android.bundle",
+      "SHA256": "DDA197D6C957031C8307CAFD020546248B5EDF3F66FCDD7C6AFF6A6687E4B6F7",
+      "ObjectCount": 221,
+      "ContainerPaths": 220,
+      "Types": {
+        "Sprite": 110,
+        "Texture2D": 110,
+        "AssetBundle": 1
+      }
+    },
+    {
+      "Bundle": "legacy-assets-win.bundle",
+      "SHA256": "C7FD852F7ED44CF8F203B6A505CFFD966D2D6372C50F6DE2693C8130177E2FD0",
+      "ObjectCount": 221,
+      "ContainerPaths": 220,
+      "Types": {
+        "Sprite": 110,
+        "Texture2D": 110,
+        "AssetBundle": 1
+      }
+    },
+    {
+      "Bundle": "tou-assets-android.bundle",
+      "SHA256": "10968BBAA2E919A05B1973AEE58A89B3630DFA2EF0B39975279F15D6EEDE6E74",
+      "ObjectCount": 2360,
+      "ContainerPaths": 1563,
+      "Types": {
+        "Sprite": 1083,
+        "GameObject": 194,
+        "Texture2D": 316,
+        "MonoScript": 21,
+        "MonoBehaviour": 158,
+        "SpriteRenderer": 100,
+        "Shader": 4,
+        "RectTransform": 84,
+        "AnimationClip": 55,
+        "AudioClip": 59,
+        "Transform": 110,
+        "BoxCollider2D": 24,
+        "AnimatorController": 36,
+        "Animator": 35,
+        "Material": 11,
+        "Rigidbody2D": 4,
+        "CanvasRenderer": 6,
+        "MeshRenderer": 49,
+        "CircleCollider2D": 4,
+        "SpriteMask": 2,
+        "Canvas": 3,
+        "Font": 1,
+        "AssetBundle": 1
+      }
+    },
+    {
+      "Bundle": "tou-assets-win.bundle",
+      "SHA256": "424D4A056D53EA72304D3F2D345128CDE9780107EFBB29A7B8638AB25C895495",
+      "ObjectCount": 2360,
+      "ContainerPaths": 1563,
+      "Types": {
+        "MonoScript": 21,
+        "Sprite": 1083,
+        "Texture2D": 316,
+        "AudioClip": 59,
+        "Shader": 4,
+        "SpriteRenderer": 100,
+        "AnimationClip": 55,
+        "Transform": 110,
+        "MonoBehaviour": 158,
+        "GameObject": 194,
+        "RectTransform": 84,
+        "AnimatorController": 36,
+        "Animator": 35,
+        "BoxCollider2D": 24,
+        "MeshRenderer": 49,
+        "CircleCollider2D": 4,
+        "SpriteMask": 2,
+        "Canvas": 3,
+        "Material": 11,
+        "Rigidbody2D": 4,
+        "CanvasRenderer": 6,
+        "Font": 1,
+        "AssetBundle": 1
+      }
+    }
+  ],
+  "Errors": []
+}

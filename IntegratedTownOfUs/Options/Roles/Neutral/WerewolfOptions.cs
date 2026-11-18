@@ -1,0 +1,23 @@
+﻿using MiraAPI.GameOptions;
+using MiraAPI.GameOptions.Attributes;
+using MiraAPI.Utilities;
+using TownOfUs.Roles.Neutral;
+
+namespace TownOfUs.Options.Roles.Neutral;
+
+public sealed class WerewolfOptions : AbstractRoleOptionGroup<WerewolfRole>
+{
+    public override string GroupName => MiraLocaleManager.Get("TownOfUsMira.Role.Werewolf", "Werewolf");
+
+    [ModdedNumberOption("TouOptionWerewolfRampageCooldown", 5f, 120f, 2.5f, MiraNumberSuffixes.Seconds)]
+    public float RampageCooldown { get; set; } = 25f;
+
+    [ModdedNumberOption("TouOptionWerewolfRampageDuration", 5f, 120f, 2.5f, MiraNumberSuffixes.Seconds)]
+    public float RampageDuration { get; set; } = 10f;
+
+    [ModdedNumberOption("TouOptionWerewolfKillCooldown", 0.5f, 15f, 0.5f, MiraNumberSuffixes.Seconds)]
+    public float RampageKillCooldown { get; set; } = 1.5f;
+
+    [ModdedToggleOption("TouOptionWerewolfCanVent")]
+    public bool CanVent { get; set; } = true;
+}

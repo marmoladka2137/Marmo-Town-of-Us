@@ -1,0 +1,3 @@
+PASS: 998 algorithm assertions in memory. No output assembly.
+PASS: XML, unique locale keys, short intro blurbs and six feature names.
+PASS: 38 numeric RPC IDs unique and disjoint from existing enum IDs.

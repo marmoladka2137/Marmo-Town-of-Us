@@ -1,0 +1,117 @@
+[
+  {
+    "Name": "LiberationSans",
+    "Bytes": 350200,
+    "SHA256": "E5B0AF421EA2BFBC1AC8D251D647268087AE82786234C57F757D1F0B90FA8B49",
+    "NameRecords": [
+      {
+        "NameID": 0,
+        "Platform": 1,
+        "Language": 0,
+        "Text": "Digitized data copyright (c) 2010 Google Corporation. \nCopyright (c) 2012 Red Hat, Inc."
+      },
+      {
+        "NameID": 1,
+        "Platform": 1,
+        "Language": 0,
+        "Text": "Liberation Sans"
+      },
+      {
+        "NameID": 2,
+        "Platform": 1,
+        "Language": 0,
+        "Text": "Regular"
+      },
+      {
+        "NameID": 3,
+        "Platform": 1,
+        "Language": 0,
+        "Text": "Ascender - Liberation Sans"
+      },
+      {
+        "NameID": 5,
+        "Platform": 1,
+        "Language": 0,
+        "Text": "Version 2.00.1"
+      },
+      {
+        "NameID": 8,
+        "Platform": 1,
+        "Language": 0,
+        "Text": "Ascender Corporation"
+      },
+      {
+        "NameID": 9,
+        "Platform": 1,
+        "Language": 0,
+        "Text": "Steve Matteson"
+      },
+      {
+        "NameID": 13,
+        "Platform": 1,
+        "Language": 0,
+        "Text": "Licensed under the SIL Open Font License, Version 1.1"
+      },
+      {
+        "NameID": 14,
+        "Platform": 1,
+        "Language": 0,
+        "Text": "http://scripts.sil.org/OFL"
+      },
+      {
+        "NameID": 0,
+        "Platform": 3,
+        "Language": 1033,
+        "Text": "Digitized data copyright (c) 2010 Google Corporation. \nCopyright (c) 2012 Red Hat, Inc."
+      },
+      {
+        "NameID": 1,
+        "Platform": 3,
+        "Language": 1033,
+        "Text": "Liberation Sans"
+      },
+      {
+        "NameID": 2,
+        "Platform": 3,
+        "Language": 1033,
+        "Text": "Regular"
+      },
+      {
+        "NameID": 3,
+        "Platform": 3,
+        "Language": 1033,
+        "Text": "Ascender - Liberation Sans"
+      },
+      {
+        "NameID": 5,
+        "Platform": 3,
+        "Language": 1033,
+        "Text": "Version 2.00.1"
+      },
+      {
+        "NameID": 8,
+        "Platform": 3,
+        "Language": 1033,
+        "Text": "Ascender Corporation"
+      },
+      {
+        "NameID": 9,
+        "Platform": 3,
+        "Language": 1033,
+        "Text": "Steve Matteson"
+      },
+      {
+        "NameID": 13,
+        "Platform": 3,
+        "Language": 1033,
+        "Text": "Licensed under the SIL Open Font License, Version 1.1"
+      },
+      {
+        "NameID": 14,
+        "Platform": 3,
+        "Language": 1033,
+        "Text": "http://scripts.sil.org/OFL"
+      }
+    ]
+  }
+]

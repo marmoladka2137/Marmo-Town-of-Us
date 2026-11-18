@@ -1,0 +1,48 @@
+﻿using MiraAPI.GameOptions;
+using TownOfUs.Options.Modifiers;
+using UnityEngine;
+
+namespace TownOfUs.Modifiers.Game.Crewmate;
+
+public sealed class ScoutModifier : TouGameModifier, IWikiDiscoverable
+{
+    public override ModifierUiConfiguration Configuration => new(
+        TownOfUsColors.Scout,
+        TmpSpriteUtils.CreateSpriteAsset(TouModifierIcons.Scout.LoadAsset(),
+            "TouMira.Modifier.Crewmate.Scout", 1.45f));
+    public override string IdPart => "Scout";
+    public override string ModifierName => MiraLocaleManager.Get($"TownOfUsMira.Modifier.{IdPart}");
+    public override string IntroInfo => MiraLocaleManager.Get($"TownOfUsMira.Modifier.{IdPart}.IntroBlurb");
+
+    public override string GetDescription()
+    {
+        return MiraLocaleManager.Get($"TownOfUsMira.Modifier.{IdPart}.TabDescription");
+    }
+
+    public string GetAdvancedDescription()
+    {
+        return MiraLocaleManager.Get($"TownOfUsMira.Modifier.{IdPart}.WikiDescription");
+    }
+
+    public override LoadableAsset<Sprite>? ModifierIcon => TouModifierIcons.Scout;
+    public override Color FreeplayFileColor => new Color32(140, 255, 255, 255);
+
+    public override ModifierFaction FactionType => ModifierFaction.CrewmateVisibility;
+
+    public List<CustomButtonWikiDescription> Abilities { get; } = [];
+
+    public override int GetAssignmentChance()
+    {
+        return (int)OptionGroupSingleton<CrewmateModifierOptions>.Instance.ScoutChance;
+    }
+
+    public override int GetAmountPerGame()
+    {
+        return (int)OptionGroupSingleton<CrewmateModifierOptions>.Instance.ScoutAmount;
+    }
+
+    public override bool IsModifierValidOn(RoleBehaviour role)
+    {
+        return base.IsModifierValidOn(role) && role.IsCrewmate() && MiscUtils.GetCurrentMap != ExpandedMapNames.Fungle;
+    }
+}

@@ -1,0 +1,26 @@
+**/bin/
+**/obj/
+.vs/
+.idea/
+*.user
+*.suo
+*.log
+*.tmp
+*.bak*
+*.orig
+*.dmp
+*.zip
+*.dll
+*.exe
+*.pdb
+*.nupkg
+.env
+.env.*
+!.env.example
+secrets.json
+local.props
+GameReferences/
+private-native-qa/
+artifacts/
+backup/
+# Required embedded .bundle/.png/.wav files and packages.lock.json are tracked.

@@ -1,0 +1,104 @@
+using MiraAPI.Modifiers;
+using MiraAPI.Modifiers.Types;
+using Reactor.Utilities.Extensions;
+using TownOfUs.Modules.Anims;
+using TownOfUs.Modifiers.Game.Universal;
+using TownOfUs.Utilities.Appearances;
+using UnityEngine;
+
+namespace TownOfUs.Modifiers;
+
+/// <summary>
+/// Visual-only version of the First Death Shield, used when a player is morphed/mimicked as someone who has
+/// <see cref="FirstDeadShield"/>
+/// </summary>
+public sealed class FirstDeadShieldDisguiseVisual(PlayerControl target) : TimedModifier, IAnimated
+{
+    public override string ModifierName => "First Death Shield (Disguise)";
+    public override bool HideOnUi => true;
+    public override float Duration => float.MaxValue;
+    public override bool AutoStart => true;
+    public override bool RemoveOnComplete => false;
+
+     public bool IsVisible { get; set; } = true;
+
+    public PlayerControl Target { get; } = target;
+
+    private GameObject _shield;
+
+    public void SetVisible()
+    {
+    }
+
+    public override void OnActivate()
+    {
+        _shield = AnimStore.SpawnAnimBody(Player, TouAssets.FirstRoundShield.LoadAsset(), false, -1.1f, -0.225f, 1.5f)!;
+        
+        if (_shield && Target != null)
+        {
+            var currentScale = _shield.transform.localScale;
+            
+            if (Player.HasModifier<GiantModifier>())
+            {
+                currentScale *= 0.7f;
+            }
+            else if (Player.HasModifier<MiniModifier>())
+            {
+                currentScale /= 0.7f;
+            }
+            
+            if (Target.HasModifier<GiantModifier>())
+            {
+                currentScale /= 0.7f;
+            }
+            else if (Target.HasModifier<MiniModifier>())
+            {
+                currentScale *= 0.7f;
+            }
+            
+            _shield.transform.localScale = currentScale;
+        }
+    }
+
+    public override void OnDeath(DeathReason reason)
+    {
+        base.OnDeath(reason);
+        ModifierComponent?.RemoveModifier(this);
+    }
+
+    public override void OnDeactivate()
+    {
+        if (_shield)
+        {
+            _shield.Destroy();
+        }
+    }
+
+    public override void Update()
+    {
+        if (!Player || Target == null)
+        {
+            ModifierComponent?.RemoveModifier(this);
+            return;
+        }
+
+        if (!MeetingHud.Instance && _shield)
+        {
+             // Show only while the target *actually* has the shield.
+             // Morph/Mimic are implemented as ConcealedModifier, but they are still visible to others.
+             // Only hide the shield for "true conceal" (e.g. swoop/invis), vents, disabled, etc.
+             _shield.SetActive(Player.IsVisibleToOthers() && IsVisible && Target.HasModifier<FirstDeadShield>());
+        }
+        else if (MeetingHud.Instance)
+        {
+            if (_shield)
+            {
+                _shield.SetActive(false);
+            }
+
+            ModifierComponent?.RemoveModifier(this);
+        }
+    }
+}
+
+

@@ -1,0 +1,218 @@
+﻿using System.Collections;
+using MiraAPI.Events;
+using MiraAPI.GameOptions;
+using MiraAPI.Utilities;
+using Reactor.Utilities;
+using TownOfUs.Events.TouEvents;
+using TownOfUs.Modules;
+using TownOfUs.Options.Roles.Impostor;
+using UnityEngine;
+using Color = UnityEngine.Color;
+
+namespace TownOfUs.Modifiers.Impostor;
+
+public sealed class GrenadierFlashModifier(PlayerControl grenadier) : DisabledModifier, IDisposable
+{
+    public static Color blindVision = new(0.83f, 0.83f, 0.83f, 1f);
+    private readonly Color dimVision = new(0.83f, 0.83f, 0.83f, 0.2f);
+
+    private readonly Color normalVision = new(0.83f, 0.83f, 0.83f, 0f);
+
+    private ScreenFlash? flash;
+    public override string ModifierName => "Flashed";
+    public override bool HideOnUi => true;
+    public override float Duration => OptionGroupSingleton<GrenadierOptions>.Instance.GrenadeDuration + 0.5f;
+    public override bool AutoStart => true;
+    public override bool CanBeInteractedWith => true;
+    public override bool IsConsideredAlive => true;
+    public override bool CanUseAbilities => true;
+    public override bool CanUseConsoles => Player.IsImpostorAligned();
+    public override bool CanOpenMap => Player.IsImpostorAligned();
+    public override bool CanReport => false;
+    public PlayerControl Grenadier => grenadier;
+
+    public void Dispose()
+    {
+        flash?.Dispose();
+    }
+
+    public static void SetColor()
+    {
+        var colorType = LocalSettingsTabSingleton<TouLocalTabGameplay>.Instance.GrenadierFlashColor.Value;
+        switch (colorType)
+        {
+            case GrenadeFlashColor.DarkGray:
+                blindVision = new(0.33f, 0.33f, 0.33f, 1f);
+                break;
+            case GrenadeFlashColor.Gray:
+                blindVision = new(0.6f, 0.6f, 0.6f, 1f);
+                break;
+            case GrenadeFlashColor.LightGray:
+                blindVision = new(0.83f, 0.83f, 0.83f, 1f);
+                break;
+            case GrenadeFlashColor.White:
+                blindVision = new(1f, 1f, 1f, 1f);
+                break;
+        }
+    }
+
+    public override void OnActivate()
+    {
+        base.OnActivate();
+        var touAbilityEvent = new TouAbilityEvent(AbilityType.GrenadierFlash, Grenadier, Player);
+        MiraEventManager.InvokeEvent(touAbilityEvent);
+
+        flash = new ScreenFlash();
+        SetColor();
+
+        if (Player.AmOwner)
+        {
+            if (!Grenadier.AmOwner)
+            {
+                var notif1 = Helpers.CreateAndShowNotification(
+                    $"<b>{TownOfUsColors.ImpSoft.ToTextColor()}{MiraLocaleManager.Get("TownOfUsMira.Modifier.GrenadierFlashedNotification")}</color></b>",
+                    Color.white,
+                    spr: TouRoleIcons.Grenadier.LoadAsset());
+
+                notif1.AdjustNotification();
+                notif1.transform.localPosition = new Vector3(0f, 1f, -150f);
+            }
+            Coroutines.Start(CoShakeScreen());
+        }
+    }
+
+    private static IEnumerator CoShakeScreen()
+    {
+        yield return new WaitForSeconds(0.5f);
+
+        HudManager.Instance.StartCoroutine(HudManager.Instance.PlayerCam.CoShakeScreen(0.4f, 5f));
+    }
+
+    public override void FixedUpdate()
+    {
+        base.FixedUpdate();
+
+        if (!Player.IsImpostorAligned() && PlayerControl.LocalPlayer.IsImpostorAligned())
+        {
+            if (TimeRemaining <= Duration - 0.5f && TimeRemaining >= 0.5f)
+            {
+                Player.cosmetics.currentBodySprite.BodySprite.material.SetColor(ShaderID.VisorColor, Color.black);
+            }
+            else
+            {
+                Player.cosmetics.currentBodySprite.BodySprite.material.SetColor(ShaderID.VisorColor,
+                    Palette.VisorColor);
+            }
+        }
+
+        if (Player.AmOwner)
+        {
+            if (TimeRemaining > Duration - 0.5f)
+            {
+                var fade = (TimeRemaining - Duration) * -2.0f;
+
+                if (ShouldPlayerBeBlinded(Player))
+                {
+                    SetFlash(Color.Lerp(normalVision, blindVision, fade));
+                }
+                else if (ShouldPlayerBeDimmed(Player))
+                {
+                    SetFlash(Color.Lerp(normalVision, dimVision, fade));
+                }
+                else
+                {
+                    SetFlash(normalVision);
+                }
+            }
+            else if (TimeRemaining <= Duration - 0.5f && TimeRemaining >= 0.5f)
+            {
+                if (ShouldPlayerBeBlinded(Player))
+                {
+                    SetFlash(blindVision);
+                }
+                else if (ShouldPlayerBeDimmed(Player))
+                {
+                    SetFlash(dimVision);
+                }
+                else
+                {
+                    SetFlash(normalVision);
+                }
+            }
+            else if (TimeRemaining < 0.5f)
+            {
+                var fade2 = TimeRemaining * -2.0f + 1.0f;
+
+                if (ShouldPlayerBeBlinded(Player))
+                {
+                    SetFlash(Color.Lerp(blindVision, normalVision, fade2));
+                }
+                else if (ShouldPlayerBeDimmed(Player))
+                {
+                    SetFlash(Color.Lerp(dimVision, normalVision, fade2));
+                }
+                else
+                {
+                    SetFlash(normalVision);
+                }
+            }
+            else
+            {
+                SetFlash(normalVision);
+
+                TimeRemaining = 0.0f;
+            }
+
+            if (MeetingHud.Instance)
+            {
+                SetFlash(normalVision);
+
+                TimeRemaining = 0.0f;
+            }
+        }
+    }
+
+    public override void OnDeactivate()
+    {
+        if (Player.AmOwner)
+        {
+            SetFlash(normalVision);
+
+            flash?.Destroy();
+        }
+
+        if (!Player.IsImpostorAligned() && PlayerControl.LocalPlayer.IsImpostorAligned())
+        {
+            Player.cosmetics.currentBodySprite.BodySprite.material.SetColor(ShaderID.VisorColor, Palette.VisorColor);
+        }
+    }
+
+    public override void OnMeetingStart()
+    {
+        ModifierComponent?.RemoveModifier(this);
+    }
+
+    private void SetFlash(Color color)
+    {
+        if (flash != null)
+        {
+            flash.SetColour(color);
+            flash.SetActive(true);
+
+            if (color == normalVision)
+            {
+                flash.SetActive(false);
+            }
+        }
+    }
+
+    private static bool ShouldPlayerBeDimmed(PlayerControl player)
+    {
+        return (player.IsImpostorAligned() || player.HasDied()) && !MeetingHud.Instance;
+    }
+
+    private static bool ShouldPlayerBeBlinded(PlayerControl player)
+    {
+        return !player.IsImpostorAligned() && !player.HasDied() && !MeetingHud.Instance;
+    }
+}

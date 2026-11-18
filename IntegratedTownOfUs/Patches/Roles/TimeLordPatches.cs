@@ -1,0 +1,85 @@
+using HarmonyLib;
+using TownOfUs.Interfaces;
+using TownOfUs.Modules;
+using UnityEngine;
+
+namespace TownOfUs.Patches.Roles;
+
+[HarmonyPatch]
+public static class TimeLordPatches
+{
+    private static float _lastTaskSnapshotTime;
+    private static readonly float _taskSnapshotInterval = 0.02f;
+    [HarmonyPatch(typeof(PlayerPhysics), nameof(PlayerPhysics.FixedUpdate))]
+    [HarmonyPostfix]
+    public static void RecordSnapshotsPostfix(PlayerPhysics __instance)
+    {
+        if (__instance != null && __instance.myPlayer.AmOwner)
+        {
+            TimeLordRewindSystem.RecordLocalSnapshot(__instance);
+            _lastTaskSnapshotTime = Time.time;
+
+            if (AmongUsClient.Instance && AmongUsClient.Instance.AmHost)
+            {
+                TimeLordRewindSystem.RecordHostBodyPositions();
+            }
+        }
+    }
+    public static void RecordTimeLordSnapshot(HudManager __instance)
+    {
+        var inMinigame = Minigame.Instance || SpawnInMinigame.Instance;
+        if (!inMinigame)
+        {
+            return;
+        }
+
+        var now = Time.time;
+        if (now - _lastTaskSnapshotTime < _taskSnapshotInterval)
+        {
+            return;
+        }
+
+        var physics = PlayerControl.LocalPlayer.MyPhysics;
+        if (physics != null)
+        {
+            TimeLordRewindSystem.RecordLocalSnapshot(physics);
+            _lastTaskSnapshotTime = now;
+        }
+    }
+
+    [HarmonyPatch(typeof(PlayerPhysics), nameof(PlayerPhysics.FixedUpdate))]
+    [HarmonyPriority(Priority.First)]
+    [HarmonyPrefix]
+    public static bool PlayerPhysicsFixedUpdatePrefix(PlayerPhysics __instance)
+    {
+        if (__instance == null || __instance.myPlayer == null)
+        {
+            return true;
+        }
+
+        var player = __instance.myPlayer;
+        
+        // Handle rewind for local player (including infected players - they're already recorded in normal snapshots)
+        if (PlayerControl.LocalPlayer && player.AmOwner &&
+            TimeLordRewindSystem.IsRewinding)
+        {
+            return !TimeLordRewindSystem.TryHandleRewindPhysics(__instance);
+        }
+
+        return true;
+    }
+
+    [HarmonyPatch(typeof(PlayerPhysics), nameof(PlayerPhysics.FlipX), MethodType.Setter)]
+    [HarmonyPrefix]
+    public static void PlayerFlipXRewindPrefix(PlayerPhysics __instance, ref bool value)
+    {
+        if (TimeLordRewindSystem.IsRewinding &&
+    __instance != null &&
+    __instance.myPlayer != null &&
+    __instance.myPlayer.AmOwner &&
+    (PlayerControl.LocalPlayer.Data.Role is not IRewindImmune immune || !immune.IgnoredByRewind))
+        {
+            value = !value;
+        }
+    }
+}

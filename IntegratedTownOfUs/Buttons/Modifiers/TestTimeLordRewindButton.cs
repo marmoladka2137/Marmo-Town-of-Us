@@ -1,0 +1,63 @@
+using MiraAPI.GameOptions;
+using MiraAPI.Modifiers;
+using TownOfUs.Modifiers.Game.Crewmate;
+using TownOfUs.Options.Roles.Crewmate;
+using TownOfUs.Roles.Crewmate;
+using UnityEngine;
+
+namespace TownOfUs.Buttons.Modifiers;
+
+public sealed class TestTimeLordRewindButton : TownOfUsButton, IAurialBypassButton
+{
+    public override string Name => MiraLocaleManager.Get("TownOfUsMira.Role.TimeLordRewind", "Rewind");
+    public override BaseKeybind Keybind => Keybinds.ModifierAction;
+    public override Color TextOutlineColor => TownOfUsColors.TimeLord;
+
+    public override float Cooldown =>
+        Math.Clamp(OptionGroupSingleton<TimeLordOptions>.Instance.RewindCooldown + MapCooldown, 5f, 120f);
+
+    public override float EffectDuration => OptionGroupSingleton<TimeLordOptions>.Instance.RewindDuration;
+
+    public override int MaxUses => (int)OptionGroupSingleton<TimeLordOptions>.Instance.MaxUses;
+
+    public override LoadableAsset<Sprite> Sprite => TouCrewAssets.RewindSprite;
+
+    public override bool ZeroIsInfinite { get; set; } = true;
+
+    protected override void OnClick()
+    {
+        // Use the same RPC as Time Lord role, but check for modifier instead
+        TimeLordRole.RpcStartRewind(PlayerControl.LocalPlayer, EffectDuration);
+        OverrideName(MiraLocaleManager.Get("TownOfUsMira.Role.TimeLordRewinding", "Rewinding"));
+    }
+
+    public override void OnEffectEnd()
+    {
+        OverrideName(MiraLocaleManager.Get("TownOfUsMira.Role.TimeLordRewind", "Rewind"));
+    }
+
+    public override bool Enabled(RoleBehaviour? role)
+    {
+        return PlayerControl.LocalPlayer &&
+               PlayerControl.LocalPlayer.HasModifier<TestTimeLordModifier>() &&
+               !PlayerControl.LocalPlayer.Data.IsDead;
+    }
+
+    protected override void FixedUpdate(PlayerControl playerControl)
+    {
+        base.FixedUpdate(playerControl);
+
+        if (Button == null)
+        {
+            return;
+        }
+
+        var spr = EffectActive ? TouCrewAssets.RewindingSprite.LoadAsset() : TouCrewAssets.RewindSprite.LoadAsset();
+        if (Button.graphic != null && Button.graphic.sprite != spr)
+        {
+            Button.graphic.sprite = spr;
+        }
+    }
+}
+
+

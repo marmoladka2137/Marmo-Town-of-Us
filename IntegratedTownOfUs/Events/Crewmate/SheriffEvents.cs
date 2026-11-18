@@ -1,0 +1,65 @@
+// MTOU publication snapshot prepared 2026-11-17.
+// Modified relative to TOU Mira b56f24a0; original credits retained. See SOURCE_PROVENANCE.md.
+using MiraAPI.Events;
+using MiraAPI.Events.Vanilla.Gameplay;
+using MiraAPI.GameOptions;
+using MiraAPI.Hud;
+using MiraAPI.Modifiers;
+using TownOfUs.Buttons.Crewmate;
+using TownOfUs.Modifiers.Game;
+using TownOfUs.Modules;
+using TownOfUs.Options.Roles.Crewmate;
+using TownOfUs.Roles;
+using TownOfUs.Roles.Crewmate;
+
+namespace TownOfUs.Events.Crewmate;
+
+public static class SheriffEvents
+{
+    [RegisterEvent]
+    public static void RoundStartHandler(RoundStartEvent @event)
+    {
+        if (@event.TriggeredByIntro)
+        {
+            CustomButtonSingleton<SheriffShootButton>.Instance.FailedShot = false;
+        }
+    }
+
+    [RegisterEvent]
+    public static void AfterMurderEventHandler(AfterMurderEvent @event)
+    {
+        var source = @event.Source;
+
+        if (source.Data.Role is not SheriffRole)
+        {
+            return;
+        }
+
+        if (source.TryGetModifier<AllianceGameModifier>(out var allyMod2) && !allyMod2.GetsPunished)
+        {
+            return;
+        }
+
+        var target = @event.Target;
+        var options = OptionGroupSingleton<SheriffOptions>.Instance;
+        if (OneMoreChanceModifier.WasForgiven(source, target) || ChanceMisfireRuntime.IsPending(source, target)) return;
+
+        if (GameHistory.PlayerStats.TryGetValue(source.PlayerId, out var stats))
+        {
+            if (target.IsImpostor() ||
+                (target.IsCrewmate() && target.TryGetModifier<AllianceGameModifier>(out var allyMod) &&
+                 !allyMod.GetsPunished) ||
+                (target.Is(RoleAlignment.NeutralOutlier) && options.ShootNeutralOutlier.Value) ||
+                (target.Is(RoleAlignment.NeutralEvil) && options.ShootNeutralEvil.Value) ||
+                (target.Is(RoleAlignment.NeutralKilling) && options.ShootNeutralKiller.Value) ||
+                (target.Is(RoleAlignment.NeutralBenign) && options.ShootNeutralBenign.Value))
+            {
+                stats.CorrectKills += 1;
+            }
+            else
+            {
+                stats.IncorrectKills += 1;
+            }
+        }
+    }
+}

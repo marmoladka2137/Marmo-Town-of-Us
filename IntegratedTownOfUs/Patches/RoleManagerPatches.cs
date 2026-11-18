@@ -1,0 +1,1286 @@
+using System.Collections;
+using AmongUs.GameOptions;
+using HarmonyLib;
+using Hazel;
+using MiraAPI.Events;
+using MiraAPI.GameModes;
+using MiraAPI.GameOptions;
+using MiraAPI.Modifiers;
+using MiraAPI.Roles;
+using MiraAPI.Utilities;
+using Reactor.Utilities;
+using TownOfUs.Events;
+using TownOfUs.Events.TouEvents;
+using TownOfUs.Modifiers;
+using TownOfUs.Options;
+using TownOfUs.Roles;
+using TownOfUs.Roles.Crewmate;
+using TownOfUs.Roles.Neutral;
+using TownOfUs.Roles.Other;
+using UnityEngine;
+using Random = UnityEngine.Random;
+
+namespace TownOfUs.Patches;
+
+[HarmonyPatch]
+public static class TouRoleManagerPatches
+{
+    private static readonly List<RoleTypes> CrewmateGhostRolePool = [];
+    private static readonly List<RoleTypes> ImpostorGhostRolePool = [];
+    private static readonly List<RoleTypes> CustomGhostRolePool = [];
+
+    public static bool ReplaceRoleManager;
+    public static HashSet<ushort> VanillaExclusions { get; private set; } = [];
+    private static List<int> LastImps { get; set; } = [];
+
+    private static void GhostRoleSetup()
+    {
+        // var ghostRoles = MiscUtils.AllRegisteredRoles.Where(x => x.IsDead);
+        var ghostRoles = MiscUtils.GetRegisteredGhostRoles();
+
+        var text = $"GhostRoleSetup - ghostRoles Count: {ghostRoles.Count()}";
+        MiscUtils.LogInfo(TownOfUsEventHandlers.LogLevel.Warning, text);
+
+        CrewmateGhostRolePool.Clear();
+        ImpostorGhostRolePool.Clear();
+        CustomGhostRolePool.Clear();
+
+        foreach (var role in ghostRoles)
+        {
+            var ghostText = $"GhostRoleSetup - ghostRoles role NiceName: {role.GetRoleName()}";
+
+            MiscUtils.LogInfo(TownOfUsEventHandlers.LogLevel.Warning, ghostText);
+
+            var data = MiscUtils.GetAssignData(role.Role);
+
+            switch (data.Chance)
+            {
+                case 100:
+                    {
+                        if (data.Count > 0)
+                        {
+                            if (role is ICustomRole { Team: ModdedRoleTeams.Custom })
+                            {
+                                CustomGhostRolePool.Add(role.Role);
+                            }
+                            else
+                            {
+                                switch (role.TeamType)
+                                {
+                                    case RoleTeamTypes.Crewmate:
+                                        CrewmateGhostRolePool.Add(role.Role);
+                                        break;
+                                    case RoleTeamTypes.Impostor:
+                                        ImpostorGhostRolePool.Add(role.Role);
+                                        break;
+                                }
+                            }
+                        }
+
+                        break;
+                    }
+                case > 0:
+                    {
+                        if (data.Count > 0 && HashRandom.Next(101) < data.Chance)
+                        {
+                            if (role is ICustomRole { Team: ModdedRoleTeams.Custom })
+                            {
+                                CustomGhostRolePool.Add(role.Role);
+                            }
+                            else
+                            {
+                                switch (role.TeamType)
+                                {
+                                    case RoleTeamTypes.Crewmate:
+                                        CrewmateGhostRolePool.Add(role.Role);
+                                        break;
+                                    case RoleTeamTypes.Impostor:
+                                        ImpostorGhostRolePool.Add(role.Role);
+                                        break;
+                                }
+                            }
+                        }
+
+                        break;
+                    }
+            }
+        }
+
+        foreach (var role in MiscUtils.AllTouRoles)
+        {
+            if (role is not IBasicGhostRole ghostRole || ghostRole.ApplyImmediatelyAfterDeath)
+            {
+                continue;
+            }
+
+            switch (role.Team)
+            {
+                case ModdedRoleTeams.Crewmate:
+                    CrewmateGhostRolePool.RemoveAll(x => x == (RoleTypes)RoleId.Get(ghostRole.GetType()));
+                    break;
+                case ModdedRoleTeams.Impostor:
+                    ImpostorGhostRolePool.RemoveAll(x => x == (RoleTypes)RoleId.Get(ghostRole.GetType()));
+                    break;
+                default:
+                    CustomGhostRolePool.RemoveAll(x => x == (RoleTypes)RoleId.Get(ghostRole.GetType()));
+                    break;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Adjusts neutral role counts to ensure requested neutral roles via /up are included.
+    /// </summary>
+    private static void AdjustNeutralCountsForUpRequests(ref int nbCount, ref int neCount, ref int nkCount, ref int noCount, int crewmateCount)
+    {
+        // Track which neutral categories are requested via /up (must be at least 1)
+        var upRequestedBenign = false;
+        var upRequestedEvil = false;
+        var upRequestedKilling = false;
+        var upRequestedOutlier = false;
+
+        var upRequests = UpCommandRequests.GetAllRequests();
+        foreach (var (playerName, _) in upRequests)
+        {
+            if (!UpCommandRequests.TryGetRequestRole(playerName, out var requestedRole))
+            {
+                continue;
+            }
+
+            // Check if the requested role is neutral
+            if (requestedRole.IsNeutral())
+            {
+                var alignment = requestedRole.GetRoleAlignment();
+
+                // Mark which categories are requested and ensure they have at least 1
+                switch (alignment)
+                {
+                    case RoleAlignment.NeutralBenign:
+                        upRequestedBenign = true;
+                        if (nbCount == 0)
+                        {
+                            nbCount = 1;
+                        }
+                        break;
+                    case RoleAlignment.NeutralEvil:
+                        upRequestedEvil = true;
+                        if (neCount == 0)
+                        {
+                            neCount = 1;
+                        }
+                        break;
+                    case RoleAlignment.NeutralKilling:
+                        upRequestedKilling = true;
+                        if (nkCount == 0)
+                        {
+                            nkCount = 1;
+                        }
+                        break;
+                    case RoleAlignment.NeutralOutlier:
+                        upRequestedOutlier = true;
+                        if (noCount == 0)
+                        {
+                            noCount = 1;
+                        }
+                        break;
+                }
+            }
+        }
+
+        // Re-adjust to ensure crewmates still outnumber neutrals after /up adjustments
+        // But protect /up requested categories from being reduced below 1
+        AdjustNeutralCountsWithProtection(ref nbCount, ref neCount, ref nkCount, ref noCount, crewmateCount,
+            upRequestedBenign, upRequestedEvil, upRequestedKilling, upRequestedOutlier);
+    }
+
+    /// <summary>
+    /// Adjusts neutral role counts to ensure crewmates always outnumber neutrals,
+    /// while protecting /up requested categories from being reduced below 1.
+    /// </summary>
+    private static void AdjustNeutralCountsWithProtection(ref int nbCount, ref int neCount, ref int nkCount, ref int noCount, int crewmateCount,
+        bool protectBenign, bool protectEvil, bool protectKilling, bool protectOutlier)
+    {
+        var roleOptions = OptionGroupSingleton<RoleOptions>.Instance;
+        var minBenign = (int)roleOptions.MinNeutralBenign.Value;
+        var minEvil = (int)roleOptions.MinNeutralEvil.Value;
+        var minKilling = (int)roleOptions.MinNeutralKiller.Value;
+        var minOutlier = (int)roleOptions.MinNeutralOutlier.Value;
+
+        // Adjust minimums to protect /up requested categories
+        if (protectBenign && minBenign < 1)
+        {
+            minBenign = 1;
+        }
+        if (protectEvil && minEvil < 1)
+        {
+            minEvil = 1;
+        }
+        if (protectKilling && minKilling < 1)
+        {
+            minKilling = 1;
+        }
+        if (protectOutlier && minOutlier < 1)
+        {
+            minOutlier = 1;
+        }
+
+        // Crew must always start out outnumbering neutrals, so subtract roles until that can be guaranteed.
+        while (Math.Ceiling((double)crewmateCount / 2) <= nbCount + neCount + nkCount + noCount)
+        {
+            var totalNeutrals = nbCount + neCount + nkCount + noCount;
+            if (totalNeutrals == 0)
+            {
+                break;
+            }
+
+            // This is one of the things I did change. The old code was actually biased and partially deterministic.
+            // Over many games, it would silently favor removing certain neutral factions more often than others (for example, neutral benign was usually protected more than outlier).
+            // Now, every faction has equal probability per subtraction. Statistically the most fair way to do it.
+            // (I know this is nitpicky but I think it's better than just a list regardless)
+            var factionIndices = new List<int> { 0, 1, 2, 3 };
+            factionIndices.Shuffle();
+
+            // Determine which factions can be subtracted (respecting protected minimums)
+            var canSubtractBenign = nbCount > minBenign;
+            var canSubtractEvil = neCount > minEvil;
+            var canSubtractKilling = nkCount > minKilling;
+            var canSubtractOutlier = noCount > minOutlier;
+            var canSubtractAny = canSubtractBenign || canSubtractEvil || canSubtractKilling || canSubtractOutlier;
+
+            // Try to subtract from a random faction that can be subtracted
+            bool subtracted = false;
+            foreach (var index in factionIndices)
+            {
+                switch (index)
+                {
+                    case 0 when nbCount > 0 && (canSubtractBenign || !canSubtractAny):
+                        nbCount -= 1;
+                        subtracted = true;
+                        break;
+                    case 1 when neCount > 0 && (canSubtractEvil || !canSubtractAny):
+                        neCount -= 1;
+                        subtracted = true;
+                        break;
+                    case 2 when nkCount > 0 && (canSubtractKilling || !canSubtractAny):
+                        nkCount -= 1;
+                        subtracted = true;
+                        break;
+                    case 3 when noCount > 0 && (canSubtractOutlier || !canSubtractAny):
+                        noCount -= 1;
+                        subtracted = true;
+                        break;
+                }
+
+                if (subtracted)
+                {
+                    break;
+                }
+            }
+
+            // Fallback: subtract from first available faction
+            if (!subtracted)
+            {
+                if (nbCount > minBenign)
+                {
+                    nbCount -= 1;
+                }
+                else if (neCount > minEvil)
+                {
+                    neCount -= 1;
+                }
+                else if (nkCount > minKilling)
+                {
+                    nkCount -= 1;
+                }
+                else if (noCount > minOutlier)
+                {
+                    noCount -= 1;
+                }
+                else
+                {
+                    // Can't subtract any more without violating minimums
+                    break;
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Adds /up requested roles to the appropriate role pools.
+    /// </summary>
+    private static void AddUpRequestedRolesToPools(List<ushort> impRoles, List<ushort> crewRoles)
+    {
+        var upRequests = UpCommandRequests.GetAllRequests();
+        foreach (var (playerName, _) in upRequests)
+        {
+            if (!UpCommandRequests.TryGetRequestRole(playerName, out var requestedRole))
+            {
+                continue;
+            }
+
+            var requestedRoleId = (ushort)requestedRole.Role;
+            var targetPool = requestedRole.IsImpostor() ? impRoles : crewRoles;
+
+            // Add to appropriate pool if not already present
+            if (!targetPool.Contains(requestedRoleId))
+            {
+                targetPool.Add(requestedRoleId);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Assigns roles to players, handling /up requests first, then random assignment.
+    /// </summary>
+    private static void AssignRolesToPlayers(List<PlayerControl> players, List<ushort> roles, string teamName)
+    {
+        if (roles.Count == 0 || players.Count == 0)
+        {
+            return;
+        }
+        Warning($"Assigning {roles.Count} {teamName} roles to {players.Count} players...");
+
+        // Shuffle both lists for better randomness and fairness
+        players.Shuffle();
+        roles.Shuffle();
+
+        // Collect /up requested roles first
+        var upRequestedRoles = new List<(ushort roleId, string playerName)>();
+        foreach (var player in players.ToList())
+        {
+            if (UpCommandRequests.TryGetRequestRole(player.Data.PlayerName, out var requestedRole))
+            {
+                var requestedRoleId = (ushort)requestedRole.Role;
+                // Only add if the role is in the pool and the player is still available
+                if (roles.Contains(requestedRoleId) && players.Contains(player))
+                {
+                    upRequestedRoles.Add((requestedRoleId, player.Data.PlayerName));
+                }
+            }
+        }
+
+        // Shuffle up requests for fairness when multiple players request the same role
+        upRequestedRoles.Shuffle();
+
+        // Assign /up requested roles first
+        foreach (var (roleId, playerName) in upRequestedRoles)
+        {
+            var player = players.FirstOrDefault(p => p.Data.PlayerName == playerName);
+            if (player != null && roles.Contains(roleId))
+            {
+                AssignRoleToPlayer(player, roleId, true);
+                UpCommandRequests.RemoveRequest(playerName);
+                players.Remove(player);
+                roles.Remove(roleId);
+            }
+        }
+
+        // Assign remaining roles randomly to remaining players
+        // Shuffle again before random assignment for better distribution
+        roles.Shuffle();
+        players.Shuffle();
+
+        foreach (var role in roles)
+        {
+            if (players.Count == 0)
+            {
+                break;
+            }
+
+            // Use random selection from shuffled list for fairness
+            var randomIndex = Random.RandomRangeInt(0, players.Count);
+            var player = players[randomIndex];
+
+            AssignRoleToPlayer(player, role, false);
+            players.RemoveAt(randomIndex);
+        }
+    }
+
+    /// <summary>
+    /// Assigns a role to a player and logs the assignment.
+    /// </summary>
+    private static void AssignRoleToPlayer(PlayerControl player, ushort roleId, bool viaUpCommand)
+    {
+        player.RpcSetRole((RoleTypes)roleId);
+        var roleName = RoleManager.Instance.GetRole((RoleTypes)roleId).GetRoleName();
+        var source = viaUpCommand ? " (via /up)" : string.Empty;
+        var roleText = $"SelectRoles - player: '{player.Data.PlayerName}', role: '{roleName}'{source}";
+        MiscUtils.LogInfo(TownOfUsEventHandlers.LogLevel.Warning, roleText);
+    }
+
+    /// <summary>
+    /// Assigns vanilla roles (Crewmate/Impostor) to players who didn't receive a special role.
+    /// </summary>
+    private static void AssignVanillaRoles(List<PlayerControl> crewmates, List<PlayerControl> impostors)
+    {
+        foreach (var player in crewmates)
+        {
+            player.RpcSetRole(RoleTypes.Crewmate);
+        }
+
+        foreach (var player in impostors)
+        {
+            player.RpcSetRole(RoleTypes.Impostor);
+        }
+    }
+
+    private static void AssignRoles(List<NetworkedPlayerInfo> infected)
+    {
+        var impCount = infected.Count;
+        var impostors = MiscUtils.GetImpostors(infected);
+        var crewmates = MiscUtils.GetCrewmates(impostors);
+
+        // Calculate neutral role counts
+        var roleOptions = OptionGroupSingleton<RoleOptions>.Instance;
+        var nbCount = Random.RandomRange((int)roleOptions.MinNeutralBenign.Value,
+            (int)roleOptions.MaxNeutralBenign.Value + 1);
+        var neCount = Random.RandomRange((int)roleOptions.MinNeutralEvil.Value,
+            (int)roleOptions.MaxNeutralEvil.Value + 1);
+        var nkCount = Random.RandomRange((int)roleOptions.MinNeutralKiller.Value,
+            (int)roleOptions.MaxNeutralKiller.Value + 1);
+        var noCount = Random.RandomRange((int)roleOptions.MinNeutralOutlier.Value,
+            (int)roleOptions.MaxNeutralOutlier.Value + 1);
+
+        // Adjust neutral counts for /up requests and ensure crewmates outnumber neutrals
+        AdjustNeutralCountsForUpRequests(ref nbCount, ref neCount, ref nkCount, ref noCount, crewmates.Count);
+
+        var excluded = MiscUtils.SpawnableRoles.Where(x => x is ISpawnChange { NoSpawn: true }).Select(x => x.Role)
+            .Concat(MiscUtils.GetExclusiveRoleExclusions().Select(x => (RoleTypes)x)).ToList();
+        var exclusionFilter = new Func<RoleBehaviour, bool>(x => !excluded.Contains(x.Role));
+
+        var impRoles =
+            MiscUtils.GetMaxRolesToAssign(ModdedRoleTeams.Impostor, impCount, exclusionFilter);
+
+        // Handle unique role constraint
+        var uniqueRole = MiscUtils.SpawnableRoles.FirstOrDefault(x => x is ISpawnChange { NoSpawn: false });
+        if (uniqueRole != null && impRoles.Contains(RoleId.Get(uniqueRole.GetType())))
+        {
+            impCount = 1;
+            var impText = $"Removing Impostor Roles because of {uniqueRole.GetRoleName()}";
+            MiscUtils.LogInfo(TownOfUsEventHandlers.LogLevel.Warning, impText);
+
+            impRoles.RemoveAll(x => x != RoleId.Get(uniqueRole.GetType()));
+
+            while (impostors.Count > impCount)
+            {
+                crewmates.Add(impostors.TakeFirst());
+            }
+        }
+
+        // Get neutral and crewmate roles
+        var nbRoles = MiscUtils.GetMaxRolesToAssign(RoleAlignment.NeutralBenign, nbCount, exclusionFilter);
+        var neRoles = MiscUtils.GetMaxRolesToAssign(RoleAlignment.NeutralEvil, neCount, exclusionFilter);
+        var nkRoles = MiscUtils.GetMaxRolesToAssign(RoleAlignment.NeutralKilling, nkCount, exclusionFilter);
+        var noRoles = MiscUtils.GetMaxRolesToAssign(RoleAlignment.NeutralOutlier, noCount, exclusionFilter);
+
+        var crewCount = crewmates.Count - nbRoles.Count - neRoles.Count - nkRoles.Count - noRoles.Count;
+        var crewRoles = MiscUtils.GetMaxRolesToAssign(ModdedRoleTeams.Crewmate, crewCount, exclusionFilter);
+
+        // Combine crewmate and neutral roles
+        var crewAndNeutRoles = new List<ushort>();
+        crewAndNeutRoles.AddRange(nbRoles);
+        crewAndNeutRoles.AddRange(neRoles);
+        crewAndNeutRoles.AddRange(nkRoles);
+        crewAndNeutRoles.AddRange(noRoles);
+        crewAndNeutRoles.AddRange(crewRoles);
+
+        // Add /up requested roles to pools
+        AddUpRequestedRolesToPools(impRoles, crewAndNeutRoles);
+
+        // Assign roles to players
+        AssignRolesToPlayers(crewmates, crewAndNeutRoles, "Crewmate/Neutral");
+        AssignRolesToPlayers(impostors, impRoles, "Impostor");
+
+        // Assign vanilla roles to remaining players
+        AssignVanillaRoles(crewmates, impostors);
+    }
+
+    /// <summary>
+    /// Builds the role list buckets from slot options.
+    /// </summary>
+    private static List<RoleListOption> BuildRoleListBuckets(int playerCount)
+    {
+        var opts = OptionGroupSingleton<RoleOptions>.Instance;
+        var buckets = new List<RoleListOption>();
+        var maxCount = opts.Slot.Count;
+
+        // Add slots up to player count (max 15)
+        var slotsToAdd = Math.Min(playerCount, maxCount);
+        for (var i = 0; i < slotsToAdd; i++)
+        {
+            buckets.Add(opts.Slot[i]);
+        }
+
+        // For players beyond 15, add random crew/non-imp roles
+        if (playerCount > maxCount)
+        {
+            for (var i = 0; i < playerCount - maxCount; i++)
+            {
+                // Use better random distribution: 25% chance for CrewRandom, 75% for NonImp
+                var random = Random.RandomRangeInt(0, 4);
+                buckets.Add(random == 0 ? RoleListOption.CrewRandom : RoleListOption.NonImp);
+            }
+        }
+
+        return buckets;
+    }
+
+    /// <summary>
+    /// Adjusts role list buckets to match the required impostor count.
+    /// </summary>
+    private static void AdjustRoleListBucketsForImpostors(List<RoleListOption> buckets, List<RoleListOption> impBuckets, int requiredImpostors)
+    {
+        // Count current impostor slots
+        var impCount = buckets.Count(bucket => impBuckets.Contains(bucket));
+        var anySlots = buckets.Count(bucket => bucket == RoleListOption.Any);
+
+        // Reduce impostor slots if too many
+        while (impCount > requiredImpostors)
+        {
+            buckets.Shuffle();
+            var lastImpIndex = buckets.FindLastIndex(bucket => impBuckets.Contains(bucket));
+            if (lastImpIndex >= 0)
+            {
+                buckets.RemoveAt(lastImpIndex);
+                buckets.Add(RoleListOption.NonImp);
+                impCount -= 1;
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        // Increase impostor slots if too few
+        while (impCount + anySlots < requiredImpostors)
+        {
+            buckets.Shuffle();
+            if (buckets.Count > 0)
+            {
+                buckets.RemoveAt(0);
+                buckets.Add(RoleListOption.ImpRandom);
+                impCount += 1;
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        // Replace "Any" slots with appropriate roles
+        while (buckets.Contains(RoleListOption.Any))
+        {
+            buckets.Shuffle();
+            var anyIndex = buckets.FindLastIndex(bucket => bucket == RoleListOption.Any);
+            if (anyIndex >= 0)
+            {
+                buckets.RemoveAt(anyIndex);
+                if (impCount < requiredImpostors)
+                {
+                    buckets.Add(RoleListOption.ImpRandom);
+                    impCount += 1;
+                }
+                else
+                {
+                    buckets.Add(RoleListOption.NonImp);
+                }
+            }
+            else
+            {
+                break;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Ensures role list buckets have at least one crew/neutral role.
+    /// </summary>
+    private static void EnsureCrewNeutralRoles(List<RoleListOption> buckets, List<RoleListOption> impBuckets, List<RoleListOption> crewNkBuckets)
+    {
+        var hasCrewNeutral = buckets.Any(bucket => crewNkBuckets.Contains(bucket));
+        var hasNeutRandom = buckets.Contains(RoleListOption.NeutRandom);
+        var hasNonImp = buckets.Contains(RoleListOption.NonImp);
+
+        if (!hasCrewNeutral)
+        {
+            var replacementOptions = new List<RoleListOption> { RoleListOption.CrewRandom, RoleListOption.NeutKilling };
+            replacementOptions.Shuffle();
+
+            if (hasNeutRandom)
+            {
+                buckets.Remove(RoleListOption.NeutRandom);
+                buckets.Add(RoleListOption.NeutKilling);
+            }
+            else if (hasNonImp)
+            {
+                buckets.Remove(RoleListOption.NonImp);
+                buckets.Add(replacementOptions[0]);
+            }
+            else
+            {
+                // Remove a random non-impostor bucket and replace with crew/neutral
+                buckets.Shuffle();
+                var nonImpIndex = buckets.FindLastIndex(bucket => !impBuckets.Contains(bucket));
+                if (nonImpIndex >= 0)
+                {
+                    buckets.RemoveAt(nonImpIndex);
+                    buckets.Add(replacementOptions[0]);
+                }
+            }
+        }
+    }
+
+    private static void AssignRolesFromRoleList(List<NetworkedPlayerInfo> infected)
+    {
+        var impostors = MiscUtils.GetImpostors(infected);
+        var crewmates = MiscUtils.GetCrewmates(impostors);
+
+        var crewRoles = new List<ushort>();
+        var impRoles = new List<ushort>();
+        var takenRoles = new HashSet<(uint, ushort, int)>();
+
+        var players = impostors.Count + crewmates.Count;
+
+        // Define bucket categories
+        List<RoleListOption> crewNkBuckets =
+        [
+            RoleListOption.CrewInvest, RoleListOption.CrewKilling, RoleListOption.CrewPower,
+            RoleListOption.CrewProtective, RoleListOption.CrewSupport, RoleListOption.CrewCommon,
+            RoleListOption.CrewSpecial, RoleListOption.CrewRandom, RoleListOption.NeutKilling
+        ];
+        List<RoleListOption> impBuckets =
+        [
+            RoleListOption.ImpConceal, RoleListOption.ImpKilling, RoleListOption.ImpPower,
+            RoleListOption.ImpSupport, RoleListOption.ImpCommon, RoleListOption.ImpSpecial,
+            RoleListOption.ImpRandom
+        ];
+
+        // Build and adjust role list buckets
+        var buckets = BuildRoleListBuckets(players);
+        AdjustRoleListBucketsForImpostors(buckets, impBuckets, impostors.Count);
+        EnsureCrewNeutralRoles(buckets, impBuckets, crewNkBuckets);
+
+        var impCount = buckets.Count(bucket => impBuckets.Contains(bucket));
+
+
+        // Get all role lists with exclusion filter
+        var excluded = MiscUtils.SpawnableRoles.Where(x => x is ISpawnChange { NoSpawn: true }).Select(x => x.Role)
+            .Concat(MiscUtils.GetExclusiveRoleExclusions().Select(x => (RoleTypes)x)).ToList();
+        var exclusionFilter = new Func<RoleBehaviour, bool>(x => !excluded.Contains(x.Role));
+
+        var crewInvestRoles = MiscUtils.GetRolesToAssign(RoleAlignment.CrewmateInvestigative, exclusionFilter);
+        var crewKillingRoles = MiscUtils.GetRolesToAssign(RoleAlignment.CrewmateKilling, exclusionFilter);
+        var crewProtectRoles = MiscUtils.GetRolesToAssign(RoleAlignment.CrewmateProtective, exclusionFilter);
+        var crewPowerRoles = MiscUtils.GetRolesToAssign(RoleAlignment.CrewmatePower, exclusionFilter);
+        var crewSupportRoles = MiscUtils.GetRolesToAssign(RoleAlignment.CrewmateSupport, exclusionFilter);
+        var neutBenignRoles = MiscUtils.GetRolesToAssign(RoleAlignment.NeutralBenign, exclusionFilter);
+        var neutEvilRoles = MiscUtils.GetRolesToAssign(RoleAlignment.NeutralEvil, exclusionFilter);
+        var neutKillingRoles = MiscUtils.GetRolesToAssign(RoleAlignment.NeutralKilling, exclusionFilter);
+        var neutOutlierRoles = MiscUtils.GetRolesToAssign(RoleAlignment.NeutralOutlier, exclusionFilter);
+        var impConcealRoles = MiscUtils.GetRolesToAssign(RoleAlignment.ImpostorConcealing, exclusionFilter);
+        var impKillingRoles = MiscUtils.GetRolesToAssign(RoleAlignment.ImpostorKilling, exclusionFilter);
+        var impPowerRoles = MiscUtils.GetRolesToAssign(RoleAlignment.ImpostorPower, exclusionFilter);
+        var impSupportRoles = MiscUtils.GetRolesToAssign(RoleAlignment.ImpostorSupport, exclusionFilter);
+
+        // imp buckets
+        impRoles.AddFromBucket(buckets, impConcealRoles, takenRoles,
+            RoleListOption.ImpConceal, RoleListOption.ImpCommon);
+
+        var commonImpRoles = impConcealRoles;
+
+        impRoles.AddFromBucket(buckets, impSupportRoles, takenRoles,
+            RoleListOption.ImpSupport, RoleListOption.ImpCommon);
+
+        commonImpRoles.UnionWith(impSupportRoles);
+
+        impRoles.AddFromBucket(buckets, impKillingRoles, takenRoles, 
+            RoleListOption.ImpKilling, RoleListOption.ImpSpecial);
+
+        var specialImpRoles = impKillingRoles;
+
+        impRoles.AddFromBucket(buckets, impPowerRoles, takenRoles, 
+            RoleListOption.ImpPower, RoleListOption.ImpSpecial);
+
+        specialImpRoles.UnionWith(impPowerRoles);
+
+        impRoles.AddFromBucket(buckets, commonImpRoles, takenRoles,
+            RoleListOption.ImpCommon, RoleListOption.ImpRandom);
+
+        var randomImpRoles = commonImpRoles;
+
+        impRoles.AddFromBucket(buckets, specialImpRoles, takenRoles,
+            RoleListOption.ImpSpecial, RoleListOption.ImpRandom);
+
+        randomImpRoles.UnionWith(specialImpRoles);
+
+        impRoles.AddFromBucket(buckets, randomImpRoles, takenRoles,
+            RoleListOption.ImpRandom);
+
+        // crew buckets
+        crewRoles.AddFromBucket(buckets, crewInvestRoles, takenRoles,
+            RoleListOption.CrewInvest, RoleListOption.CrewCommon);
+
+        var commonCrewRoles = crewInvestRoles;
+
+        crewRoles.AddFromBucket(buckets, crewProtectRoles, takenRoles,
+            RoleListOption.CrewProtective, RoleListOption.CrewCommon);
+
+        commonCrewRoles.UnionWith(crewProtectRoles);
+
+        crewRoles.AddFromBucket(buckets, crewSupportRoles, takenRoles,
+            RoleListOption.CrewSupport, RoleListOption.CrewCommon);
+
+        commonCrewRoles.UnionWith(crewSupportRoles);
+
+        crewRoles.AddFromBucket(buckets, crewKillingRoles, takenRoles,
+            RoleListOption.CrewKilling, RoleListOption.CrewSpecial);
+
+        var specialCrewRoles = crewKillingRoles;
+
+        crewRoles.AddFromBucket(buckets, crewPowerRoles, takenRoles,
+            RoleListOption.CrewPower, RoleListOption.CrewSpecial);
+
+        specialCrewRoles.UnionWith(crewPowerRoles);
+
+        crewRoles.AddFromBucket(buckets, commonCrewRoles, takenRoles,
+            RoleListOption.CrewCommon, RoleListOption.CrewRandom);
+
+        var randomCrewRoles = commonCrewRoles;
+
+        crewRoles.AddFromBucket(buckets, specialCrewRoles, takenRoles,
+            RoleListOption.CrewSpecial, RoleListOption.CrewRandom);
+
+        randomCrewRoles.UnionWith(specialCrewRoles);
+
+        crewRoles.AddFromBucket(buckets, randomCrewRoles, takenRoles,
+            RoleListOption.CrewRandom, RoleListOption.NonImp);
+
+        var randomNonImpRoles = randomCrewRoles;
+
+        // neutral buckets
+        crewRoles.AddFromBucket(buckets, neutBenignRoles, takenRoles,
+            RoleListOption.NeutBenign, RoleListOption.NeutCommon, RoleListOption.NeutWildcard);
+
+        var commonNeutRoles = neutBenignRoles;
+
+        crewRoles.AddFromBucket(buckets, neutEvilRoles, takenRoles,
+            RoleListOption.NeutEvil, RoleListOption.NeutCommon, RoleListOption.NeutWildcard);
+
+        commonNeutRoles.UnionWith(neutEvilRoles);
+
+        crewRoles.AddFromBucket(buckets, neutOutlierRoles, takenRoles,
+            RoleListOption.NeutOutlier, RoleListOption.NeutSpecial, RoleListOption.NeutWildcard);
+
+        var specialNeutRoles = neutOutlierRoles;
+
+        var wildNeutRoles = neutOutlierRoles.ToHashSet();
+
+        crewRoles.AddFromBucket(buckets, neutKillingRoles, takenRoles,
+            RoleListOption.NeutKilling, RoleListOption.NeutSpecial);
+
+        specialNeutRoles.UnionWith(neutKillingRoles);
+
+        crewRoles.AddFromBucket(buckets, commonNeutRoles, takenRoles,
+            RoleListOption.NeutCommon, RoleListOption.NeutRandom);
+
+        var randomNeutRoles = commonNeutRoles;
+
+        wildNeutRoles.UnionWith(commonNeutRoles);
+
+        crewRoles.AddFromBucket(buckets, specialNeutRoles, takenRoles,
+            RoleListOption.NeutSpecial, RoleListOption.NeutRandom);
+
+        randomNeutRoles.UnionWith(specialNeutRoles);
+
+        crewRoles.AddFromBucket(buckets, wildNeutRoles, takenRoles,
+            RoleListOption.NeutWildcard, RoleListOption.NeutRandom);
+
+        crewRoles.AddFromBucket(buckets, randomNeutRoles, takenRoles,
+            RoleListOption.NeutRandom, RoleListOption.NonImp);
+
+        randomNonImpRoles.UnionWith(randomNeutRoles);
+
+        crewRoles.AddFromBucket(buckets, randomNonImpRoles, takenRoles,
+            RoleListOption.NonImp);
+
+        // Add /up requested roles to pools
+        AddUpRequestedRolesToPools(impRoles, crewRoles);
+
+        // Shuffle roles before handing them out for better randomness and fairness
+        crewRoles.Shuffle();
+        impRoles.Shuffle();
+
+        // Select impostor roles (take up to impCount)
+        var chosenImpRoles = impRoles.Take(impCount).ToList();
+
+        // Ensure /up requested impostor roles are included
+        foreach (var impostor in impostors.ToList())
+        {
+            if (UpCommandRequests.TryGetRequestRole(impostor.Data.PlayerName, out var requestedRole))
+            {
+                var requestedRoleId = (ushort)requestedRole.Role;
+                if (requestedRole.IsImpostor() && !chosenImpRoles.Contains(requestedRoleId))
+                {
+                    // Add the requested role, removing a random one if at capacity
+                    if (chosenImpRoles.Count >= impCount && chosenImpRoles.Count > 0)
+                    {
+                        var randomIndex = Random.RandomRangeInt(0, chosenImpRoles.Count);
+                        chosenImpRoles.RemoveAt(randomIndex);
+                    }
+                    chosenImpRoles.Add(requestedRoleId);
+                }
+            }
+        }
+
+        chosenImpRoles = chosenImpRoles.Pad(impCount, (ushort)RoleTypes.Impostor);
+
+        // Handle unique role constraint
+        var uniqueRole = MiscUtils.SpawnableRoles.FirstOrDefault(x => x is ISpawnChange { NoSpawn: false });
+        if (uniqueRole != null && chosenImpRoles.Contains(RoleId.Get(uniqueRole.GetType())))
+        {
+            impCount = 1;
+            var impText = $"Removing Impostor Roles because of {uniqueRole.GetRoleName()}";
+            MiscUtils.LogInfo(TownOfUsEventHandlers.LogLevel.Warning, impText);
+
+            while (impostors.Count > impCount)
+            {
+                crewmates.Add(impostors.TakeFirst());
+            }
+
+            chosenImpRoles.RemoveAll(x => x != RoleId.Get(uniqueRole.GetType()));
+
+            // Re-add /up requested role if it was removed
+            foreach (var impostor in impostors.ToList())
+            {
+                if (UpCommandRequests.TryGetRequestRole(impostor.Data.PlayerName, out var requestedRole))
+                {
+                    var requestedRoleId = (ushort)requestedRole.Role;
+                    if (requestedRole.IsImpostor() && !chosenImpRoles.Contains(requestedRoleId))
+                    {
+                        chosenImpRoles.Add(requestedRoleId);
+                    }
+                }
+            }
+        }
+
+        // Assign roles to players
+        AssignRolesToPlayers(impostors, chosenImpRoles, "Impostor");
+        AssignRolesToPlayers(crewmates, crewRoles, "Crewmate/Neutral");
+
+        // Assign vanilla roles to remaining players
+        AssignVanillaRoles(crewmates, impostors);
+    }
+
+    public static void AssignTargets()
+    {
+        // This is a coroutine because otherwise, the game just assigns targets real badly like traitor egotist, exe being lovers with their targets, that sort of thing - Atony
+        Coroutines.Start(CoAssignTargets());
+    }
+
+    public static IEnumerator CoAssignTargets()
+    {
+        yield return null;
+
+        foreach (var role in MiscUtils.SpawnableRoles.Where(x => x is IAssignableTargets)
+                     .OrderBy(x => (x as IAssignableTargets)!.Priority))
+        {
+            if (role is IAssignableTargets assignRole)
+            {
+                assignRole.AssignTargets();
+                yield return new WaitForSeconds(0.01f);
+            }
+        }
+
+        foreach (var assignMod in MiscUtils.AssignableTargetModifiers
+                     .OrderBy(x => x.Priority))
+        {
+            assignMod.AssignTargets();
+            yield return new WaitForSeconds(0.01f);
+        }
+
+        GhostRoleSetup();
+
+        ModifierManager.AssignModifiers(
+            PlayerControl.AllPlayerControls.ToArray().Where(plr => !plr.Data.IsDead && !plr.Data.Disconnected)
+                .ToList());
+    }
+
+    [HarmonyPatch(typeof(RoleManager), nameof(RoleManager.SelectRoles))]
+    [HarmonyPrefix]
+    [HarmonyPriority(Priority.First)]
+    public static bool SelectRolesPatch(RoleManager __instance)
+    {
+        var assignmentType = (RoleSelectionMode)OptionGroupSingleton<RoleOptions>.Instance.RoleAssignmentType.Value;
+        Error($"RoleManager.SelectRoles - ReplaceRoleManager: {ReplaceRoleManager} | Assignment type is set to {assignmentType.ToDisplayString()}!");
+        GameManager.Instance.LogicOptions.SyncOptions();
+        ModifierManager.MiraAssignsModifiers = false;
+        MiraAPI.Patches.Roles.SelectRolesPatch.ApiHandlesRoleSelect = false;
+        foreach (var mod in MiscUtils.AllBaseGameModifiers)
+        {
+            mod.BeforeModifierSpawns();
+        }
+
+        if (TutorialManager.InstanceExists || ReplaceRoleManager || GameManager.Instance.IsHideAndSeek() || assignmentType is RoleSelectionMode.Vanilla || !CustomGameModeManager.IsClassic())
+        {
+            MiraAPI.Patches.Roles.SelectRolesPatch.ApiHandlesRoleSelect = true;
+            VanillaExclusions = [];
+            if (assignmentType is RoleSelectionMode.Vanilla && !TutorialManager.InstanceExists && !ReplaceRoleManager && !GameManager.Instance.IsHideAndSeek() && CustomGameModeManager.IsClassic())
+            {
+                VanillaExclusions = MiscUtils.GetExclusiveRoleExclusions();
+            }
+
+            return true;
+        }
+
+        var random = new System.Random();
+
+        var players = GameData.Instance.AllPlayers.ToArray()
+            .Excluding(x => SpectatorRole.TrackedSpectators.Contains(x.PlayerName)).ToList();
+        players.Shuffle();
+
+        var impCount = GameOptionsManager.Instance.CurrentGameOptions.GetAdjustedNumImpostors(players.Count);
+        List<NetworkedPlayerInfo> infected = [];
+
+        var useBias = OptionGroupSingleton<RoleOptions>.Instance.LastImpostorBias;
+
+        if (useBias && LastImps.Count > 0)
+        {
+            var biasPercent = OptionGroupSingleton<RoleOptions>.Instance.ImpostorBiasPercent.Value / 100f;
+            while (infected.Count < impCount)
+            {
+                if (players.All(x => LastImps.Contains(x.ClientId)))
+                {
+                    var remainingImps = impCount - infected.Count;
+                    players.Shuffle();
+                    infected.AddRange(players.Where(x => !infected.Contains(x)).Take(remainingImps));
+                    break;
+                }
+
+                var num = random.Next(players.Count);
+                var player = players[num];
+                var skip = LastImps.Contains(player.ClientId) && random.NextDouble() < biasPercent;
+
+                if (infected.Contains(player) || skip)
+                {
+                    continue;
+                }
+
+                infected.Add(player);
+            }
+        }
+        else
+        {
+            infected.AddRange(players.Take(impCount));
+        }
+
+        LastImps = [.. infected.Select(x => x.ClientId)];
+
+        // Handle /up requests before role assignment
+        // This ensures players are in the correct list (infected/crewmates) based on their requested role
+        var upRequests = UpCommandRequests.GetAllRequests().Select(x => x.Key);
+        foreach (var playerName in upRequests)
+        {
+            var playerInfo = players.FirstOrDefault(p => p.PlayerName == playerName);
+            if (playerInfo == null)
+            {
+                continue;
+            }
+
+            if (!UpCommandRequests.TryGetRequestRole(playerName, out var requestedRole))
+            {
+                continue;
+            }
+            Warning($"Setting {playerName}'s role to {requestedRole.GetRoleName()}");
+
+            // Check if the role is Impostor-aligned using IsImpostor() method
+            var isImpostorAligned = requestedRole.IsImpostor();
+
+            if (isImpostorAligned)
+            {
+                // Force player into infected list (swap, don't add)
+                if (!infected.Contains(playerInfo))
+                {
+                    // Remove from infected if at capacity, otherwise just add
+                    if (infected.Count >= impCount && infected.Count > 0)
+                    {
+                        // Swap: remove a random impostor and add this player
+                        var randomIndex = random.Next(infected.Count);
+                        infected.RemoveAt(randomIndex);
+                    }
+                    infected.Add(playerInfo);
+                }
+            }
+            else
+            {
+                infected.Remove(playerInfo);
+                // If we removed someone, we need to add someone else to maintain imp count
+                if (infected.Count < impCount)
+                {
+                    var availablePlayers = players.Where(p => !infected.Contains(p) && p != playerInfo).ToList();
+                    if (availablePlayers.Count > 0)
+                    {
+                        availablePlayers.Shuffle();
+                        infected.Add(availablePlayers[0]);
+                    }
+                }
+            }
+        }
+
+        var distrib = OptionGroupSingleton<RoleOptions>.Instance.CurrentRoleDistribution();
+        if (distrib is RoleDistribution.Draft && TownOfUs.Modules.DraftMode.DraftApplier.PendingDraftStates.Count > 0)
+        {
+            var draftedPlayers = TownOfUs.Modules.DraftMode.DraftApplier.PendingDraftStates
+                .Select(state => state.PlayerId)
+                .ToHashSet();
+            TownOfUs.Modules.DraftMode.DraftApplier.ApplyDraftResults(TownOfUs.Modules.DraftMode.DraftApplier.PendingDraftStates);
+            TownOfUs.Modules.DraftMode.DraftApplier.PendingDraftStates.Clear();
+
+            foreach (var p in PlayerControl.AllPlayerControls)
+            {
+                if (p == null || p.Data == null || p.Data.Disconnected) continue;
+                if (draftedPlayers.Contains(p.PlayerId)) continue;
+                if (p.Data.Role == null || p.Data.Role.Role == 0)
+                {
+                    p.RpcSetRole(RoleTypes.Crewmate);
+                }
+            }
+        }
+        else if (assignmentType is RoleSelectionMode.RoleList)
+        {
+            AssignRolesFromRoleList(infected);
+        }
+        else
+        {
+            AssignRoles(infected);
+        }
+
+        return false;
+    }
+
+    [HarmonyPatch(typeof(RoleManager), nameof(RoleManager.SelectRoles))]
+    [HarmonyFinalizer]
+    public static void ClearVanillaExclusions()
+    {
+        VanillaExclusions = [];
+    }
+
+    [HarmonyPatch(typeof(RoleManager), nameof(RoleManager.SelectRoles))]
+    [HarmonyPostfix]
+    [HarmonyPriority(Priority.Low)]
+    public static void SetSpectatorsAndModifiers(RoleManager __instance)
+    {
+        var spectators = GameData.Instance.AllPlayers.ToArray()
+            .Where(x => SpectatorRole.TrackedSpectators.Contains(x.PlayerName)).ToList();
+        var specId = (RoleTypes)RoleId.Get<SpectatorRole>();
+
+        foreach (var player in spectators)
+        {
+            player.Object.RpcSetRole(RoleTypes.Crewmate, true);
+        }
+
+        foreach (var player in spectators)
+        {
+            player.Object.RpcSetRole(specId);
+        }
+
+        if (OptionGroupSingleton<InitialRoundOptions>.Instance.RoundOneVictims)
+        {
+            var firstDead = GameData.Instance.AllPlayers.ToArray()
+                .Where(x => FirstDeadPatch.FirstRoundPlayerNames.Contains(x.PlayerName) && !spectators.Contains(x)).ToList();
+
+            foreach (var player in firstDead)
+            {
+                player.Object.RpcAddModifier<FirstRoundIndicator>();
+            }
+        }
+        AssignTargets();
+    }
+
+    [HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.RpcSetRole))]
+    [HarmonyPrefix]
+    public static bool RpcSetRolePatch(PlayerControl __instance, [HarmonyArgument(0)] RoleTypes roleType,
+        [HarmonyArgument(1)] bool canOverrideRole = false)
+    {
+        if (AmongUsClient.Instance.AmClient)
+        {
+            __instance.StartCoroutine(__instance.CoSetRole(roleType, canOverrideRole));
+        }
+
+        var messageWriter =
+            AmongUsClient.Instance.StartRpcImmediately(__instance.NetId, (byte)RpcCalls.SetRole, SendOption.Reliable);
+        messageWriter.Write((ushort)roleType);
+        messageWriter.Write(canOverrideRole);
+        AmongUsClient.Instance.FinishRpcImmediately(messageWriter);
+
+        var changeRoleEvent = new ChangeRoleEvent(__instance, null, RoleManager.Instance.GetRole(roleType), canOverrideRole);
+        MiraEventManager.InvokeEvent(changeRoleEvent);
+
+        return false;
+    }
+
+    [HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.CoSetRole))]
+    [HarmonyPrefix]
+    public static void SetRolePatch(PlayerControl __instance, [HarmonyArgument(1)] bool canOverrideRole)
+    {
+        if (canOverrideRole)
+        {
+            __instance.roleAssigned = false;
+        }
+    }
+
+    [HarmonyPatch(typeof(RoleManager), nameof(RoleManager.AssignRoleOnDeath))]
+    [HarmonyPrefix]
+    public static bool AssignRoleOnDeathPatch(RoleManager __instance, PlayerControl player, bool specialRolesAllowed)
+    {
+        // Note: I know this is a one-to-one recreation of the AssignRoleOnDeath function, but for some reason,
+        // the original won't spawn the Spectre and just spawns Neutral Ghost instead
+
+        var text = $"AssignRoleOnDeathPatch - Player: '{player.Data.PlayerName}', specialRolesAllowed: {specialRolesAllowed}";
+        MiscUtils.LogInfo(TownOfUsEventHandlers.LogLevel.Warning, text);
+
+        if (player == null || !player.Data.IsDead)
+        {
+            return false;
+        }
+
+        if (player.CanGetGhostRole() && specialRolesAllowed)
+        // Message($"AssignRoleOnDeathPatch - !player.Data.Role.IsImpostor: '{!player.Data.Role.IsImpostor}' specialRolesAllowed: {specialRolesAllowed}");
+        {
+            RoleManager.TryAssignSpecialGhostRoles(player, player.IsImpostor());
+        }
+
+        if (!RoleManager.IsGhostRole(player.Data.Role.Role))
+        // Message($"AssignRoleOnDeathPatch - !RoleManager.IsGhostRole(player.Data.Role.Role): '{!RoleManager.IsGhostRole(player.Data.Role.Role)}'");
+        {
+            player.RpcSetRole(player.Data.Role.DefaultGhostRole);
+        }
+
+        return false;
+    }
+
+    [HarmonyPatch(typeof(RoleManager), nameof(RoleManager.TryAssignSpecialGhostRoles))]
+    [HarmonyPrefix]
+    public static bool TryAssignSpecialGhostRolesPatch(RoleManager __instance, PlayerControl player)
+    {
+        var text = $"TryAssignSpecialGhostRolesPatch - Player: '{player.Data.PlayerName}'";
+        MiscUtils.LogInfo(TownOfUsEventHandlers.LogLevel.Warning, text);
+
+        var ghostRole = RoleTypes.CrewmateGhost;
+
+        if (player.IsCrewmate() && CrewmateGhostRolePool.Count > 0)
+        {
+            ghostRole = CrewmateGhostRolePool.TakeFirst();
+        }
+        else if (player.IsImpostor() && ImpostorGhostRolePool.Count > 0)
+        {
+            ghostRole = ImpostorGhostRolePool.TakeFirst();
+        }
+        else if (player.IsNeutral() && CustomGhostRolePool.Count > 0)
+        {
+            ghostRole = CustomGhostRolePool.TakeFirst();
+        }
+
+        if (ghostRole != RoleTypes.CrewmateGhost && ghostRole != RoleTypes.ImpostorGhost &&
+            ghostRole != (RoleTypes)RoleId.Get<NeutralGhostRole>())
+        // var newRole = RoleManager.Instance.GetRole(ghostRole);
+        // Message($"TryAssignSpecialGhostRolesPatch - ghostRoles role: {newRole.GetRoleName()}");
+        {
+            player.RpcChangeRole((ushort)ghostRole);
+        }
+
+        return false;
+    }
+
+    //[HarmonyPatch(typeof(RoleManager), nameof(RoleManager.SetRole))]
+    //[HarmonyPostfix]
+    //public static void SetRolePatch(RoleManager __instance, [HarmonyArgument(0)] PlayerControl targetPlayer, [HarmonyArgument(1)] RoleTypes roleType)
+    //{
+    //    GameHistory.RegisterRole(targetPlayer, targetPlayer.Data.Role);
+    //}
+    [HarmonyPatch(typeof(IGameOptionsExtensions), nameof(IGameOptionsExtensions.GetAdjustedNumImpostors))]
+    [HarmonyPrefix]
+    public static bool GetAdjustedImposters(IGameOptions __instance, ref int __result)
+    {
+        if (MiscUtils.CurrentGamemode() is not TouGamemode.Normal || !CustomGameModeManager.IsClassic())
+        {
+            return true;
+        }
+
+        var assignmentType = (RoleSelectionMode)OptionGroupSingleton<RoleOptions>.Instance.RoleAssignmentType.Value;
+
+        if (assignmentType is not RoleSelectionMode.RoleList)
+        {
+            return true;
+        }
+
+        var players = GameData.Instance.PlayerCount - SpectatorRole.TrackedSpectators.Count;
+        var impostors = 0;
+        var list = OptionGroupSingleton<RoleOptions>.Instance;
+        var maxCount = list.Slot.Count;
+        var maxSlots = players < maxCount ? players : maxCount;
+        List<RoleListOption> impBuckets =
+        [
+            RoleListOption.ImpConceal, RoleListOption.ImpKilling, RoleListOption.ImpPower, RoleListOption.ImpSupport,
+            RoleListOption.ImpCommon, RoleListOption.ImpSpecial, RoleListOption.ImpRandom
+        ];
+        List<RoleListOption> buckets = [];
+        var anySlots = 0;
+
+        for (int i = 0; i < maxSlots; i++)
+        {
+            RoleListOption slotValue = i >= list.Slot.Count
+                                       ? (RoleListOption)(-1)
+                                       : list.Slot[i].Value;
+
+            buckets.Add(slotValue);
+        }
+
+        foreach (var roleOption in buckets)
+        {
+            if (impBuckets.Contains(roleOption))
+            {
+                impostors += 1;
+            }
+            else if (roleOption == RoleListOption.Any)
+            {
+                anySlots += 1;
+            }
+        }
+
+        int impProbability = (int)Math.Floor((double)players / anySlots * 5 / 3);
+        for (int i = 0; i < anySlots; i++)
+        {
+            var random = Random.RandomRangeInt(0, 100);
+            if (random < impProbability)
+            {
+                impostors += 1;
+            }
+
+            impProbability += 3;
+        }
+
+        if (players < 7 || impostors == 0)
+        {
+            impostors = 1;
+        }
+        else if (players < 10 && impostors > 2)
+        {
+            impostors = 2;
+        }
+        else if (players < 14 && impostors > 3)
+        {
+            impostors = 3;
+        }
+        else if (players < 19 && impostors > 4)
+        {
+            impostors = 4;
+        }
+        else if (impostors > 5)
+        {
+            impostors = 5;
+        }
+
+        __result = impostors;
+        return false;
+    }
+}

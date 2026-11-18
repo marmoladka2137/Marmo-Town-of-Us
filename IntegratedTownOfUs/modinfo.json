@@ -1,0 +1,25 @@
+{
+  "Name": "Marmo Town of Us",
+  "Description": "Independent community modification based on Town of Us: Mira, with MTOU roles, modifiers and reworked mechanics.",
+  "Tags": [
+    "mods"
+  ],
+  "Icon": "TouMarmo.Resources.Branding.MarmoLogo.png",
+  "License": "GPLv3",
+  "Authors": [
+    "Marmo (MTOU project)",
+    "Atony",
+    "AlchlcSystm",
+    "angxlwtf",
+    "MyDragonBreath",
+    "Nix",
+    "Satire",
+    "xerminator",
+    "XtraCube",
+    "whichtwix",
+    "Zeo"
+  ],
+  "Links": {
+    "Upstream Source": "https://github.com/AU-Avengers/TOU-Mira"
+  }
+}

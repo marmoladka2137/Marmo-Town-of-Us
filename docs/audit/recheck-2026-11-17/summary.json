@@ -1,0 +1,20 @@
+{
+  "tracked_files": 1425,
+  "csharp_files": 1136,
+  "code_origins": {
+    "MTOU_OR_ADDED_SOURCE": 127,
+    "UPSTREAM_IDENTICAL": 899,
+    "UPSTREAM_MODIFIED": 110
+  },
+  "assets": 168,
+  "asset_bytes": 49647014,
+  "asset_origins": {
+    "AI_GENERATION_HISTORY_DOCUMENTED": 5,
+    "UNTRACED": 20,
+    "AI_OUTPUT_BYTE_IDENTICAL": 14,
+    "OWNER_SUPPLIED_LOGO": 1,
+    "LOCAL_PROCEDURAL_RECORD": 2,
+    "UPSTREAM_BYTE_IDENTICAL": 126
+  },
+  "generated_originals_indexed": 41
+}

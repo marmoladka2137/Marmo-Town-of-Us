@@ -1,0 +1,119 @@
+﻿using HarmonyLib;
+using MiraAPI.Events;
+using MiraAPI.GameOptions;
+using MiraAPI.Hud;
+using TownOfUs.Achievements;
+using TownOfUs.Buttons;
+using TownOfUs.Events.TouEvents;
+using TownOfUs.Modules;
+using TownOfUs.Options.Roles.Neutral;
+using TownOfUs.Roles.Neutral;
+using UnityEngine;
+
+namespace TownOfUs.Modifiers.Neutral;
+
+public sealed class GlitchHackedModifier(byte glitchId) : DisabledModifier
+{
+    public override string ModifierName => "Hacked";
+    public override float Duration => OptionGroupSingleton<GlitchOptions>.Instance.HackDuration;
+    public override bool CanUseAbilities => ShouldHideHacked;
+    public override bool CanReport => ShouldHideHacked;
+    public override bool HideOnUi => ShouldHideHacked;
+    public byte GlitchId { get; } = glitchId;
+
+    public bool ShouldHideHacked { get; set; } = true;
+    private GameObject ReportButtonHackedSprite { get; set; }
+    private GameObject KillButtonHackedSprite { get; set; }
+    private GameObject VentButtonHackedSprite { get; set; }
+    private GameObject UseButtonHackedSprite { get; set; }
+    private GameObject SabotageButtonHackedSprite { get; set; }
+    private List<GameObject> CustomButtonHackedSprites { get; } = [];
+
+    public override void OnActivate()
+    {
+        var glitch = PlayerControl.AllPlayerControls.ToArray().FirstOrDefault(x => x.PlayerId == GlitchId);
+        var touAbilityEvent = new TouAbilityEvent(AbilityType.GlitchInitialHack, glitch!, Player);
+        MiraEventManager.InvokeEvent(touAbilityEvent);
+        if (Player.AmOwner)
+        {
+            ReportButtonHackedSprite = HudManager.Instance.ReportButton.CreateHackedIcon();
+            KillButtonHackedSprite = HudManager.Instance.KillButton.CreateHackedIcon();
+            VentButtonHackedSprite = HudManager.Instance.ImpostorVentButton.CreateHackedIcon();
+            UseButtonHackedSprite = HudManager.Instance.UseButton.CreateHackedIcon();
+            SabotageButtonHackedSprite = HudManager.Instance.SabotageButton.CreateHackedIcon();
+
+            foreach (var button in CustomButtonManager.Buttons)
+            {
+                if (button is FakeVentButton)
+                {
+                    continue;
+                }
+
+                CustomButtonHackedSprites.Add(button!.Button!.CreateHackedIcon());
+            }
+        }
+    }
+
+    public override void OnDeath(DeathReason reason)
+    {
+        ModifierComponent!.RemoveModifier(this);
+    }
+
+    public override void OnMeetingStart()
+    {
+        ModifierComponent!.RemoveModifier(this);
+    }
+
+    public void ShowHacked()
+    {
+        if (!ShouldHideHacked)
+        {
+            return;
+        }
+
+        ShouldHideHacked = false;
+        // TimedModifier removes itself locally, so every client that received the trigger
+        // must run the timer. Otherwise observers retain a stale hacked modifier forever.
+        StartTimer();
+        var glitch = PlayerControl.AllPlayerControls.ToArray().FirstOrDefault(x => x.PlayerId == GlitchId);
+        var touAbilityEvent = new TouAbilityEvent(AbilityType.GlitchHackTrigger, glitch!, Player);
+        MiraEventManager.InvokeEvent(touAbilityEvent);
+
+        if (Player.AmOwner)
+        {
+            if (Player.Data.Role is GlitchRole)
+            {
+                AchievementsAPIHelper.Unlock(TouAchievements.Anomaly);
+            }
+            TouAudio.PlaySound(TouAudio.HackedSound);
+
+            ReportButtonHackedSprite?.SetHackActive(true);
+            KillButtonHackedSprite?.SetHackActive(true);
+            VentButtonHackedSprite?.SetHackActive(true);
+            UseButtonHackedSprite?.SetHackActive(true);
+            SabotageButtonHackedSprite?.SetHackActive(true);
+
+            CustomButtonHackedSprites.Do(x => x.SetHackActive(true));
+
+        }
+    }
+
+    public override void OnDeactivate()
+    {
+        if (Player.AmOwner)
+        {
+            if (!MeetingHud.Instance)
+            {
+                TouAudio.PlaySound(TouAudio.UnhackedSound);
+            }
+
+            ReportButtonHackedSprite?.SetHackActive(false);
+            KillButtonHackedSprite?.SetHackActive(false);
+            VentButtonHackedSprite?.SetHackActive(false);
+            UseButtonHackedSprite?.SetHackActive(false);
+            SabotageButtonHackedSprite?.SetHackActive(false);
+
+            CustomButtonHackedSprites.Do(x => x.SetHackActive(false));
+        }
+    }
+}

@@ -1,0 +1,129 @@
+// MTOU publication snapshot prepared 2026-11-17.
+// Modified relative to TOU Mira b56f24a0; original credits retained. See SOURCE_PROVENANCE.md.
+using System.Text;
+using Il2CppInterop.Runtime.Attributes;
+using MiraAPI.Events;
+using MiraAPI.GameOptions;
+using MiraAPI.Modifiers;
+using MiraAPI.Patches.Stubs;
+using MiraAPI.Roles;
+using Reactor.Networking.Attributes;
+using Reactor.Utilities;
+using TownOfUs.Events.TouEvents;
+using TownOfUs.Modifiers.Crewmate;
+using TownOfUs.Options;
+using TownOfUs.Options.Roles.Crewmate;
+using UnityEngine;
+
+namespace TownOfUs.Roles.Crewmate;
+
+public sealed class ClericRole(IntPtr cppPtr) : CrewmateRole(cppPtr), ITownOfUsRole, IWikiDiscoverable, IDoomable
+{
+    public override bool IsAffectedByComms => false;
+    public DoomableType DoomHintType => DoomableType.Protective;
+    public string IdPart => "Cleric";
+
+    public string GetAdvancedDescription()
+    {
+        return
+            MiraLocaleManager.Get($"TownOfUsMira.Role.{IdPart}.WikiDescription") +
+            MiscUtils.AppendOptionsText(GetType());
+    }
+
+    public static string ProtectionString = MiraLocaleManager.Get("TownOfUsMira.Role.ClericTabProtecting");
+
+    public override void Initialize(PlayerControl player)
+    {
+        RoleBehaviourStubs.Initialize(this, player);
+        ProtectionString = MiraLocaleManager.Get("TownOfUsMira.Role.ClericTabProtecting");
+    }
+
+    [HideFromIl2Cpp]
+    public StringBuilder SetTabText()
+    {
+        var stringB = ITownOfUsRole.SetNewTabText(this);
+
+        var barrieredPlayer = ModifierUtils.GetPlayersWithModifier<ClericBarrierModifier>(x => x.Cleric.AmOwner).FirstOrDefault();
+        if (barrieredPlayer != null)
+        {
+            stringB.AppendLine(TownOfUsPlugin.Culture, $"\n<b>{ProtectionString.Replace("<player>", barrieredPlayer.Data.PlayerName)}</b>");
+        }
+
+        return stringB;
+    }
+
+    [HideFromIl2Cpp]
+    public List<CustomButtonWikiDescription> Abilities
+    {
+        get
+        {
+            return
+            [
+                new(MiraLocaleManager.Get($"TownOfUsMira.Role.{IdPart}Barrier", "Barrier"),
+                    MiraLocaleManager.Get($"TownOfUsMira.Role.{IdPart}Barrier.WikiDescription").Replace("<BarrierCooldown>",
+                        $"{OptionGroupSingleton<ClericOptions>.Instance.BarrierCooldown}"),
+                    TouCrewAssets.BarrierSprite),
+                new(MiraLocaleManager.Get($"TownOfUsMira.Role.{IdPart}Cleanse", "Cleanse"),
+                    MiraLocaleManager.Get($"TownOfUsMira.Role.{IdPart}Cleanse.WikiDescription"),
+                    TouCrewAssets.CleanseSprite)
+            ];
+        }
+    }
+
+    [HideFromIl2Cpp]
+    public List<AdvancedWikiAbilityDescription> WikiAbilities
+    {
+        get
+        {
+            return
+            [
+                new(MiraLocaleManager.Get($"TownOfUsMira.Role.{IdPart}Barrier", "Barrier"),
+                    MiraLocaleManager.Get("MiraApi.AbilityType.Interaction"),
+                    MiraLocaleManager.Get($"TownOfUsMira.Role.{IdPart}Barrier.WikiDescription").Replace("<BarrierCooldown>",
+                        $"{OptionGroupSingleton<ClericOptions>.Instance.BarrierCooldown}"),
+                    TouCrewAssets.BarrierSprite),
+                new(MiraLocaleManager.Get($"TownOfUsMira.Role.{IdPart}Cleanse", "Cleanse"),
+                    MiraLocaleManager.Get("MiraApi.AbilityType.Interaction"),
+                    MiraLocaleManager.Get($"TownOfUsMira.Role.{IdPart}Cleanse.WikiDescription"),
+                    TouCrewAssets.CleanseSprite)
+            ];
+        }
+    }
+
+    public Color RoleColor => TownOfUsColors.Cleric;
+    public ModdedRoleTeams Team => ModdedRoleTeams.Crewmate;
+    public RoleAlignment RoleAlignment => RoleAlignment.CrewmateProtective;
+
+    public CustomRoleConfiguration Configuration => new(this)
+    {
+        IconTmp = TmpSpriteUtils.CreateSpriteAsset(TouRoleIcons.Cleric.LoadAsset(), "TouMira.Role.Crewmate.Cleric", 1.45f),
+        IntroSound = TouAudio.PotionIntro,
+        OptionsScreenshot = TouBanners.ClericRoleBanner,
+        Icon = TouRoleIcons.Cleric
+    };
+
+    [MethodRpc((uint)TownOfUsRpc.ClericBarrierAttacked)]
+    public static void RpcClericBarrierAttacked(PlayerControl source, PlayerControl cleric, PlayerControl shielded)
+    {
+        if (LobbyBehaviour.Instance)
+        {
+            MiscUtils.RunAnticheatWarning(source);
+            return;
+        }
+        if (cleric.Data.Role is not ClericRole)
+        {
+            Error("RpcClericBarrierAttacked - Invalid cleric");
+            return;
+        }
+
+        var touAbilityEvent = new TouAbilityEvent(AbilityType.ClericBarrier, "Blocked", cleric, shielded);
+        MiraEventManager.InvokeEvent(touAbilityEvent);
+
+        if (source.AmOwner ||
+            (cleric.AmOwner &&
+             OptionGroupSingleton<ClericOptions>.Instance.AttackNotif))
+        {
+            ProtectionRuntime.ShowLocal(source, shielded, ProtectionKind.Cleric, cleric);
+        }
+    }
+}

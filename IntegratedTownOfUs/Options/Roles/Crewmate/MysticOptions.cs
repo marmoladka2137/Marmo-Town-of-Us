@@ -1,0 +1,17 @@
+﻿using MiraAPI.GameOptions;
+using MiraAPI.GameOptions.Attributes;
+using MiraAPI.GameOptions.OptionTypes;
+using MiraAPI.Utilities;
+using TownOfUs.Roles.Crewmate;
+
+namespace TownOfUs.Options.Roles.Crewmate;
+
+public sealed class MysticOptions : AbstractRoleOptionGroup<MysticRole>
+{
+    public override string GroupName => MiraLocaleManager.Get("TownOfUsMira.Role.Mystic", "Mystic");
+
+    [ModdedNumberOption("TouOptionMysticDeadBodyArrowDuration", 0f, 1f, 0.05f, MiraNumberSuffixes.Seconds, "0.00")]
+    public float MysticArrowDuration { get; set; } = 0.1f;
+
+    public ModdedToggleOption MysticHnsPopUp { get; } = new("TouOptionMysticHnsPopUp", true);
+}

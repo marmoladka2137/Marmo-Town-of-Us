@@ -1,0 +1,101 @@
+﻿using MiraAPI.Events;
+using MiraAPI.Events.Vanilla.Gameplay;
+using MiraAPI.GameOptions;
+using MiraAPI.Roles;
+using MiraAPI.Utilities;
+using TownOfUs.Modules;
+using TownOfUs.Modules.Components;
+using TownOfUs.Options.Roles.Neutral;
+using TownOfUs.Roles.Neutral;
+using UnityEngine;
+
+namespace TownOfUs.Events.Neutral;
+
+public static class DoomsayerEvents
+{
+    [RegisterEvent]
+    public static void AfterMurderEventHandler(AfterMurderEvent @event)
+    {
+        var source = @event.Source;
+
+        if (source.Data.Role is DoomsayerRole doom)
+        {
+            if (!source.AmOwner)
+            {
+                doom.NumberOfGuesses++;
+            }
+            if (GameHistory.PlayerStats.TryGetValue(source.PlayerId, out var stats))
+            {
+                stats.CorrectAssassinKills++;
+            }
+
+            if (source.AmOwner && (int)OptionGroupSingleton<DoomsayerOptions>.Instance.DoomsayerGuessesToWin ==
+                doom.NumberOfGuesses)
+            {
+                DoomsayerRole.RpcDoomsayerWin(source);
+                GameHistory.RpcUpdateLocalDeathHandler(PlayerControl.LocalPlayer, PlayerControl.LocalPlayer, "DiedToWinning",
+                    HudManagerHelper.Instance.CurrentRound, DeathHandlerOverride.SetFalse,
+                    lockInfo: DeathHandlerOverride.SetTrue);
+            }
+        }
+        else if (source.GetRoleWhenAlive() is DoomsayerRole &&
+                 (MeetingHud.Instance || ExileController.Instance) &&
+                 GameHistory.PlayerStats.TryGetValue(source.PlayerId, out var stats))
+        {
+            // This should fix doomsayer's guesses appearing as regular postmortem kills
+            stats.CorrectAssassinKills++;
+        }
+    }
+
+    [RegisterEvent]
+    public static void RoundStartEventHandler(RoundStartEvent @event)
+    {
+        if (@event.TriggeredByIntro)
+        {
+            return;
+        }
+
+        if (OptionGroupSingleton<DoomsayerOptions>.Instance.DoomWin is not DoomWinOptions.Leaves)
+        {
+            return;
+        }
+
+        var doom = CustomRoleUtils.GetActiveRolesOfType<DoomsayerRole>()
+            .FirstOrDefault(x => x.AllGuessesCorrect && !x.Player.HasDied());
+        if (doom != null)
+        {
+            if (doom.Player.AmOwner)
+            {
+                PlayerControl.LocalPlayer.DelayExile();
+                var notif1 = Helpers.CreateAndShowNotification(
+                    $"<b>{MiraLocaleManager.Get("TownOfUsMira.Role.DoomsayerWonSelf").Replace("<role>", $"{TownOfUsColors.Doomsayer.ToTextColor()}{doom.GetRoleName()}</color>")}</b>",
+                    Color.white, new Vector3(0f, 1f, -20f), spr: TouRoleIcons.Doomsayer.LoadAsset());
+
+                notif1.AdjustNotification();
+            }
+            else
+            {
+                string message;
+                LoadableAsset<Sprite> icon;
+
+                if (OptionGroupSingleton<DoomsayerOptions>.Instance.DoomAnonymizeWin.Value)
+                {
+                    message = MiraLocaleManager.Get("TouNeutAnonymousVictoryMessage");
+                    icon = TouRoleIcons.Neutral;
+                }
+                else
+                {
+                    message = $"<b>{MiraLocaleManager.Get("TownOfUsMira.Role.DoomsayerWonOther")
+                        .Replace("<role>", $"{TownOfUsColors.Doomsayer.ToTextColor()}{doom.GetRoleName()}</color>")}</b>";
+                    icon = TouRoleIcons.Doomsayer;
+                }
+
+                var notif1 = Helpers.CreateAndShowNotification(
+                    message.Replace("<player>", doom.Player.Data.PlayerName),
+                    Color.white, new Vector3(0f, 1f, -20f), spr: icon.LoadAsset());
+
+                notif1.AdjustNotification();
+            }
+        }
+    }
+}

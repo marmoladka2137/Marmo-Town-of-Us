@@ -1,0 +1,44 @@
+// MTOU publication snapshot prepared 2026-11-17.
+// Modified relative to TOU Mira b56f24a0; original credits retained. See SOURCE_PROVENANCE.md.
+using MiraAPI.GameOptions.Attributes;
+using MiraAPI.Utilities;
+using TownOfUs.Modifiers.Game.Crewmate;
+using UnityEngine;
+
+namespace TownOfUs.Options.Modifiers.Crewmate;
+
+public sealed class OperativeOptions : AbstractTouModifierOptionGroup<OperativeModifier>
+{
+    public override Func<bool> GroupVisible => () => RoleOptions.GetIsClassicRoleAssignment();
+    public override string GroupName => MiraLocaleManager.Get("TownOfUsMira.Modifier.Operative", "Operative");
+    public override uint GroupPriority => 24;
+
+    public override Color GroupColor => new(0.8f, 0.33f, 0.37f, 1f);
+
+    // THESE BREAK THE CAMERA MINIFairyME!!
+    /*
+        [ModdedToggleOption("TouOptionOperativeMoveWithCams")]
+        public bool MoveWithCams { get; set; } = false;
+
+        [ModdedToggleOption("TouOptionOperativeMoveOnFungle")]
+        public bool MoveOnFungle { get; set; } = false;
+    */
+
+    [ModdedToggleOption("TouOptionOperativeMoveOnMira")]
+    public bool MoveOnMira { get; set; } = true;
+
+    [ModdedNumberOption("TouOptionOperativeStartingCharge", 0f, 30f, 2.5f, MiraNumberSuffixes.Seconds)]
+    public float StartingCharge { get; set; } = 20f;
+
+    [ModdedNumberOption("TouOptionOperativeRoundCharge", 0f, 30f, 2.5f, MiraNumberSuffixes.Seconds)]
+    public float RoundCharge { get; set; } = 10f;
+
+    [ModdedNumberOption("TouOptionOperativeTaskCharge", 0f, 30f, 2.5f, MiraNumberSuffixes.Seconds)]
+    public float TaskCharge { get; set; } = 7.5f;
+
+    [ModdedNumberOption("TouOptionOperativeDisplayCooldown", 0f, 30f, 5f, MiraNumberSuffixes.Seconds)]
+    public float DisplayCooldown { get; set; } = 15f;
+
+    [ModdedNumberOption("TouOptionOperativeDisplayDuration", 0f, 30f, 5f, MiraNumberSuffixes.Seconds, zeroInfinity: true)]
+    public float DisplayDuration { get; set; } = 15f;
+}

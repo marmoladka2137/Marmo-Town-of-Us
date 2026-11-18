@@ -1,0 +1,737 @@
+{
+  "clips": [
+    {
+      "name": "AmbushDeadAnimation",
+      "duration": 1.75,
+      "loop": true,
+      "frames": 42,
+      "spritePaths": [
+        ""
+      ]
+    },
+    {
+      "name": "AmbushGrabAnimation",
+      "duration": 1.75,
+      "loop": true,
+      "frames": 42,
+      "spritePaths": [
+        ""
+      ]
+    },
+    {
+      "name": "AmbushShadowAnimation",
+      "duration": 1.75,
+      "loop": true,
+      "frames": 42,
+      "spritePaths": [
+        ""
+      ]
+    },
+    {
+      "name": "BlackImpIdle",
+      "duration": 1.25,
+      "loop": true,
+      "frames": 30,
+      "spritePaths": [
+        ""
+      ]
+    },
+    {
+      "name": "BlackImpPetting",
+      "duration": 0.9166666865348816,
+      "loop": true,
+      "frames": 22,
+      "spritePaths": [
+        ""
+      ]
+    },
+    {
+      "name": "BlackImpSad",
+      "duration": 1.0,
+      "loop": true,
+      "frames": 24,
+      "spritePaths": [
+        ""
+      ]
+    },
+    {
+      "name": "BlackImpScared",
+      "duration": 0.1666666716337204,
+      "loop": true,
+      "frames": 4,
+      "spritePaths": [
+        ""
+      ]
+    },
+    {
+      "name": "BlackImpWalk",
+      "duration": 0.5833333134651184,
+      "loop": true,
+      "frames": 14,
+      "spritePaths": [
+        ""
+      ]
+    },
+    {
+      "name": "ClericBarrierAnimation",
+      "duration": 4.799999713897705,
+      "loop": true,
+      "frames": 72,
+      "spritePaths": [
+        ""
+      ]
+    },
+    {
+      "name": "DeathMeetingBody",
+      "duration": 1.3333333730697632,
+      "loop": false,
+      "frames": 32,
+      "spritePaths": [
+        ""
+      ]
+    },
+    {
+      "name": "DeathMeetingBodyBlood",
+      "duration": 1.3333333730697632,
+      "loop": false,
+      "frames": 32,
+      "spritePaths": [
+        ""
+      ]
+    },
+    {
+      "name": "DeathMeetingLaserBlood",
+      "duration": 1.6666666269302368,
+      "loop": false,
+      "frames": 40,
+      "spritePaths": [
+        ""
+      ]
+    },
+    {
+      "name": "DeathMeetingLaserPlayer",
+      "duration": 1.6666666269302368,
+      "loop": false,
+      "frames": 40,
+      "spritePaths": [
+        ""
+      ]
+    },
+    {
+      "name": "DeathMeetingShotFront",
+      "duration": 1.25,
+      "loop": false,
+      "frames": 30,
+      "spritePaths": [
+        ""
+      ]
+    },
+    {
+      "name": "DeathMeetingShotFrontBlood",
+      "duration": 1.25,
+      "loop": false,
+      "frames": 30,
+      "spritePaths": [
+        ""
+      ]
+    },
+    {
+      "name": "DeathMeetingShotRight",
+      "duration": 1.25,
+      "loop": false,
+      "frames": 30,
+      "spritePaths": [
+        ""
+      ]
+    },
+    {
+      "name": "DeathMeetingShotRightBlood",
+      "duration": 1.25,
+      "loop": false,
+      "frames": 30,
+      "spritePaths": [
+        ""
+      ]
+    },
+    {
+      "name": "EscapistMark",
+      "duration": 0.8333333134651184,
+      "loop": true,
+      "frames": 20,
+      "spritePaths": [
+        ""
+      ]
+    },
+    {
+      "name": "FirstRoundShieldAnimation",
+      "duration": 1.6666667461395264,
+      "loop": true,
+      "frames": 40,
+      "spritePaths": [
+        ""
+      ]
+    },
+    {
+      "name": "FlopsteScaredAnim",
+      "duration": 0.125,
+      "loop": true,
+      "frames": 3,
+      "spritePaths": [
+        ""
+      ]
+    },
+    {
+      "name": "FlopsterIdleAnim",
+      "duration": 3.0833332538604736,
+      "loop": true,
+      "frames": 72,
+      "spritePaths": [
+        ""
+      ]
+    },
+    {
+      "name": "FlopsterSadAnim",
+      "duration": 0.1666666716337204,
+      "loop": true,
+      "frames": 4,
+      "spritePaths": [
+        ""
+      ]
+    },
+    {
+      "name": "FlopsterWalkAnim",
+      "duration": 0.5,
+      "loop": true,
+      "frames": 12,
+      "spritePaths": [
+        ""
+      ]
+    },
+    {
+      "name": "HeartbeatAnim",
+      "duration": 3.5,
+      "loop": false,
+      "frames": 72,
+      "spritePaths": [
+        ""
+      ]
+    },
+    {
+      "name": "HexBombDeathAnimation",
+      "duration": 1.3333333730697632,
+      "loop": false,
+      "frames": 32,
+      "spritePaths": [
+        ""
+      ]
+    },
+    {
+      "name": "MagicMirrorAnimation",
+      "duration": 1.0,
+      "loop": true,
+      "frames": 24,
+      "spritePaths": [
+        ""
+      ]
+    },
+    {
+      "name": "MayorRevealHands",
+      "duration": 2.0,
+      "loop": false,
+      "frames": 48,
+      "spritePaths": [
+        ""
+      ]
+    },
+    {
+      "name": "MayorRevealOutfit",
+      "duration": 2.5,
+      "loop": false,
+      "frames": 60,
+      "spritePaths": [
+        ""
+      ]
+    },
+    {
+      "name": "MayorRevealPlayer",
+      "duration": 2.5,
+      "loop": false,
+      "frames": 60,
+      "spritePaths": [
+        ""
+      ]
+    },
+    {
+      "name": "MedicShieldBackAnimation",
+      "duration": 0.9166666269302368,
+      "loop": true,
+      "frames": 22,
+      "spritePaths": [
+        ""
+      ]
+    },
+    {
+      "name": "MedicShieldFrontAnimation",
+      "duration": 0.1666666716337204,
+      "loop": true,
+      "frames": 4,
+      "spritePaths": [
+        ""
+      ]
+    },
+    {
+      "name": "MedusaStoneCrackAnim",
+      "duration": 0.25,
+      "loop": false,
+      "frames": 6,
+      "spritePaths": [
+        ""
+      ]
+    },
+    {
+      "name": "MedusaStoneMoveAnim",
+      "duration": 0.25,
+      "loop": false,
+      "frames": 6,
+      "spritePaths": [
+        ""
+      ]
+    },
+    {
+      "name": "MedusaStoneShatterAnim",
+      "duration": 0.4166666567325592,
+      "loop": false,
+      "frames": 10,
+      "spritePaths": [
+        ""
+      ]
+    },
+    {
+      "name": "MedusaStoneStaticAnim",
+      "duration": 0.0833333358168602,
+      "loop": false,
+      "frames": 2,
+      "spritePaths": [
+        ""
+      ]
+    },
+    {
+      "name": "MedusaStoneVisorAnim",
+      "duration": 0.4166666567325592,
+      "loop": false,
+      "frames": 10,
+      "spritePaths": [
+        ""
+      ]
+    },
+    {
+      "name": "MinerExplode",
+      "duration": 1.1666667461395264,
+      "loop": false,
+      "frames": 29,
+      "spritePaths": [
+        ""
+      ]
+    },
+    {
+      "name": "ParasiteOverlayAnimation",
+      "duration": 1.0,
+      "loop": true,
+      "frames": 24,
+      "spritePaths": [
+        ""
+      ]
+    },
+    {
+      "name": "PlayerGhostAnimation",
+      "duration": 2.0,
+      "loop": true,
+      "frames": 48,
+      "spritePaths": [
+        ""
+      ]
+    },
+    {
+      "name": "ProsBodyBackAnimation",
+      "duration": 0.75,
+      "loop": false,
+      "frames": 18,
+      "spritePaths": [
+        ""
+      ]
+    },
+    {
+      "name": "ProsBodyFrontAnimation",
+      "duration": 0.75,
+      "loop": false,
+      "frames": 18,
+      "spritePaths": [
+        ""
+      ]
+    },
+    {
+      "name": "ProsBodyPlayerAnimation",
+      "duration": 0.75,
+      "loop": false,
+      "frames": 18,
+      "spritePaths": [
+        ""
+      ]
+    },
+    {
+      "name": "ProsGavelBackAnimation",
+      "duration": 0.8333333134651184,
+      "loop": false,
+      "frames": 20,
+      "spritePaths": [
+        ""
+      ]
+    },
+    {
+      "name": "ProsGavelFrontAnimation",
+      "duration": 0.8333333134651184,
+      "loop": false,
+      "frames": 20,
+      "spritePaths": [
+        ""
+      ]
+    },
+    {
+      "name": "ProsGavelHammerAnimation",
+      "duration": 0.8333333134651184,
+      "loop": false,
+      "frames": 20,
+      "spritePaths": [
+        ""
+      ]
+    },
+    {
+      "name": "ProsPointHandAnimation",
+      "duration": 0.8333333134651184,
+      "loop": false,
+      "frames": 20,
+      "spritePaths": [
+        ""
+      ]
+    },
+    {
+      "name": "SentryCamOffAnimation",
+      "duration": 0.0833333358168602,
+      "loop": false,
+      "frames": 2,
+      "spritePaths": [
+        ""
+      ]
+    },
+    {
+      "name": "SentryCamOnAnimation",
+      "duration": 2.0,
+      "loop": true,
+      "frames": 48,
+      "spritePaths": [
+        ""
+      ]
+    },
+    {
+      "name": "TortIdle",
+      "duration": 2.0,
+      "loop": true,
+      "frames": 48,
+      "spritePaths": [
+        ""
+      ]
+    },
+    {
+      "name": "TortPetting",
+      "duration": 1.25,
+      "loop": true,
+      "frames": 30,
+      "spritePaths": [
+        ""
+      ]
+    },
+    {
+      "name": "TortSad",
+      "duration": 2.0,
+      "loop": true,
+      "frames": 48,
+      "spritePaths": [
+        ""
+      ]
+    },
+    {
+      "name": "TortScared",
+      "duration": 0.125,
+      "loop": true,
+      "frames": 3,
+      "spritePaths": [
+        ""
+      ]
+    },
+    {
+      "name": "TortWalk",
+      "duration": 0.4166666865348816,
+      "loop": true,
+      "frames": 10,
+      "spritePaths": [
+        ""
+      ]
+    },
+    {
+      "name": "WardenFortBackAnimation",
+      "duration": 0.5,
+      "loop": true,
+      "frames": 12,
+      "spritePaths": [
+        ""
+      ]
+    },
+    {
+      "name": "WardenFortFrontAnimation",
+      "duration": 0.5,
+      "loop": true,
+      "frames": 12,
+      "spritePaths": [
+        ""
+      ]
+    }
+  ],
+  "audio": [
+    {
+      "name": "AltruistIntro",
+      "duration": 2.0946667194366455
+    },
+    {
+      "name": "ArsonistIgnite",
+      "duration": 1.1755101680755615
+    },
+    {
+      "name": "BombExplode",
+      "duration": 2.054874897003174
+    },
+    {
+      "name": "ChefRing",
+      "duration": 4.832766532897949
+    },
+    {
+      "name": "Deny",
+      "duration": 0.1613333374261856
+    },
+    {
+      "name": "DeputyIntro",
+      "duration": 5.858104228973389
+    },
+    {
+      "name": "DeputyIntroNew",
+      "duration": 2.4633750915527344
+    },
+    {
+      "name": "DeputyReveal",
+      "duration": 4.163166522979736
+    },
+    {
+      "name": "Discovered",
+      "duration": 2.991020441055298
+    },
+    {
+      "name": "EscapistMark",
+      "duration": 0.36899998784065247
+    },
+    {
+      "name": "EscapistRecall",
+      "duration": 0.8932499885559082
+    },
+    {
+      "name": "ExplodeIntro",
+      "duration": 3.153310775756836
+    },
+    {
+      "name": "Fix1",
+      "duration": 0.6066666841506958
+    },
+    {
+      "name": "Fix2",
+      "duration": 0.5106666684150696
+    },
+    {
+      "name": "Fix3",
+      "duration": 0.6196666955947876
+    },
+    {
+      "name": "GlitchIntro",
+      "duration": 1.8996144533157349
+    },
+    {
+      "name": "GrenadeThrow",
+      "duration": 2.221156358718872
+    },
+    {
+      "name": "GuardianAngelProtect",
+      "duration": 2.3573696613311768
+    },
+    {
+      "name": "GunKill",
+      "duration": 2.0114285945892334
+    },
+    {
+      "name": "HackedSound",
+      "duration": 0.43299999833106995
+    },
+    {
+      "name": "HexBomb",
+      "duration": 7.680395603179932
+    },
+    {
+      "name": "HexBombAlarm",
+      "duration": 1.575124979019165
+    },
+    {
+      "name": "JailSound",
+      "duration": 1.1856689453125
+    },
+    {
+      "name": "JanitorClean",
+      "duration": 1.425011396408081
+    },
+    {
+      "name": "MarshalTribunal",
+      "duration": 3.4914286136627197
+    },
+    {
+      "name": "MayorRevealSound",
+      "duration": 3.3909976482391357
+    },
+    {
+      "name": "MediumIntro",
+      "duration": 5.505011558532715
+    },
+    {
+      "name": "MimicSound",
+      "duration": 0.9750113487243652
+    },
+    {
+      "name": "MineSound",
+      "duration": 0.6429024934768677
+    },
+    {
+      "name": "MirrorcasterIntro",
+      "duration": 5.082358360290527
+    },
+    {
+      "name": "MirrorcasterShatter",
+      "duration": 1.5675736665725708
+    },
+    {
+      "name": "NoisemakerDeath",
+      "duration": 4.639636993408203
+    },
+    {
+      "name": "OtherIntro",
+      "duration": 4.139999866485596
+    },
+    {
+      "name": "PotionIntro",
+      "duration": 1.5864167213439941
+    },
+    {
+      "name": "ProsIntro",
+      "duration": 2.027052164077759
+    },
+    {
+      "name": "ProsecuteAudio",
+      "duration": 6.65412712097168
+    },
+    {
+      "name": "QuestionSound",
+      "duration": 3.4387500286102295
+    },
+    {
+      "name": "ScreamIntro",
+      "duration": 3.444127082824707
+    },
+    {
+      "name": "SentryIntro",
+      "duration": 1.3964166641235352
+    },
+    {
+      "name": "SentryPlace",
+      "duration": 0.33662131428718567
+    },
+    {
+      "name": "SheriffIntro",
+      "duration": 2.565999984741211
+    },
+    {
+      "name": "ShootLaserMeeting",
+      "duration": 2.4106667041778564
+    },
+    {
+      "name": "SinisterIntro",
+      "duration": 5.794708251953125
+    },
+    {
+      "name": "SneakyIntro",
+      "duration": 1.591473937034607
+    },
+    {
+      "name": "SpyIntro",
+      "duration": 2.6511337757110596
+    },
+    {
+      "name": "SuspenseIntro",
+      "duration": 4.7611565589904785
+    },
+    {
+      "name": "SwooperActivate",
+      "duration": 3.209523916244507
+    },
+    {
+      "name": "SwooperDeactivate",
+      "duration": 3.194512367248535
+    },
+    {
+      "name": "TimeLordIntro",
+      "duration": 2.1929931640625
+    },
+    {
+      "name": "ToppatIntro",
+      "duration": 3.61022686958313
+    },
+    {
+      "name": "TrackerActivate",
+      "duration": 1.8561451435089111
+    },
+    {
+      "name": "TrackerDeactivate",
+      "duration": 1.8706575632095337
+    },
+    {
+      "name": "TrapperPlace",
+      "duration": 3.2174148559570312
+    },
+    {
+      "name": "UnhackedSound",
+      "duration": 0.4959999918937683
+    },
+    {
+      "name": "UnmimicSound",
+      "duration": 0.5090022683143616
+    },
+    {
+      "name": "VampireIntro",
+      "duration": 3.668708324432373
+    },
+    {
+      "name": "VigilanteIntro",
+      "duration": 6.0333333015441895
+    },
+    {
+      "name": "WarlockIntro",
+      "duration": 4.986326694488525
+    },
+    {
+      "name": "WerewolfRampage",
+      "duration": 1.8343764543533325
+    }
+  ]
+}

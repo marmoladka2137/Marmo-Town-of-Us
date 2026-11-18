@@ -1,0 +1,83 @@
+using MiraAPI.GameOptions;
+using MiraAPI.Utilities;
+using TownOfUs.Options.Roles.Impostor;
+using TownOfUs.Roles.Impostor;
+using UnityEngine;
+
+namespace TownOfUs.Buttons.Impostor;
+
+public sealed class JanitorCleanButton : TownOfUsKillRoleButton<JanitorRole, DeadBody>, IAftermathableBodyButton,
+    IDiseaseableButton, ILegacyCapable
+{
+    public override string Name => MiraLocaleManager.Get("TownOfUsMira.Role.JanitorClean", "Clean");
+    public override BaseKeybind Keybind => Keybinds.SecondaryAction;
+    public override Color TextOutlineColor => TownOfUsColors.Impostor;
+    public override float Cooldown => Math.Clamp(OptionGroupSingleton<JanitorOptions>.Instance.CleanCooldown + MapCooldown, 5f, 120f);
+    public override float EffectDuration => OptionGroupSingleton<JanitorOptions>.Instance.CleanDelay + 0.001f;
+    public override int MaxUses => (int)OptionGroupSingleton<JanitorOptions>.Instance.MaxClean;
+    public override LoadableAsset<Sprite> Sprite => LegacyAssets.IsLegacy ? LegacyImpAssets.CleanButtonSprite : TouImpAssets.CleanButtonSprite;
+
+    public DeadBody? CleaningBody { get; set; }
+
+    public void SetDiseasedTimer(float multiplier)
+    {
+        SetTimer(Cooldown * multiplier);
+    }
+
+    public override DeadBody? GetTarget()
+    {
+        return PlayerControl.LocalPlayer.GetNearestDeadBody(Distance);
+    }
+
+    public void AftermathHandler()
+    {
+        var body = PlayerControl.LocalPlayer.GetNearestDeadBody(Distance);
+        if (body == null)
+        {
+            return;
+        }
+        CleaningBody = body;
+
+        OnEffectEnd();
+    }
+
+    protected override void OnClick()
+    {
+        if (Target == null)
+        {
+            return;
+        }
+
+        CleaningBody = Target;
+        OverrideName(MiraLocaleManager.Get("TownOfUsMira.Role.JanitorCleaning", "Cleaning"));
+    }
+
+    public void CheckReset(bool resetSelf)
+    {
+        var opts = OptionGroupSingleton<JanitorOptions>.Instance.CooldownSync;
+        if (opts == JanitorCooldownSync.Always || opts == JanitorCooldownSync.WithTeammates && MiscUtils.ImpAliveCount > 1)
+        {
+            if (resetSelf)
+            {
+                ResetCooldownAndOrEffect();
+            }
+            else
+            {
+                PlayerControl.LocalPlayer.SetKillTimer(PlayerControl.LocalPlayer.GetKillCooldown());
+            }
+        }
+    }
+
+    public override void OnEffectEnd()
+    {
+        OverrideName(MiraLocaleManager.Get("TownOfUsMira.Role.JanitorClean", "Clean"));
+        if (CleaningBody == Target && CleaningBody != null)
+        {
+            JanitorRole.RpcCleanBody(PlayerControl.LocalPlayer, CleaningBody.ParentId);
+            TouAudio.PlaySound(TouAudio.JanitorCleanSound);
+        }
+
+        CleaningBody = null;
+        CheckReset(false);
+    }
+}

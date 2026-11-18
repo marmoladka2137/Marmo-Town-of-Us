@@ -1,0 +1,500 @@
+{
+  "source": "Interface metadata only; no animation curves, images or keyframes copied.",
+  "clips": [
+    {
+      "name": "AmbushDeadAnimation",
+      "duration": 1.75,
+      "loop": true,
+      "spritePaths": [
+        ""
+      ],
+      "sourceBundlePathId": "3282743863715076030"
+    },
+    {
+      "name": "AmbushGrabAnimation",
+      "duration": 1.75,
+      "loop": true,
+      "spritePaths": [
+        ""
+      ],
+      "sourceBundlePathId": "-5331595869927763514"
+    },
+    {
+      "name": "AmbushShadowAnimation",
+      "duration": 1.75,
+      "loop": true,
+      "spritePaths": [
+        ""
+      ],
+      "sourceBundlePathId": "1539739108051183639"
+    },
+    {
+      "name": "BlackImpIdle",
+      "duration": 1.25,
+      "loop": true,
+      "spritePaths": [
+        ""
+      ],
+      "sourceBundlePathId": "-3588865063714320336"
+    },
+    {
+      "name": "BlackImpPetting",
+      "duration": 0.9166666865348816,
+      "loop": true,
+      "spritePaths": [
+        ""
+      ],
+      "sourceBundlePathId": "-5075781839453837307"
+    },
+    {
+      "name": "BlackImpSad",
+      "duration": 1.0,
+      "loop": true,
+      "spritePaths": [
+        ""
+      ],
+      "sourceBundlePathId": "-8584909466756310796"
+    },
+    {
+      "name": "BlackImpScared",
+      "duration": 0.1666666716337204,
+      "loop": true,
+      "spritePaths": [
+        ""
+      ],
+      "sourceBundlePathId": "-3148745743410355808"
+    },
+    {
+      "name": "BlackImpWalk",
+      "duration": 0.5833333134651184,
+      "loop": true,
+      "spritePaths": [
+        ""
+      ],
+      "sourceBundlePathId": "815002918523835347"
+    },
+    {
+      "name": "ClericBarrierAnimation",
+      "duration": 4.799999713897705,
+      "loop": true,
+      "spritePaths": [
+        ""
+      ],
+      "sourceBundlePathId": "4528955191966671183"
+    },
+    {
+      "name": "DeathMeetingBody",
+      "duration": 1.3333333730697632,
+      "loop": false,
+      "spritePaths": [
+        ""
+      ],
+      "sourceBundlePathId": "5621989338933284799"
+    },
+    {
+      "name": "DeathMeetingBodyBlood",
+      "duration": 1.3333333730697632,
+      "loop": false,
+      "spritePaths": [
+        ""
+      ],
+      "sourceBundlePathId": "-3281338119490890506"
+    },
+    {
+      "name": "DeathMeetingLaserBlood",
+      "duration": 1.6666666269302368,
+      "loop": false,
+      "spritePaths": [
+        ""
+      ],
+      "sourceBundlePathId": "-1770486311078424112"
+    },
+    {
+      "name": "DeathMeetingLaserPlayer",
+      "duration": 1.6666666269302368,
+      "loop": false,
+      "spritePaths": [
+        ""
+      ],
+      "sourceBundlePathId": "8058141208796408616"
+    },
+    {
+      "name": "DeathMeetingShotFront",
+      "duration": 1.25,
+      "loop": false,
+      "spritePaths": [
+        ""
+      ],
+      "sourceBundlePathId": "-6085915598390200390"
+    },
+    {
+      "name": "DeathMeetingShotFrontBlood",
+      "duration": 1.25,
+      "loop": false,
+      "spritePaths": [
+        ""
+      ],
+      "sourceBundlePathId": "1581007426807122506"
+    },
+    {
+      "name": "DeathMeetingShotRight",
+      "duration": 1.25,
+      "loop": false,
+      "spritePaths": [
+        ""
+      ],
+      "sourceBundlePathId": "-9098880044246230618"
+    },
+    {
+      "name": "DeathMeetingShotRightBlood",
+      "duration": 1.25,
+      "loop": false,
+      "spritePaths": [
+        ""
+      ],
+      "sourceBundlePathId": "2203028202081130142"
+    },
+    {
+      "name": "EscapistMark",
+      "duration": 0.8333333134651184,
+      "loop": true,
+      "spritePaths": [
+        ""
+      ],
+      "sourceBundlePathId": "2439124581277921505"
+    },
+    {
+      "name": "FirstRoundShieldAnimation",
+      "duration": 1.6666667461395264,
+      "loop": true,
+      "spritePaths": [
+        ""
+      ],
+      "sourceBundlePathId": "-8355954526133440929"
+    },
+    {
+      "name": "FlopsteScaredAnim",
+      "duration": 0.125,
+      "loop": true,
+      "spritePaths": [
+        ""
+      ],
+      "sourceBundlePathId": "8325245802007528983"
+    },
+    {
+      "name": "FlopsterIdleAnim",
+      "duration": 3.0833332538604736,
+      "loop": true,
+      "spritePaths": [
+        ""
+      ],
+      "sourceBundlePathId": "5523479517264113997"
+    },
+    {
+      "name": "FlopsterSadAnim",
+      "duration": 0.1666666716337204,
+      "loop": true,
+      "spritePaths": [
+        ""
+      ],
+      "sourceBundlePathId": "2139950100035669978"
+    },
+    {
+      "name": "FlopsterWalkAnim",
+      "duration": 0.5,
+      "loop": true,
+      "spritePaths": [
+        ""
+      ],
+      "sourceBundlePathId": "-3136083405723590035"
+    },
+    {
+      "name": "HeartbeatAnim",
+      "duration": 3.5,
+      "loop": false,
+      "spritePaths": [
+        ""
+      ],
+      "sourceBundlePathId": "5606098797935995229"
+    },
+    {
+      "name": "HexBombDeathAnimation",
+      "duration": 1.3333333730697632,
+      "loop": false,
+      "spritePaths": [
+        ""
+      ],
+      "sourceBundlePathId": "-4596367525626821114"
+    },
+    {
+      "name": "MagicMirrorAnimation",
+      "duration": 1.0,
+      "loop": true,
+      "spritePaths": [
+        ""
+      ],
+      "sourceBundlePathId": "7014553607324379878"
+    },
+    {
+      "name": "MayorRevealHands",
+      "duration": 2.0,
+      "loop": false,
+      "spritePaths": [
+        ""
+      ],
+      "sourceBundlePathId": "-1901642023986261718"
+    },
+    {
+      "name": "MayorRevealOutfit",
+      "duration": 2.5,
+      "loop": false,
+      "spritePaths": [
+        ""
+      ],
+      "sourceBundlePathId": "-2492878806835346091"
+    },
+    {
+      "name": "MayorRevealPlayer",
+      "duration": 2.5,
+      "loop": false,
+      "spritePaths": [
+        ""
+      ],
+      "sourceBundlePathId": "1364415117937301827"
+    },
+    {
+      "name": "MedicShieldBackAnimation",
+      "duration": 0.9166666269302368,
+      "loop": true,
+      "spritePaths": [
+        ""
+      ],
+      "sourceBundlePathId": "-4334266322349506210"
+    },
+    {
+      "name": "MedicShieldFrontAnimation",
+      "duration": 0.1666666716337204,
+      "loop": true,
+      "spritePaths": [
+        ""
+      ],
+      "sourceBundlePathId": "-140127397575152355"
+    },
+    {
+      "name": "MedusaStoneCrackAnim",
+      "duration": 0.25,
+      "loop": false,
+      "spritePaths": [
+        ""
+      ],
+      "sourceBundlePathId": "-7492741385944822700"
+    },
+    {
+      "name": "MedusaStoneMoveAnim",
+      "duration": 0.25,
+      "loop": false,
+      "spritePaths": [
+        ""
+      ],
+      "sourceBundlePathId": "5052083564153899239"
+    },
+    {
+      "name": "MedusaStoneShatterAnim",
+      "duration": 0.4166666567325592,
+      "loop": false,
+      "spritePaths": [
+        ""
+      ],
+      "sourceBundlePathId": "-6018103085016758995"
+    },
+    {
+      "name": "MedusaStoneStaticAnim",
+      "duration": 0.0833333358168602,
+      "loop": false,
+      "spritePaths": [
+        ""
+      ],
+      "sourceBundlePathId": "692783317024437679"
+    },
+    {
+      "name": "MedusaStoneVisorAnim",
+      "duration": 0.4166666567325592,
+      "loop": false,
+      "spritePaths": [
+        ""
+      ],
+      "sourceBundlePathId": "83138450618903580"
+    },
+    {
+      "name": "MinerExplode",
+      "duration": 1.1666667461395264,
+      "loop": false,
+      "spritePaths": [
+        ""
+      ],
+      "sourceBundlePathId": "-6665763815613854260"
+    },
+    {
+      "name": "ParasiteOverlayAnimation",
+      "duration": 1.0,
+      "loop": true,
+      "spritePaths": [
+        ""
+      ],
+      "sourceBundlePathId": "-464557235284861418"
+    },
+    {
+      "name": "PlayerGhostAnimation",
+      "duration": 2.0,
+      "loop": true,
+      "spritePaths": [
+        ""
+      ],
+      "sourceBundlePathId": "7299956667349865508"
+    },
+    {
+      "name": "ProsBodyBackAnimation",
+      "duration": 0.75,
+      "loop": false,
+      "spritePaths": [
+        ""
+      ],
+      "sourceBundlePathId": "3478603147398035314"
+    },
+    {
+      "name": "ProsBodyFrontAnimation",
+      "duration": 0.75,
+      "loop": false,
+      "spritePaths": [
+        ""
+      ],
+      "sourceBundlePathId": "-3912316531062848101"
+    },
+    {
+      "name": "ProsBodyPlayerAnimation",
+      "duration": 0.75,
+      "loop": false,
+      "spritePaths": [
+        ""
+      ],
+      "sourceBundlePathId": "-8528809881803624673"
+    },
+    {
+      "name": "ProsGavelBackAnimation",
+      "duration": 0.8333333134651184,
+      "loop": false,
+      "spritePaths": [
+        ""
+      ],
+      "sourceBundlePathId": "1350946466520119539"
+    },
+    {
+      "name": "ProsGavelFrontAnimation",
+      "duration": 0.8333333134651184,
+      "loop": false,
+      "spritePaths": [
+        ""
+      ],
+      "sourceBundlePathId": "5101401428356794983"
+    },
+    {
+      "name": "ProsGavelHammerAnimation",
+      "duration": 0.8333333134651184,
+      "loop": false,
+      "spritePaths": [
+        ""
+      ],
+      "sourceBundlePathId": "-4784938588707802678"
+    },
+    {
+      "name": "ProsPointHandAnimation",
+      "duration": 0.8333333134651184,
+      "loop": false,
+      "spritePaths": [
+        ""
+      ],
+      "sourceBundlePathId": "-2544123042973612981"
+    },
+    {
+      "name": "SentryCamOffAnimation",
+      "duration": 0.0833333358168602,
+      "loop": false,
+      "spritePaths": [
+        ""
+      ],
+      "sourceBundlePathId": "1424720356701281311"
+    },
+    {
+      "name": "SentryCamOnAnimation",
+      "duration": 2.0,
+      "loop": true,
+      "spritePaths": [
+        ""
+      ],
+      "sourceBundlePathId": "1362676573960600105"
+    },
+    {
+      "name": "TortIdle",
+      "duration": 2.0,
+      "loop": true,
+      "spritePaths": [
+        ""
+      ],
+      "sourceBundlePathId": "-2679719810748449835"
+    },
+    {
+      "name": "TortPetting",
+      "duration": 1.25,
+      "loop": true,
+      "spritePaths": [
+        ""
+      ],
+      "sourceBundlePathId": "-1446501214333016483"
+    },
+    {
+      "name": "TortSad",
+      "duration": 2.0,
+      "loop": true,
+      "spritePaths": [
+        ""
+      ],
+      "sourceBundlePathId": "-3998685597401673067"
+    },
+    {
+      "name": "TortScared",
+      "duration": 0.125,
+      "loop": true,
+      "spritePaths": [
+        ""
+      ],
+      "sourceBundlePathId": "2990218962162993437"
+    },
+    {
+      "name": "TortWalk",
+      "duration": 0.4166666865348816,
+      "loop": true,
+      "spritePaths": [
+        ""
+      ],
+      "sourceBundlePathId": "5511887931742281508"
+    },
+    {
+      "name": "WardenFortBackAnimation",
+      "duration": 0.5,
+      "loop": true,
+      "spritePaths": [
+        ""
+      ],
+      "sourceBundlePathId": "8918598869532162624"
+    },
+    {
+      "name": "WardenFortFrontAnimation",
+      "duration": 0.5,
+      "loop": true,
+      "spritePaths": [
+        ""
+      ],
+      "sourceBundlePathId": "-7939334786480670813"
+    }
+  ]
+}

@@ -1,0 +1,96 @@
+using TouMarmo.Assets;
+using TouMarmo.Roles;
+using MiraAPI.MeetingAbilities;
+using UnityEngine;
+
+namespace TouMarmo.MeetingAbilities;
+
+public sealed class HuggerMeetingButton : TargetedMeetingButton
+{
+    private readonly List<MeetingAbilityBehaviour> _buttons = [];
+    private MeetingHud? _meeting;
+
+    public override string Name => MiraLocaleManager.Get("ComposterAddon.Ability.MeetingHug", "Hug");
+    public override int MaxUses => 2;
+    public override float Cooldown => 0.0001f;
+    public override float InitialCooldown => 0.0001f;
+    public override LoadableAsset<Sprite> Sprite => HuggerAssets.Hug;
+    public override Color OutlineColor => new Color32(205, 44, 72, 255);
+    public override bool Enabled(RoleBehaviour role) => role is HuggerRole hugger &&
+        !hugger.Player.HasDied() && (!hugger.HuggedImpostor || !hugger.HuggedOther);
+
+    public override bool IsTargetValid(PlayerVoteArea area)
+    {
+        if (!base.IsTargetValid(area) || PlayerControl.LocalPlayer.Data.Role is not HuggerRole role)
+        {
+            return false;
+        }
+
+        var target = PlayerControl.AllPlayerControls.ToArray().FirstOrDefault(p => p.PlayerId == area.PlayerId.Value);
+        return target != null && !target.HasDied() &&
+            (target.IsImpostorAligned() ? !role.HuggedImpostor : !role.HuggedOther);
+    }
+
+    public override MeetingAbilityBehaviour CreateButton(PlayerVoteArea area)
+    {
+        if (_meeting != MeetingHud.Instance)
+        {
+            _meeting = MeetingHud.Instance;
+            _buttons.Clear();
+        }
+
+        var button = base.CreateButton(area);
+        _buttons.Add(button);
+        return button;
+    }
+
+    public override void FixedUpdate() => RefreshButtons();
+
+    public override void ClickHandler(MeetingAbilityBehaviour button, PlayerVoteArea area)
+    {
+        if (!Enabled(PlayerControl.LocalPlayer.Data.Role) || !IsTargetValid(area))
+        {
+            return;
+        }
+
+        base.ClickHandler(button, area);
+        RefreshButtons();
+    }
+
+    private void RefreshButtons()
+    {
+        foreach (var button in _buttons)
+        {
+            if (!button || !button.VoteArea)
+            {
+                continue;
+            }
+
+            var hammer = button.VoteArea.JudgeOverruleButton;
+            if (hammer)
+            {
+                // Use the native hammer slot outside the animated confirm/cancel group.
+                button.transform.SetParent(button.VoteArea.transform, true);
+                button.transform.position = hammer.transform.position;
+                var scale = hammer.transform.lossyScale;
+                var parentScale = button.VoteArea.transform.lossyScale;
+                button.transform.localScale = new Vector3(scale.x / parentScale.x, scale.y / parentScale.y, 1);
+            }
+            var active = button.VoteArea.Buttons.activeSelf && UsesLeft > 0 && Enabled(PlayerControl.LocalPlayer.Data.Role) &&
+                IsTargetValid(button.VoteArea);
+            if (button.gameObject.activeSelf != active)
+            {
+                button.gameObject.SetActive(active);
+            }
+        }
+    }
+
+    protected override void OnClick(PlayerVoteArea area)
+    {
+        var target = PlayerControl.AllPlayerControls.ToArray().FirstOrDefault(p => p.PlayerId == area.PlayerId.Value);
+        if (target != null)
+        {
+            HuggerRole.RpcMeetingHug(PlayerControl.LocalPlayer, target);
+        }
+    }
+}

@@ -1,0 +1,81 @@
+﻿using MiraAPI.GameOptions;
+using MiraAPI.Hud;
+using MiraAPI.Modifiers;
+using MiraAPI.Modifiers.Types;
+using TownOfUs.Buttons.Modifiers;
+using TownOfUs.Interfaces;
+using TownOfUs.Options.Modifiers;
+using TownOfUs.Options.Modifiers.Crewmate;
+using UnityEngine;
+
+namespace TownOfUs.Modifiers.Game.Crewmate;
+
+public sealed class OperativeModifier : TouGameModifier, IWikiDiscoverable, IButtonModifier
+{
+    public override ModifierUiConfiguration Configuration => new(
+        TownOfUsColors.Operative,
+        TmpSpriteUtils.CreateSpriteAsset(TouModifierIcons.Operative.LoadAsset(),
+            "TouMira.Modifier.Crewmate.Operative", 1.45f));
+    public override string IdPart => "Operative";
+    public override string ModifierName => MiraLocaleManager.Get($"TownOfUsMira.Modifier.{IdPart}");
+    public override string IntroInfo => MiraLocaleManager.Get($"TownOfUsMira.Modifier.{IdPart}.IntroBlurb");
+
+    public override string GetDescription()
+    {
+        return MiraLocaleManager.Get($"TownOfUsMira.Modifier.{IdPart}.TabDescription");
+    }
+
+    public string GetAdvancedDescription()
+    {
+        return MiraLocaleManager.Get($"TownOfUsMira.Modifier.{IdPart}.WikiDescription")
+               + MiscUtils.AppendOptionsText(GetType());
+    }
+
+    public override LoadableAsset<Sprite>? ModifierIcon => TouModifierIcons.Operative;
+    public override Color FreeplayFileColor => new Color32(140, 255, 255, 255);
+
+    public override ModifierFaction FactionType => ModifierFaction.CrewmateUtility;
+
+    public List<CustomButtonWikiDescription> Abilities { get; } = [];
+
+    public override void OnActivate()
+    {
+        base.OnActivate();
+
+        if (!Player.AmOwner)
+        {
+            return;
+        }
+
+        CustomButtonSingleton<SecurityButton>.Instance.AvailableCharge =
+            OptionGroupSingleton<OperativeOptions>.Instance.StartingCharge;
+    }
+
+    public static void OnRoundStart()
+    {
+        CustomButtonSingleton<SecurityButton>.Instance.AvailableCharge +=
+            OptionGroupSingleton<OperativeOptions>.Instance.RoundCharge;
+    }
+
+    public static void OnTaskComplete()
+    {
+        CustomButtonSingleton<SecurityButton>.Instance.AvailableCharge +=
+            OptionGroupSingleton<OperativeOptions>.Instance.TaskCharge;
+    }
+
+    public override int GetAssignmentChance()
+    {
+        return (int)OptionGroupSingleton<CrewmateModifierOptions>.Instance.OperativeChance;
+    }
+
+    public override int GetAmountPerGame()
+    {
+        return (int)OptionGroupSingleton<CrewmateModifierOptions>.Instance.OperativeAmount;
+    }
+
+    public override bool IsModifierValidOn(RoleBehaviour role)
+    {
+        return base.IsModifierValidOn(role) && role.IsCrewmate() &&
+               !role.Player.GetModifierComponent().HasModifier<GameModifier>(true, x => x is IButtonModifier);
+    }
+}

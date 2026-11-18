@@ -1,0 +1,2 @@
+PASS: 1060 playback-clock assertions; pure production class, no Unity runtime.
+PASS: 32 return-to-lobby state assertions; new deadline implementation.

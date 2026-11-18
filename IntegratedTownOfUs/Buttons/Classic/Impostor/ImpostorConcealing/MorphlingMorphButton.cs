@@ -1,0 +1,113 @@
+﻿using MiraAPI.GameOptions;
+using MiraAPI.Modifiers;
+using TownOfUs.Modifiers;
+using TownOfUs.Modifiers.Impostor;
+using TownOfUs.Options.Roles.Impostor;
+using TownOfUs.Roles.Impostor;
+using UnityEngine;
+
+namespace TownOfUs.Buttons.Impostor;
+
+public sealed class MorphlingMorphButton : TownOfUsRoleButton<MorphlingRole>, IAftermathableButton, ILegacyCapable
+{
+    public override string Name => MiraLocaleManager.Get("TownOfUsMira.Role.MorphlingMorph", "Morph");
+    public override BaseKeybind Keybind => Keybinds.SecondaryAction;
+    public override Color TextOutlineColor => TownOfUsColors.Impostor;
+    public override float Cooldown => Math.Clamp(OptionGroupSingleton<MorphlingOptions>.Instance.MorphlingCooldown + MapCooldown, 5f, 120f);
+    public override float EffectDuration => OptionGroupSingleton<MorphlingOptions>.Instance.MorphlingDuration;
+    public override int MaxUses => (int)OptionGroupSingleton<MorphlingOptions>.Instance.MaxMorphs;
+
+    public override bool ZeroIsInfinite { get; set; } = true;
+    public override LoadableAsset<Sprite> Sprite => LegacyAssets.IsLegacy ? LegacyImpAssets.MorphSprite : TouImpAssets.MorphSprite;
+
+    public override void ClickHandler()
+    {
+        if (!CanUse())
+        {
+            return;
+        }
+
+        OnClick();
+        Button?.SetDisabled();
+        if (EffectActive)
+        {
+            Timer = Cooldown;
+            EffectActive = false;
+        }
+        else if (HasEffect)
+        {
+            EffectActive = true;
+            Timer = EffectDuration;
+        }
+        else
+        {
+            Timer = Cooldown;
+        }
+    }
+
+    public override bool Enabled(RoleBehaviour? role)
+    {
+        return base.Enabled(role) && Role is not { Sampled: null };
+    }
+
+    public override bool CanUse()
+    {
+        if (HudManager.Instance.Chat.IsOpenOrOpening || MeetingHud.Instance)
+        {
+            return false;
+        }
+
+        if (PlayerControl.LocalPlayer.GetModifiers<DisabledModifier>().Any(x => !x.CanUseAbilities))
+        {
+            return false;
+        }
+
+        return ((Timer <= 0 && !EffectActive && (!LimitedUses || UsesLeft > 0)) || (EffectActive && Timer <= EffectDuration - 2f));
+    }
+
+    public void AftermathHandler()
+    {
+        if (!EffectActive)
+        {
+            PlayerControl.LocalPlayer.RpcAddModifier<MorphlingMorphModifier>(Role.Sampled!);
+            OverrideName(MiraLocaleManager.Get("TownOfUsMira.Role.MorphlingUnmorph", "Unmorph"));
+            UsesLeft--;
+            if (LimitedUses)
+            {
+                Button?.SetUsesRemaining(UsesLeft);
+            }
+        }
+        else
+        {
+            PlayerControl.LocalPlayer.RpcRemoveModifier<MorphlingMorphModifier>();
+            OverrideName(MiraLocaleManager.Get("TownOfUsMira.Role.MorphlingMorph", "Morph"));
+        }
+    }
+
+    protected override void OnClick()
+    {
+        if (!EffectActive)
+        {
+            PlayerControl.LocalPlayer.RpcAddModifier<MorphlingMorphModifier>(Role.Sampled!);
+            OverrideName(MiraLocaleManager.Get("TownOfUsMira.Role.MorphlingUnmorph", "Unmorph"));
+            UsesLeft--;
+            if (LimitedUses)
+            {
+                Button?.SetUsesRemaining(UsesLeft);
+            }
+        }
+        else
+        {
+            PlayerControl.LocalPlayer.RpcRemoveModifier<MorphlingMorphModifier>();
+            OverrideName(MiraLocaleManager.Get("TownOfUsMira.Role.MorphlingMorph", "Morph"));
+        }
+    }
+
+    public override void OnEffectEnd()
+    {
+        base.OnEffectEnd();
+
+        PlayerControl.LocalPlayer.RpcRemoveModifier<MorphlingMorphModifier>();
+        OverrideName(MiraLocaleManager.Get("TownOfUsMira.Role.MorphlingMorph", "Morph"));
+    }
+}

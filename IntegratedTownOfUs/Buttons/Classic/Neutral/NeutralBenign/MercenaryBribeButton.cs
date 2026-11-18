@@ -1,0 +1,51 @@
+﻿using MiraAPI.Modifiers;
+using MiraAPI.Utilities;
+using TownOfUs.Modifiers.Neutral;
+using TownOfUs.Roles.Neutral;
+using UnityEngine;
+
+namespace TownOfUs.Buttons.Neutral;
+
+public sealed class MercenaryBribeButton : TownOfUsRoleButton<MercenaryRole, PlayerControl>, ILegacyCapable
+{
+    public override string Name => MiraLocaleManager.Get("TownOfUsMira.Role.MercenaryBribe", "Bribe");
+    public override BaseKeybind Keybind => Keybinds.PrimaryAction;
+    public override Color TextOutlineColor => TownOfUsColors.Mercenary;
+    public override float Cooldown => Math.Clamp(MapCooldown, 0.001f, 120f);
+    public override LoadableAsset<Sprite> Sprite => LegacyAssets.IsLegacy ? LegacyNeutAssets.BribeSprite : TouNeutAssets.BribeSprite;
+
+    public override bool CanUse()
+    {
+        return base.CanUse() && Role.CanBribe;
+    }
+
+    protected override void OnClick()
+    {
+        if (Target == null)
+        {
+            Error("Mercenary Bribed: Target is null");
+            return;
+        }
+
+        Target.RpcAddModifier<MercenaryBribedModifier>(PlayerControl.LocalPlayer);
+        var notificationText = MiraLocaleManager.Get(
+                "TownOfUsMira.Role.MercenaryBribeSuccess",
+                "If <player> wins, you will win as well.")
+            .Replace("<player>", Target.Data.PlayerName);
+
+        var notif1 = Helpers.CreateAndShowNotification(
+            $"<b>{notificationText}</b>", Color.white, new Vector3(0f, 1f, -20f),
+            spr: TouRoleIcons.Mercenary.LoadAsset());
+        notif1.AdjustNotification();
+
+        Role.Gold -= MercenaryRole.BrideCost;
+
+        SetActive(false, Role);
+    }
+
+    public override PlayerControl? GetTarget()
+    {
+        return PlayerControl.LocalPlayer.GetClosestLivingPlayer(true, Distance,
+            predicate: x => !x.HasModifier<MercenaryBribedModifier>());
+    }
+}

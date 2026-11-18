@@ -1,0 +1,91 @@
+﻿using HarmonyLib;
+using MiraAPI.Modifiers.Types;
+using MiraAPI.PluginLoading;
+using TownOfUs.Modules;
+using UnityEngine;
+
+namespace TownOfUs.Modifiers;
+
+// This is intended to be used for roles such as Snitch or Mayor
+// for getting the role, use this: RoleManager.Instance.GetRole((RoleTypes)RoleId.Get<ImitatorRole>())
+[MiraIgnore]
+public abstract class RevealModifier(int roleChangeResult, bool revealRole, RoleBehaviour? role) : BaseRevealModifier
+{
+    public override bool RevealRole { get; set; } = revealRole;
+
+    public override ChangeRoleResult ChangeRoleResult { get; set; } = (ChangeRoleResult)roleChangeResult;
+
+    public override void OnActivate()
+    {
+        if (RevealRole && ShownRole == null)
+        {
+            ShownRole = role ?? Player.Data.Role;
+        }
+
+        if (MeetingHud.Instance && RevealRole)
+        {
+            var targetVoteArea = MeetingHud.Instance.playerStates.First(x => x.PlayerId == Player.PlayerId);
+            if (targetVoteArea.PlayerId != PlayerControl.LocalPlayer.PlayerId)
+            {
+                MeetingMenu.Instances.Do(x => x.HideSingle(targetVoteArea.PlayerId));
+            }
+        }
+    }
+}
+
+[MiraIgnore]
+public abstract class BaseRevealModifier : TimedModifier
+{
+    public override string ModifierName => "Revealed";
+    public override float Duration => 1f;
+    public override bool AutoStart => false;
+    public override bool HideOnUi => true;
+    public override bool RemoveOnComplete => false;
+    public virtual string ExtraRoleText { get; set; } = string.Empty;
+    public virtual string ExtraNameText { get; set; } = string.Empty;
+    public virtual Color? NameColor { get; set; }
+    public virtual bool RevealRole { get; set; }
+
+    public virtual ChangeRoleResult ChangeRoleResult { get; set; } = ChangeRoleResult.Nothing;
+
+    public virtual RoleBehaviour? ShownRole { get; set; }
+
+    public virtual bool Visible { get; set; } = true;
+
+    public override string GetDescription() => "You are Revealed!";
+
+    public void SetNewInfo(bool revealRole, string? nameTxt = null, string? roleTxt = null, RoleBehaviour? role2 = null,
+        Color? nameColor = null)
+    {
+        RevealRole = revealRole;
+        ExtraRoleText = roleTxt ?? ExtraRoleText; // Set to string.Empty to remove the text
+        ExtraNameText = nameTxt ?? ExtraNameText; // Set to string.Empty to remove the text
+        NameColor = nameColor;
+        ShownRole = role2;
+    }
+
+    public override void OnActivate()
+    {
+        base.OnActivate();
+        if (RevealRole && ShownRole == null)
+        {
+            ShownRole = Player.Data.Role;
+        }
+
+        if (MeetingHud.Instance && RevealRole)
+        {
+            var targetVoteArea = MeetingHud.Instance.playerStates.First(x => x.PlayerId == Player.PlayerId);
+            if (targetVoteArea.PlayerId != PlayerControl.LocalPlayer.PlayerId)
+            {
+                MeetingMenu.Instances.Do(x => x.HideSingle(targetVoteArea.PlayerId));
+            }
+        }
+    }
+}
+
+public enum ChangeRoleResult
+{
+    UpdateInfo,
+    RemoveModifier,
+    Nothing
+}

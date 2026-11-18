@@ -1,0 +1,174 @@
+﻿using System.Collections;
+using Il2CppInterop.Runtime.Attributes;
+using MiraAPI.GameOptions;
+using MiraAPI.Patches.Stubs;
+using MiraAPI.Roles;
+using Reactor.Networking.Attributes;
+using Reactor.Utilities;
+using TownOfUs.Achievements;
+using TownOfUs.Modules;
+using TownOfUs.Modules.RainbowMod;
+using TownOfUs.Options.Roles.Crewmate;
+using UnityEngine;
+using Color = UnityEngine.Color;
+
+namespace TownOfUs.Roles.Crewmate;
+
+public sealed class AurialRole(IntPtr cppPtr) : CrewmateRole(cppPtr), ITownOfUsRole, IWikiDiscoverable, IDoomable
+{
+    private readonly Dictionary<(Vector3, int), ArrowBehaviour> _senseArrows = [];
+    public DoomableType DoomHintType => DoomableType.Perception;
+    public string IdPart => "Aurial";
+
+    public string GetAdvancedDescription()
+    {
+        return
+            MiraLocaleManager.Get($"TownOfUsMira.Role.{IdPart}.WikiDescription") +
+            MiscUtils.AppendOptionsText(GetType());
+    }
+
+    public Color RoleColor => TownOfUsColors.Aurial;
+    public ModdedRoleTeams Team => ModdedRoleTeams.Crewmate;
+    public RoleAlignment RoleAlignment => RoleAlignment.CrewmateInvestigative;
+
+    public CustomRoleConfiguration Configuration => new(this)
+    {
+        IconTmp = TmpSpriteUtils.CreateSpriteAsset(TouRoleIcons.Aurial.LoadAsset(), "TouMira.Role.Crewmate.Aurial", 1.45f),
+        Icon = TouRoleIcons.Aurial,
+        OptionsScreenshot = TouBanners.AurialRoleBanner,
+        IntroSound = TouAudio.MediumIntroSound
+    };
+
+    public void LobbyStart()
+    {
+        _senseArrows.Values.DestroyAll();
+        _senseArrows.Clear();
+    }
+
+
+
+    public override void Deinitialize(PlayerControl targetPlayer)
+    {
+        RoleBehaviourStubs.Deinitialize(this, targetPlayer);
+
+        _senseArrows.Values.DestroyAll();
+        _senseArrows.Clear();
+    }
+
+    [HideFromIl2Cpp]
+    public IEnumerator Sense(PlayerControl player, bool willDie)
+    {
+        if (!CheckRange(player, OptionGroupSingleton<AurialOptions>.Instance.AuraOuterRadius))
+        {
+            yield break;
+        }
+
+        var willColor = CheckRange(player,
+            OptionGroupSingleton<AurialOptions>.Instance.AuraInnerRadius);
+        if (willDie)
+        {
+            if (!willColor)
+            {
+                AchievementsAPIHelper.Unlock(TouAchievements.StrangerDanger);
+            }
+            yield break;
+        }
+
+        AchievementsAPIHelper.Increment(TouAchievements.ForceBeWithYou, 1,
+            AchievementsAPIHelper.GetCurrentValue(TouAchievements.ForceBeWithYou) == 4);
+
+        var position = player.transform.position;
+        var colorID = player.Data.DefaultOutfit.ColorId;
+        var color = Color.white;
+
+        if (willColor)
+        {
+            color = Palette.PlayerColors[colorID];
+        }
+
+        var arrow = MiscUtils.CreateArrow(Player.transform, color);
+        arrow.target = position;
+
+        if (willColor)
+        {
+            var spr = arrow.gameObject.GetComponent<SpriteRenderer>();
+            var r = arrow.gameObject.AddComponent<BasicRainbowBehaviour>();
+
+            r.AddRend(spr, Player.cosmetics.ColorId);
+        }
+
+        try
+        {
+            DestroyArrow(position, colorID);
+        }
+        catch
+        {
+            /* ignored */
+        }
+
+        _senseArrows.Add((position, colorID), arrow);
+
+        yield return new WaitForSeconds(OptionGroupSingleton<AurialOptions>.Instance.SenseDuration);
+
+        try
+        {
+            DestroyArrow(position, colorID);
+        }
+        catch
+        {
+            /* ignored */
+        }
+    }
+
+    public bool CheckRange(PlayerControl player, float radius)
+    {
+        var lightRadius = radius * ShipStatus.Instance.MaxLightRadius;
+        var vector2 = new Vector2(player.GetTruePosition().x - Player.GetTruePosition().x,
+            player.GetTruePosition().y - Player.GetTruePosition().y);
+        var magnitude = vector2.magnitude;
+
+        if (magnitude <= lightRadius)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public void DestroyArrow(Vector3 targetArea, int colourID)
+    {
+        var arrow = _senseArrows.FirstOrDefault(x => x.Key == (targetArea, colourID));
+
+        if (arrow.Value != null)
+        {
+            Destroy(arrow.Value);
+        }
+
+        if (arrow.Value?.gameObject != null)
+        {
+            Destroy(arrow.Value.gameObject);
+        }
+
+        _senseArrows.Remove(arrow.Key);
+    }
+
+    [MethodRpc((uint)TownOfUsRpc.AurialSense)]
+    public static void RpcSense(PlayerControl player, PlayerControl source, bool willDie)
+    {
+        if (LobbyBehaviour.Instance)
+        {
+            MiscUtils.RunAnticheatWarning(player);
+            return;
+        }
+        if (player.Data.Role is not AurialRole aurial)
+        {
+            Error("Invalid Aurial");
+            return;
+        }
+
+        if (player.AmOwner)
+        {
+            Coroutines.Start(aurial.Sense(source, willDie));
+        }
+    }
+}

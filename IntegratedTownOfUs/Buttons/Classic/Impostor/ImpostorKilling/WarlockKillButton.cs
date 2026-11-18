@@ -1,0 +1,180 @@
+﻿using MiraAPI.GameOptions;
+using MiraAPI.Modifiers;
+using MiraAPI.Networking;
+using TownOfUs.Modifiers.Impostor;
+using TownOfUs.Options;
+using TownOfUs.Options.Maps;
+using TownOfUs.Options.Modifiers.Alliance;
+using TownOfUs.Options.Roles.Impostor;
+using TownOfUs.Roles.Impostor;
+using TownOfUs.Utilities.Appearances;
+using UnityEngine;
+
+namespace TownOfUs.Buttons.Impostor;
+
+public sealed class WarlockKillButton : TownOfUsKillRoleButton<WarlockRole, PlayerControl>, IDiseaseableButton,
+    IKillButton, ILegacyCapable
+{
+    private string _killName = "Kill";
+    private string _burstKill = "Burst Kill";
+    private string _burstActive = "Burst Active";
+    public override string Name => _killName;
+    public override BaseKeybind Keybind => Keybinds.PrimaryAction;
+    public override Color TextOutlineColor => TownOfUsColors.Impostor;
+    public override float Cooldown => PlayerControl.LocalPlayer.GetKillCooldown();
+    public override LoadableAsset<Sprite> Sprite => LegacyAssets.IsLegacy ? LegacyVanillaAssets.KillSprite : TouAssets.KillSprite;
+
+    public override bool ZeroIsInfinite { get; set; } = true;
+
+    public float Charge { get; set; }
+    public bool BurstActive { get; set; }
+    public int Kills { get; set; }
+    public List<PlayerControl> MarkedPlayers = [];
+
+    public void MarkPlayerForDeath(PlayerControl player)
+    {
+        Error($"Marked {player.CachedPlayerData.PlayerName} for death!");
+        MarkedPlayers.Add(player);
+        player.AddModifier<WarlockMarkedModifier>();
+    }
+
+    public void ResetMarkedPlayers()
+    {
+        Warning("Marked Players are reset!");
+        MarkedPlayers.Clear();
+        foreach (var mod in ModifierUtils.GetActiveModifiers<WarlockMarkedModifier>().ToList())
+        {
+            mod.Player.RemoveModifier(mod);
+        }
+    }
+
+    public void SetDiseasedTimer(float multiplier)
+    {
+        SetTimer(Cooldown * multiplier);
+    }
+
+    public override void CreateButton(Transform parent)
+    {
+        base.CreateButton(parent);
+        KeybindIcon?.transform.localPosition = new Vector3(0.4f, 0.45f, -9f);
+
+        _killName = TranslationController.Instance.GetStringWithDefault(StringNames.KillLabel, "Kill");
+        _burstKill = MiraLocaleManager.Get("TownOfUsMira.Role.WarlockBurstKill", "Burst Kill");
+        _burstActive = MiraLocaleManager.Get("TownOfUsMira.Role.WarlockBurstActive", "Burst Active");
+        OverrideName(_killName);
+    }
+
+    protected override void FixedUpdate(PlayerControl playerControl)
+    {
+        if (BurstActive)
+        {
+            Charge -= 100 * Time.fixedDeltaTime / OptionGroupSingleton<WarlockOptions>.Instance.DischargeTimeDuration;
+
+            if (Charge <= 0)
+            {
+                Charge = 0;
+                BurstActive = false;
+                SetTimer(Cooldown);
+                ResetMarkedPlayers();
+            }
+        }
+        else
+        {
+            if (Timer <= 0 && Charge < 100 && !PlayerControl.LocalPlayer.inVent)
+            {
+                var duration = OptionGroupSingleton<WarlockOptions>.Instance.ChargeTimeDuration *
+                               (1f + Kills * OptionGroupSingleton<WarlockOptions>.Instance.AddedTimeDuration);
+                var delta = Time.fixedDeltaTime;
+                Charge += 100 * delta / duration;
+
+                var num = Mathf.Clamp((100 - Charge) / 100, 0f, 1f);
+                Button?.SetCooldownFill(num);
+            }
+        }
+
+        Button?.usesRemainingText.gameObject.SetActive(Timer <= 0);
+        Button?.usesRemainingSprite.gameObject.SetActive(Timer <= 0);
+        Button!.usesRemainingText.text = (int)Charge + "%";
+
+        if (BurstActive)
+        {
+            OverrideName(_burstActive);
+        }
+        else if (Charge >= 100 && Timer <= 0)
+        {
+            OverrideName(_burstKill);
+        }
+        else
+        {
+            OverrideName(_killName);
+        }
+
+        base.FixedUpdate(playerControl);
+    }
+
+    public override bool CanUse()
+    {
+        return base.CanUse() && Charge > 0;
+    }
+
+    public override bool CanClick()
+    {
+        return base.CanClick() && (BurstActive || Charge > 0);
+    }
+
+    protected override void OnClick()
+    {
+        if (Target == null)
+        {
+            return;
+        }
+
+        if (!Target.Data.IsDead && !MarkedPlayers.Contains(Target))
+        {
+            if (BurstActive || Charge > 99f)
+            {
+                MarkPlayerForDeath(Target);
+            }
+            PlayerControl.LocalPlayer.RpcCustomMurder(Target, MeetingCheck.OutsideMeeting);
+        }
+    }
+
+    public override void ResetCooldownAndOrEffect()
+    {
+        ResetMarkedPlayers();
+        base.ResetCooldownAndOrEffect();
+    }
+
+    public override void ClickHandler()
+    {
+        if (!CanClick())
+        {
+            return;
+        }
+
+        OnClick();
+        Button?.SetDisabled();
+        // The timer changes are moved to WarlockEvents.cs due to the kill system changes adding a delay.
+    }
+
+    public override PlayerControl? GetTarget()
+    {
+        var genOpt = OptionGroupSingleton<GeneralOptions>.Instance;
+        var saboOpt = OptionGroupSingleton<AdvancedSabotageOptions>.Instance;
+        var closePlayer = PlayerControl.LocalPlayer.GetClosestLivingPlayer(true, Distance);
+
+        var includePostors = genOpt.FFAImpostorMode ||
+                             (PlayerControl.LocalPlayer.IsLover() &&
+                              OptionGroupSingleton<LoversOptions>.Instance.LoverKillTeammates) ||
+                             (saboOpt.KillDuringCamoComms &&
+                              closePlayer?.GetAppearanceType() == TownOfUsAppearances.Camouflage);
+        if (!OptionGroupSingleton<LoversOptions>.Instance.LoversKillEachOther && PlayerControl.LocalPlayer.IsLover())
+        {
+            return PlayerControl.LocalPlayer.GetClosestLivingPlayer(includePostors, Distance, false,
+                x => !MarkedPlayers.Contains(x) && !x.IsLover());
+        }
+
+        return PlayerControl.LocalPlayer.GetClosestLivingPlayer(includePostors, Distance, false,
+            x => !MarkedPlayers.Contains(x));
+    }
+}

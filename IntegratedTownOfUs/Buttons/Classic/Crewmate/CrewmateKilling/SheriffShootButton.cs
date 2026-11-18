@@ -1,0 +1,207 @@
+// MTOU publication snapshot prepared 2026-11-17.
+// Modified relative to TOU Mira b56f24a0; original credits retained. See SOURCE_PROVENANCE.md.
+using System.Collections;
+using Il2CppInterop.Runtime;
+using MiraAPI.GameOptions;
+using MiraAPI.Modifiers;
+using MiraAPI.Networking;
+using MiraAPI.Utilities;
+using Reactor.Utilities;
+using TouMarmo.Modifiers;
+using TouMarmo.Options;
+using TownOfUs.Modifiers;
+using TownOfUs.Modifiers.Game;
+using TownOfUs.Options.Modifiers.Alliance;
+using TownOfUs.Options.Roles.Crewmate;
+using TownOfUs.Roles;
+using TownOfUs.Roles.Crewmate;
+using UnityEngine;
+
+namespace TownOfUs.Buttons.Crewmate;
+
+public sealed class SheriffShootButton : TownOfUsKillRoleButton<SheriffRole, PlayerControl>, IKillButton, ILegacyCapable
+{
+    public override string Name => MiraLocaleManager.Get("TownOfUsMira.Role.SheriffShoot", "Shoot");
+    public override BaseKeybind Keybind => Keybinds.PrimaryAction;
+    public override Color TextOutlineColor => TownOfUsColors.Sheriff;
+    public override float Cooldown => Math.Clamp(OptionGroupSingleton<SheriffOptions>.Instance.KillCooldown + MapCooldown, 5f, 120f);
+    public override LoadableAsset<Sprite> Sprite => LegacyAssets.IsLegacy ? LegacyVanillaAssets.KillSprite : TouCrewAssets.SheriffShootSprite;
+
+    public override bool ZeroIsInfinite { get; set; } = true;
+
+    public override bool UsableFirstRound => OptionGroupSingleton<SheriffOptions>.Instance.FirstRoundUse;
+
+    public bool FailedShot { get; set; }
+
+    public override bool CanUse()
+    {
+        return base.CanUse() && !FailedShot;
+    }
+
+    private void Misfire()
+    {
+        if (ChanceMisfireRuntime.Request(PlayerControl.LocalPlayer, Target))
+        {
+            Timer = Cooldown;
+            return;
+        }
+
+        if (Target == null)
+        {
+            Error("Misfire: Target is null");
+            return;
+        }
+
+        var missType = OptionGroupSingleton<SheriffOptions>.Instance.MisfireType;
+        SheriffRole.RpcSheriffMisfire(PlayerControl.LocalPlayer);
+
+        if (missType is MisfireOptions.Target or MisfireOptions.Both)
+        {
+            PlayerControl.LocalPlayer.RpcCustomMurder(Target, MeetingCheck.OutsideMeeting);
+        }
+
+        if (missType is MisfireOptions.Sheriff or MisfireOptions.Both)
+        {
+            PlayerControl.LocalPlayer.RpcCustomMurder(PlayerControl.LocalPlayer, MeetingCheck.OutsideMeeting);
+        }
+
+        FailedShot = true;
+
+        var notif1 = Helpers.CreateAndShowNotification($"<b>{MiraLocaleManager.Get("TownOfUsMira.Role.SheriffMisfireFeedback")}</b>",
+            Color.white, new Vector3(0f, 1f, -20f), spr: TouRoleIcons.Sheriff.LoadAsset());
+
+        notif1.AdjustNotification();
+
+        Coroutines.Start(MiscUtils.CoFlash(Color.red));
+    }
+
+    private static IEnumerator CoSetBodyReportable(byte bodyId)
+    {
+        var waitDelegate =
+            DelegateSupport.ConvertDelegate<Il2CppSystem.Func<bool>>(() => Helpers.GetBodyById(bodyId) != null);
+        yield return new WaitUntil(waitDelegate);
+        var body = Helpers.GetBodyById(bodyId);
+
+        if (body != null)
+        {
+            body.gameObject.layer = LayerMask.NameToLayer("Ship");
+            body.Reported = true;
+        }
+    }
+
+    protected override void OnClick()
+    {
+        if (Target == null)
+        {
+            Error("Sheriff Shoot: Target is null");
+            return;
+        }
+
+        if (!ProtectionRuntime.Bypass(Target) && Target.HasModifier<FirstDeadShield>())
+        {
+            return;
+        }
+
+        if (!ProtectionRuntime.Bypass(Target) && Target.HasModifier<BaseShieldModifier>())
+        {
+            return;
+        }
+
+        var alignment = Target.Data.Role.GetRoleAlignment();
+        var options = OptionGroupSingleton<SheriffOptions>.Instance;
+
+        if (!(PlayerControl.LocalPlayer.TryGetModifier<AllianceGameModifier>(out var allyMod) &&
+              !allyMod.GetsPunished) &&
+            !(Target.TryGetModifier<AllianceGameModifier>(out var allyMod2) && !allyMod2.GetsPunished))
+        {
+            switch (alignment)
+            {
+                case RoleAlignment.CrewmateInvestigative:
+                case RoleAlignment.CrewmateKilling:
+                case RoleAlignment.CrewmateProtective:
+                case RoleAlignment.CrewmatePower:
+                case RoleAlignment.CrewmateSupport:
+                    Misfire();
+                    break;
+
+                case RoleAlignment.NeutralOutlier:
+                    if (!options.ShootNeutralOutlier.Value)
+                    {
+                        Misfire();
+                    }
+                    else
+                    {
+                        PlayerControl.LocalPlayer.RpcCustomMurder(Target, MeetingCheck.OutsideMeeting);
+                    }
+
+                    break;
+
+                case RoleAlignment.NeutralKilling:
+                    if (!options.ShootNeutralKiller.Value)
+                    {
+                        Misfire();
+                    }
+                    else
+                    {
+                        PlayerControl.LocalPlayer.RpcCustomMurder(Target, MeetingCheck.OutsideMeeting);
+                    }
+
+                    break;
+
+                case RoleAlignment.NeutralEvil:
+                    if (!options.ShootNeutralEvil.Value)
+                    {
+                        Misfire();
+                    }
+                    else
+                    {
+                        PlayerControl.LocalPlayer.RpcCustomMurder(Target, MeetingCheck.OutsideMeeting);
+                    }
+
+                    break;
+
+                case RoleAlignment.NeutralBenign:
+                    if (!options.ShootNeutralBenign.Value)
+                    {
+                        Misfire();
+                    }
+                    else
+                    {
+                        PlayerControl.LocalPlayer.RpcCustomMurder(Target, MeetingCheck.OutsideMeeting);
+                    }
+
+                    break;
+                default:
+                    if (Target.IsImpostor() || Target.IsNeutral())
+                    {
+                        PlayerControl.LocalPlayer.RpcCustomMurder(Target, MeetingCheck.OutsideMeeting);
+                    }
+                    else
+                    {
+                        Misfire();
+                    }
+
+                    break;
+            }
+        }
+        else
+        {
+            PlayerControl.LocalPlayer.RpcCustomMurder(Target, MeetingCheck.OutsideMeeting);
+        }
+
+        if (!OptionGroupSingleton<SheriffOptions>.Instance.SheriffBodyReport)
+        {
+            Coroutines.Start(CoSetBodyReportable(Target.PlayerId));
+        }
+    }
+
+    public override PlayerControl? GetTarget()
+    {
+        if (!OptionGroupSingleton<LoversOptions>.Instance.LoversKillEachOther && PlayerControl.LocalPlayer.IsLover())
+        {
+            return PlayerControl.LocalPlayer.GetClosestLivingPlayer(true, Distance, false, x => !x.IsLover());
+        }
+
+        return PlayerControl.LocalPlayer.GetClosestLivingPlayer(true, Distance);
+    }
+}

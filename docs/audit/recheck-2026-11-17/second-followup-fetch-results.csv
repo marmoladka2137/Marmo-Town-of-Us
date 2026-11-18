@@ -1,0 +1,8 @@
+"Name","Url","Status","Bytes","SHA256","Error"
+"AutoRejoin-tree","https://api.github.com/repos/Maxi0fc/AutoRejoin/git/trees/main?recursive=1","200","48194","4167283B3470CB8193562B69DC424C9A1C89151151B2AFA65F97AA1DFF59BC7F",""
+"BepInEx-tree","https://api.github.com/repos/BepInEx/BepInEx/git/trees/0d275a4df3b6bbcb990a9715d0f037789624c377?recursive=1","200","51591","6CC1069DD4CEB5EE49B0CFB138F5801BAE9FCA71CC63D70836C767E7BF951FFC",""
+"Cosmetics-commit","https://api.github.com/repos/AU-Avengers/TownOfUs-Cosmetics/commits/main","200","4072","6A7A0C6F5781643E16916890041C6D827C101FC836BD3626F894A8FF754F0C15",""
+"Disarm-tree","https://api.github.com/repos/SamboyCoding/Disarm/git/trees/c25313c438ad4f3b3c7284128368504f98b5686d?recursive=1","200","15810","6E8E24DB63E2780D68AD8F8DCFF157435F64A2FBE31258FC563711541C8EFD0F",""
+"Dobby-license","https://raw.githubusercontent.com/jmpews/Dobby/master/LICENSE","200","11356","43070E2D4E532684DE521B885F385D0841030EFA2B1A20BAFB76133A5E1379C1",""
+"Primitives-tree","https://api.github.com/repos/AssetRipper/AssetRipper.Primitives/git/trees/9c4a7d8127cc9af1e5f61edee8eeb90bd90676aa?recursive=1","200","10867","1C374CA03094BD931F028329DF7F45BAFC4AF2C583ED70E53C1B438812A00E5F",""
+"TOU-Mira-assetsrepo","https://api.github.com/repos/AU-Avengers/TOU-Mira-Assets","404","0","","Response status code does not indicate success: 404 (Not Found)."

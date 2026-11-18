@@ -1,0 +1,71 @@
+﻿using HarmonyLib;
+using MiraAPI.GameOptions;
+using MiraAPI.Hud;
+using MiraAPI.Modifiers;
+using MiraAPI.Utilities;
+
+using TownOfUs.Modifiers.Game.Universal;
+using TownOfUs.Options.Modifiers.Universal;
+using UnityEngine;
+using Object = UnityEngine.Object;
+
+namespace TownOfUs.Buttons.Modifiers;
+
+public sealed class SatelliteButton : TownOfUsButton, ILegacyCapable
+{
+    public override string Name => MiraLocaleManager.Get("TownOfUsMira.Modifier.SatelliteBroadcast", "Broadcast");
+    public override BaseKeybind Keybind => Keybinds.ModifierAction;
+    public override Color TextOutlineColor => TownOfUsColors.Satellite;
+    public override float Cooldown => Math.Clamp(OptionGroupSingleton<SatelliteOptions>.Instance.Cooldown + MapCooldown, 5f, 120f);
+    public override int MaxUses => (int)OptionGroupSingleton<SatelliteOptions>.Instance.MaxNumCast;
+    public override ButtonLocation Location => ButtonLocation.BottomLeft;
+    public override LoadableAsset<Sprite> Sprite => LegacyAssets.IsLegacy ? LegacyAssets.BroadcastSprite : TouAssets.BroadcastSprite;
+    public bool CanStillUse = true;
+
+    public override bool UsableFirstRound => OptionGroupSingleton<SatelliteOptions>.Instance.FirstRoundUse;
+
+    public override bool Enabled(RoleBehaviour? role)
+    {
+        return PlayerControl.LocalPlayer &&
+               PlayerControl.LocalPlayer.HasModifier<SatelliteModifier>() &&
+               !PlayerControl.LocalPlayer.Data.IsDead;
+    }
+
+    public override bool CanUse()
+    {
+        return base.CanUse() && CanStillUse;
+    }
+
+    public override void CreateButton(Transform parent)
+    {
+        base.CreateButton(parent);
+
+        Button!.usesRemainingSprite.sprite = LegacyAssets.IsLegacy ? TouAssets.BlankSprite.LoadAsset() : TouAssets.AbilityCounterBodySprite.LoadAsset();
+    }
+
+    protected override void OnClick()
+    {
+        var deadBodies = Object.FindObjectsOfType<DeadBody>().ToList();
+
+        deadBodies.Do(x => PlayerControl.LocalPlayer.AddModifier<SatelliteArrowModifier>(x, Color.white));
+        var text = MiraLocaleManager.Get("TownOfUsMira.Modifier.SatelliteFailedNotif");
+        if (deadBodies.Count == 1)
+        {
+            text = MiraLocaleManager.Get("TownOfUsMira.Modifier.SatelliteSingleNotif");
+        }
+        else if (deadBodies.Count > 1)
+        {
+            text = MiraLocaleManager.Get("TownOfUsMira.Modifier.SatellitePluralNotif").Replace("<count>", deadBodies.Count.ToString(TownOfUsPlugin.Culture));
+        }
+        var notif1 = Helpers.CreateAndShowNotification($"<b>{text}</b>", Color.white,
+            new Vector3(0f, 1f, -20f), spr: TouModifierIcons.Satellite.LoadAsset());
+        notif1.AdjustNotification();
+
+        if (OptionGroupSingleton<SatelliteOptions>.Instance.OneUsePerRound)
+        {
+            CanStillUse = false;
+        }
+        // will return to this once i get more freetime
+        //deadBodies.Do(x => PlayerControl.LocalPlayer.GetModifier<SatelliteModifier>().NewMapIcon(MiscUtils.PlayerById(x.ParentId)));
+    }
+}
