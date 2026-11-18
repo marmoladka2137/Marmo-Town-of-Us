@@ -1,136 +1,189 @@
-# Marmo Town of Us — role catalog for SUS Modder
+# Marmo Town of Us — roles for SUS Modder
 
-Draft for moderator review. No public repository/release URL has been created. Includes active registrations, separated by game mode; known test and licensing blockers remain in KNOWN_ISSUES.md.
+Public source: https://github.com/marmoladka2137/Marmo-Town-of-Us
 
-- **Exorcist** — Crewmate / CrewmateInvestigative; Classic / transformation; MTOU. Drag and drop bodies. Prayer requires min(3, all unreported bodies on the map), with at least one body, in a valid nearby group. BodyGroupRules requires pairwise spacing within 1.5 units. A successful prayer privately reveals one qualifying killer name and role at the next meeting. Only actual history entries for the analyzed victims qualify; the killer must have an Impostor or Neutral Killing role. Failed conditions do not consume Prayer.
-- **Composter** — Crewmate / CrewmateKilling; Classic / transformation; MTOU. The Composter wins with the Crewmates but can kill indirectly. Their Place Trap button creates an invisible, single-use trap at their feet. The Composter is immune to their own traps. Other players cannot see them.
-- **Furas** — Crewmate / CrewmateKilling; Classic / transformation; MTOU. Furas wins with the Crew. Place up to the configured number of pet spawn points, choose one, then control a walking fox for a limited time. The fox uses normal movement controls and moves at 1.25 times normal player speed by default. It cannot cross walls or use vents, ladders, platforms or doors. Attacks respect shields and Dirtek protection. By default, killing a Crewmate permanently disables all Furas abilities. Options control spawn count, placement cooldown, control duration and cooldown, speed multiplier, attack range and cooldown, initial attack delay, kills per control, visibility, marker display, Comms blocking, meeting persistence and the Crewmate penalty.
-- **Bandit** — Crewmate / CrewmatePower; Classic / transformation; MTOU. Choose a living player during a round. Both roles stay unchanged through the next meeting. After it ends, you borrow their current role for one round. After the following meeting, both original roles return. If either player dies before activation, the selection is cancelled. You win with the Crewmates.
-- **Necromancer** — Crewmate / CrewmatePower; Classic / transformation; MTOU. Control a corpse while your own body stays still, with one attack per control. Alternatively, animate a corpse to follow its killer around obstacles. Its owner remains dead. Timers, death and meetings end control. Settings govern uses, speed, reporting and Crewmate attacks.
-- **Doctor** — Crewmate / CrewmateProtective; Classic / transformation; MTOU. Mark players to give them a one-hit shield. The mark that unlocks your reveal grants no shield. Your shields vanish when you die. An early reveal disables marking until the next meeting. Only marked living Crewmates count toward your reveal. After revealing, you become protected and can no longer mark. Voting can still eject you when enabled. You win with the Crewmates.
-- **Wladca** — Crewmate / CrewmateSupport; Classic / transformation; MTOU. Empower activates Wladca's selected powers for the configured duration. Each power can be switched on or off separately in TOU-Marmo role settings. The role has its own crown and Empower icons.
-- **Hugger** — Impostor / ImpostorPower; Classic / transformation; MTOU. Hug kills immediately in the world, using the standard special-murder animation and a configured body-disappearance chance. In meetings, one non-Impostor hug per game requests an immediate meeting kill. One Impostor hug per game grants Double Shot while preserving Assassin. This interaction is retained unchanged by owner decision; Double/Triple Shot retirement remains unresolved.
-- **Sweets** — Impostor / ImpostorPower; Classic / transformation; MTOU. Give flowers to non-Impostor-aligned living players. After the configured quota, the same button becomes Pollinate. Each flower holder independently rolls the kill percentage; all flowers and the counter reset afterwards, allowing further cycles. Flower state is currently shared statically across Sweets instances: multi-Sweets lobbies need testing.
-- **Dirtek** — Neutral / NeutralBenign; Classic / transformation; MTOU. Dirtek automatically receives one random living player at the start of the game. Protection is passive, permanent and has no cooldown or activation button. The target cannot be changed. The target dies when Dirtek dies. This protective Neutral is listed under Neutral Benign.
-- **Gambler** — Neutral / NeutralEvil; Classic / transformation; MTOU. Gambler places marks during a meeting. Marks arm when the next round begins; marked players who are already dead do not count. The first marked death outside a meeting grants one shot. A successful Cash Out kill fulfills Gambler's win condition.
-- **Barszcz** — Neutral / NeutralKilling; Classic / transformation; MTOU. Barszcz is a Neutral Killing role. After Barszcz kills, every player receives an arrow pointing to the new body. At the same time, Barszcz trades positions with the farthest living player. The arrow remains until the body disappears or a meeting begins.
-- **Engineer** — Crewmate / Crewmate; Town of Polus; TOU Mira. The Engineer is a Crewmate role that can fix one sabotage per game, from anywhere on the map.
-- **Crewmate (mode-specific variant)** — Crewmate / Crewmate; Town of Polus; TOU Mira. Town of Polus base Crewmate variant; uses the mode-specific Crewmate mechanics and team victory rules.
-- **Haunter** — Crewmate / CrewmateAfterlife; Classic / transformation; TOU Mira. The Haunter is a Crewmate Ghost who can do tasks. They will appear as a transparent player. If they finish all their tasks, all living players will see who the Impostors are. However, if an Impostor clicks them first, they will become a normal ghost. Impostors get a warning shortly before and when the Haunter finishes their tasks.
-- **Chameleon** — Crewmate / CrewmateHider; Hide and Seek; TOU Mira. The Chameleon is a Crewmate that can temporarily go invisible to hide from the seeker.
-- **Mystic** — Crewmate / CrewmateHider; Hide and Seek; TOU Mira. The Mystic is a Crewmate that gets an arrow pointing to every kill.
-- **Snitch** — Crewmate / CrewmateHider; Hide and Seek; TOU Mira. The Snitch is a Crewmate that decreases the time remaining quicker than other players with tasks, but at the cost of outing themselves to the seeker.
-- **Aurial** — Crewmate / CrewmateInvestigative; Classic / transformation; TOU Mira. The Aurial is a Crewmate Investigative role that will be alerted whenever a player near them uses one of their abilities.
-- **Forensic** — Crewmate / CrewmateInvestigative; Classic / transformation; TOU Mira. The Forensic is a Crewmate Investigative role that can inspect crime scenes and examine players to see if they were at the crime scene, flashing red if they were there.
-- **Investigator** — Crewmate / CrewmateInvestigative; Classic / transformation; TOU Mira. The Investigator is a Crewmate Investigative role can see player's footprints throughout the game. Swooped players' footprints will not be visible to the Investigator.
-- **Lookout** — Crewmate / CrewmateInvestigative; Classic / transformation; TOU Mira. The Lookout is a Crewmate Investigative role that can watch other players during rounds. During meetings, they will see all roles or players who interact with each watched player.
-- **Medium** — Crewmate / CrewmateInvestigative; Classic / transformation; TOU Mira. The Medium is a Crewmate Investigative role that can temporarily release their spirit. They can pass through walls and see ghosts, but leave their body unprotected.
-- **Mystic** — Crewmate / CrewmateInvestigative; Classic / transformation; TOU Mira. The Mystic is a Crewmate Investigative role that gets an alert when someone dies.
-- **Seer** — Crewmate / CrewmateInvestigative; Classic / transformation; TOU Mira. The Seer is a Crewmate Investigative role that can reveal the alliance of other players.
-- **Snitch** — Crewmate / CrewmateInvestigative; Classic / transformation; TOU Mira. The Snitch is a Crewmate Investigative role that can reveal the Impostors to themselves by finishing all their tasks. Upon completing all tasks, the Impostors will be revealed to the Snitch with an arrow and their red name.
-- **Sonar** — Crewmate / CrewmateInvestigative; Classic / transformation; TOU Mira. The Sonar is a Crewmate Investigative role that can track other players to see their general position across the map, getting colored arrows towards all tracked players.
-- **Spy** — Crewmate / CrewmateInvestigative; Classic / transformation; TOU Mira. The Spy is a Crewmate Investigative role that gains extra information on the admin table. They not only see how many people are in a room, but see who is in every room.
-- **Trapper** — Crewmate / CrewmateInvestigative; Classic / transformation; TOU Mira. The Trapper is a Crewmate Investigative role that can place traps around the map. If someone stays in it for enough time and enough players go through, they will get a list of their roles in the next meeting in random order.
-- **Deputy** — Crewmate / CrewmateKilling; Classic / transformation; Reworked TOU Mira. The Deputy is a Crewmate Killing role that can camp other players. Once a camped player dies, the Deputy is alerted to their death. The following meeting, the Deputy may then attempt to shoot the killer of the camped player. If successful the killer dies and if not nothing happens.
-- **Hunter** — Crewmate / CrewmateKilling; Classic / transformation; Reworked TOU Mira. The Hunter is a Crewmate Killing role that can stalk players during the round. If a stalked player uses an ability, they can be killed by the Hunter at any point in the game, even Crew. However, if the Hunter kills a caught Crewmate in the same round they were caught, the Hunter will leave in shame at the end of the next meeting.
-- **Officer** — Crewmate / CrewmateKilling; Classic / transformation; Reworked TOU Mira. The Officer is a Crewmate Killing role that can shoot players with limited ammo. They must load bullets, which only last one round unless they are added within 10 seconds.
-- **Sheriff** — Crewmate / CrewmateKilling; Classic / transformation; Reworked TOU Mira. The Sheriff is a Crewmate Killing role that can shoot a player to attempt to kill them. If Sheriff doesn't die to misfire, they will lose the ability to shoot.
-- **Veteran** — Crewmate / CrewmateKilling; Classic / transformation; TOU Mira. The Veteran is a Crewmate Killing role that can go on alert and kill anyone who interacts with them.
-- **Vigilante** — Crewmate / CrewmateKilling; Classic / transformation; TOU Mira. The Vigilante is a Crewmate Killing role that can guess roles of players in meetings. If they guess correctly, the other player will die. If not, they will die.
-- **Jailor** — Crewmate / CrewmatePower; Classic / transformation; Reworked TOU Mira. The Jailor is a Crewmate Power role that can jail other players. During a meeting, the Jailor can choose to execute their jailed player. (Unless the Jailor is an Imitator)
-- **Mayor** — Crewmate / CrewmatePower; Classic / transformation; TOU Mira. The Mayor is a Crewmate Power role that gains three votes and is revealed to all players, also changing their look in meetings.
-- **Monarch** — Crewmate / CrewmatePower; Classic / transformation; TOU Mira. The Monarch is a Crewmate Power role that can hand out additional votes to other players.
-- **Politician** — Crewmate / CrewmatePower; Classic / transformation; TOU Mira. The Politician is a Crewmate Power role that can reveal themselves to the crew as the Mayor, given that they have campaigned at least half of the crewmates.
-- **Prosecutor** — Crewmate / CrewmatePower; Classic / transformation; TOU Mira. The Prosecutor is a Crewmate Power role that can Exile a player, applying five votes to a player of their choosing. They can also see who voted for whom, even if they're anonymous.
-- **Swapper** — Crewmate / CrewmatePower; Classic / transformation; TOU Mira. The Swapper is a Crewmate Power that can swap the votes of two players in a meeting. Their meeting vote areas will be swapped visually, and the votes will be swapped. If player 1 received the most votes, and you swap them with player 2, player 2 will now be ejected instead.
-- **Time Lord** — Crewmate / CrewmatePower; Classic / transformation; TOU Mira. The Time Lord is a Crewmate Power role that can rewind time, forcing every player to retrace their steps for a short duration.
-- **Altruist** — Crewmate / CrewmateProtective; Classic / transformation; TOU Mira. The Altruist is a Crewmate Protective role that can revive dead crewmates, but prevents meetings being called by themselves or the crewmates they revive.
-- **Cleric** — Crewmate / CrewmateProtective; Classic / transformation; Reworked TOU Mira. The Cleric is a Crewmate Protective that can protect crewmates by negating their negative effects, as well as placing barriers on them to prevent interactions.
-- **Medic** — Crewmate / CrewmateProtective; Classic / transformation; Reworked TOU Mira. The Medic is a Crewmate Protective role that can give a Shield to a player.
-- **Mirrorcaster** — Crewmate / CrewmateProtective; Classic / transformation; Reworked TOU Mira. The Mirrorcaster is a Crewmate Protective role that can cast a Magic Mirror on a player to protect them. If attacked directly, the Mirrorcaster can then unleash onto another player.
-- **Oracle** — Crewmate / CrewmateProtective; Classic / transformation; TOU Mira. The Oracle is a Crewmate Protective role that can get another player to confess (revealing their faction with [revealAccuracy]% accuracy if the Oracle dies) or can protect a player from meeting abilities.
-- **Warden** — Crewmate / CrewmateProtective; Classic / transformation; Reworked TOU Mira. The Warden is a Crewmate Protective role that can fortify players to prevent them from being interacted with.
-- **Barkeeper** — Crewmate / CrewmateSupport; Classic / transformation; TOU Mira. The Barkeeper is a Crewmate Support role that can drink with others to roleblock them. They may also spill a drink to speed or slow down players.
-- **Engineer** — Crewmate / CrewmateSupport; Classic / transformation; TOU Mira. The Engineer is a Crewmate Support role that can vent and fix sabotages remotely.
-- **Imitator** — Crewmate / CrewmateSupport; Classic / transformation; TOU Mira. The Imitator is a Crewmate Support role that can select a dead crewmate to imitate their role until they change targets. Certain roles are inaccessible if there are multiple living imitators.
-- **Plumber** — Crewmate / CrewmateSupport; Classic / transformation; Reworked TOU Mira. Drop a nail into a nearby vent. The vent records eligible entries and triggers the configured single-use trap threshold, then removes the trap. Task progression can replenish uses. The installed role no longer builds vent walls. Its standard Engineer-style vent access is retained.
-- **Sentry** — Crewmate / CrewmateSupport; Classic / transformation; TOU Mira. The Sentry is a Crewmate Support role that can deploy cameras around the map that function like Security cameras.
-- **Transporter** — Crewmate / CrewmateSupport; Classic / transformation; TOU Mira. The Transporter is a Crewmate Support role that can transport two players, dead or alive, to swap their locations.
-- **Bomber** — Custom / FrenzyKiller; Kill Frenzy; TOU Mira. The Bomber is an Impostor Killing role that can drop a bomb on the map, which detonates after [detonateDelay] second(s).
-- **Escapist** — Custom / FrenzyKiller; Kill Frenzy; TOU Mira. The Escapist is an Impostor Concealing role that can mark a location and then recall (teleport) to that location.
-- **Glitch** — Custom / FrenzyKiller; Kill Frenzy; TOU Mira. The Glitch is a Neutral Killing role that wins by being the last killer alive. They can Mimic into another player, or they can hack a player.
-- **Grenadier** — Custom / FrenzyKiller; Kill Frenzy; TOU Mira. The Grenadier is an Impostor Concealing role that can throw down a grenade that will blind all other players
-- **Juggernaut** — Custom / FrenzyKiller; Kill Frenzy; TOU Mira. The Juggernaut is a Neutral Killing role that wins by being the last killer alive. For each kill they get, their kill cooldown gets reduced.
-- **Outcast** — Custom / FrenzyKiller; Kill Frenzy; TOU Mira. The Outcast is a basic killer, with the ability to vent and being able to see farther than any other killer.
-- **Scavenger** — Custom / FrenzyKiller; Kill Frenzy; TOU Mira. The Scavenger is an Impostor Killing role that gets new targets after every kill and when the round starts. If they kill their target, they get a reduced kill cooldown, but if they don't, their cooldown is increased significantly.
-- **Vampire** — Custom / FrenzyKiller; Kill Frenzy; TOU Mira. The Vampire is a Neutral Killing role that wins by being the last killer(s) alive. They can bite, changing others into Vampires, or kill players.
-- **Venerer** — Custom / FrenzyKiller; Kill Frenzy; TOU Mira. The Venerer is an Impostor Concealing role that can kill players to gain new abilities, preventing others from catching them! However, the ability will be used immediately as they receive it, which will stack up.
-- **Veteran** — Custom / FrenzyKiller; Kill Frenzy; TOU Mira. The Veteran is a Crewmate Killing role that can go on alert and kill anyone who interacts with them.
-- **Werewolf** — Custom / FrenzyKiller; Kill Frenzy; TOU Mira. The Werewolf is a Neutral Killing role that wins by being the last killer alive. They can go on a rampage to gain the ability to kill.
-- **Spectator** — Custom / GameOutlier; Classic / transformation; TOU Mira. You don't participate in-game nor interact with players. All you can do is watch.
-- **Swooper** — Impostor / Impostor; Town of Polus; TOU Mira. The Swooper is an Impostor role that can go invisible at any time to either hide or run away from kills. However, they cannot vent.
-- **Impostor (mode-specific variant)** — Impostor / Impostor; Town of Polus; TOU Mira. Town of Polus base Impostor variant; uses the mode-specific Impostor mechanics and team victory rules.
-- **Eclipsal** — Impostor / ImpostorConcealing; Classic / transformation; TOU Mira. The Eclipsal is an Impostor Concealing role that can hinder the vision of all crewmates and neutrals alike, given that they are near the Eclipsal.
-- **Escapist** — Impostor / ImpostorConcealing; Classic / transformation; TOU Mira. The Escapist is an Impostor Concealing role that can mark a location and then recall (teleport) to that location.
-- **Grenadier** — Impostor / ImpostorConcealing; Classic / transformation; TOU Mira. The Grenadier is an Impostor Concealing role that can throw down a grenade that will blind all other players
-- **Morphling** — Impostor / ImpostorConcealing; Classic / transformation; TOU Mira. The Morphling is an Impostor Concealing role that can Sample a player and Morph into it's appearance.
-- **Swooper** — Impostor / ImpostorConcealing; Classic / transformation; TOU Mira. The Swooper is an Impostor Concealing role that can temporarily turn invisible.
-- **Venerer** — Impostor / ImpostorConcealing; Classic / transformation; TOU Mira. The Venerer is an Impostor Concealing role that can kill players to gain new abilities, preventing others from catching them! However, the ability will be used immediately as they receive it, which will stack up.
-- **Ambusher** — Impostor / ImpostorKilling; Classic / transformation; TOU Mira. The Ambusher is an Impostor Killing role that can pursue a player, getting an arrow to them. They may ambush the closest player next to them. If they manage to kill the player, they will drag their body into the shadows, teleporting back with the Ambusher.
-- **Bomber** — Impostor / ImpostorKilling; Classic / transformation; TOU Mira. The Bomber is an Impostor Killing role that can drop a bomb on the map, which detonates after [detonateDelay] second(s).
-- **Parasite** — Impostor / ImpostorKilling; Classic / transformation; TOU Mira. The Parasite can Overtake nearby non-impostors to take control of their movement. By default, while overtaken, the victim looks like the Parasite and cannot use abilities. You can watch them with a PiP camera and kill them at any time, or wait for the control timer to kill them.
-- **Scavenger** — Impostor / ImpostorKilling; Classic / transformation; TOU Mira. The Scavenger is an Impostor Killing role that gets new targets after every kill and when the round starts. If they kill their target, they get a reduced kill cooldown, but if they don't, their cooldown is increased significantly.
-- **Warlock** — Impostor / ImpostorKilling; Classic / transformation; TOU Mira. The Warlock is an Impostor Killing role that can charge up attacks to wipe out the crew quickly.
-- **Ambassador** — Impostor / ImpostorPower; Classic / transformation; TOU Mira. The Ambassador is an Impostor Power role that can retrain impostors into other impostor roles.
-- **Herbalist** — Impostor / ImpostorPower; Classic / transformation; Reworked TOU Mira. The Herbalist is an Impostor Power role that has many abilities tied to one cooldown, either to help Impostors or to affect what others see.
-- **Puppeteer** — Impostor / ImpostorPower; Classic / transformation; TOU Mira. The Puppeteer is an Impostor Power role that controls other players to kill for them. When a player is controlled, they must watch as they are forced to kill their fellow crewmates.
-- **Spellslinger** — Impostor / ImpostorPower; Classic / transformation; TOU Mira. The Spellslinger is an Impostor Power role that can hex a player, priming them for detonation. Once all non-Impostors are hexed, they may set off a Hex Bomb after a set amount of time to win.
-- **Traitor** — Impostor / ImpostorPower; Classic / transformation; TOU Mira. The Traitor is an Impostor Power role that spawns after a meeting, in which the spawn conditions are suitable. The Traitor will always be a crewmate, and they may change to a few select roles.
-- **Camouflager** — Impostor / ImpostorSeeker; Hide and Seek; TOU Mira. The Camouflager is an Impostor that can temporarily make all players appear the same as themselves.
-- **Blackmailer** — Impostor / ImpostorSupport; Classic / transformation; TOU Mira. The Blackmailer is an Impostor Support role that can stop a player from speaking (marked with [symbol]) in the next meeting
-- **Bootlegger** — Impostor / ImpostorSupport; Classic / transformation; TOU Mira. The Bootlegger is an Impostor Support role that can drink with others to roleblock them. Once a player is roleblocked three times, they will die of poison.
-- **Hypnotist** — Impostor / ImpostorSupport; Classic / transformation; TOU Mira. The Hypnotist is an Impostor Support role that can hypnotize players. During a meeting they can release Mass Hysteria, which makes all hypnotized players (marked with [symbol]) have different visuals applied to players the following round.
-- **Janitor** — Impostor / ImpostorSupport; Classic / transformation; TOU Mira. The Janitor is an Impostor Support role that can clean dead bodies.
-- **Miner** — Impostor / ImpostorSupport; Classic / transformation; TOU Mira. The Miner is an Impostor Support role that can create vents.
-- **Undertaker** — Impostor / ImpostorSupport; Classic / transformation; TOU Mira. The Undertaker is an Impostor Support role that can drag dead bodies around the map.
-- **Serial Killer** — Neutral / Neutral; Town of Polus; TOU Mira. The Serial Killer is a Neutral role that has the sole goal of killing every player. If they do not kill the minimum amount of players needed, they will lose.
-- **Spectre** — Neutral / NeutralAfterlife; Classic / transformation; Reworked TOU Mira. The Spectre is a Neutral Ghost role that wins the game by finishing their tasks before a living player has clicked on them.
-- **Amnesiac** — Neutral / NeutralBenign; Classic / transformation; TOU Mira. The Amnesiac is a Neutral Benign role that gains access to a new role from remembering a dead body’s role. Use the role you remember to win the game.
-- **Fairy** — Neutral / NeutralBenign; Classic / transformation; Reworked TOU Mira. The Fairy is a Neutral Benign that needs to protect their target (signified by [symbol]) from getting killed/ejected.
-- **Mercenary** — Neutral / NeutralBenign; Classic / transformation; TOU Mira. The Mercenary is a Neutral Benign role that can only win by bribing players, allowing them to gain multiple win conditions.
-- **Survivor** — Neutral / NeutralBenign; Classic / transformation; TOU Mira. The Survivor is a Neutral Benign role that just needs to survive until the end of the game.
-- **FrenzyGhostRole (mode-specific variant)** — Neutral / NeutralBenign; Kill Frenzy; TOU Mira. Internal Kill Frenzy dead-player wrapper. Its visible description and victory evaluation delegate to the player role recorded before death; it is not an additional independently assigned living role.
-- **Doomsayer** — Neutral / NeutralEvil; Classic / transformation; TOU Mira. The Doomsayer is a Neutral Evil role that wins by guessing [guessCount] players' roles.
-- **Executioner** — Neutral / NeutralEvil; Classic / transformation; Reworked TOU Mira. The Executioner is a Neutral Evil role that wins by getting their target (signified by [symbol]) ejected in a meeting.
-- **Jester** — Neutral / NeutralEvil; Classic / transformation; Reworked TOU Mira. The Jester is a Neutral Evil role that wins by getting themselves ejected.
-- **Arsonist** — Neutral / NeutralKilling; Classic / transformation; TOU Mira. The Arsonist is a Neutral Killing role that wins by being the last killer alive.
-- **Glitch** — Neutral / NeutralKilling; Classic / transformation; TOU Mira. The Glitch is a Neutral Killing role that wins by being the last killer alive. They can Mimic into another player, or they can hack a player.
-- **Juggernaut** — Neutral / NeutralKilling; Classic / transformation; TOU Mira. The Juggernaut is a Neutral Killing role that wins by being the last killer alive. For each kill they get, their kill cooldown gets reduced.
-- **Medusa** — Neutral / NeutralKilling; Classic / transformation; TOU Mira. The Medusa is a Neutral Killing role that forces its victims to stand still and slowly turn into stone. Stoned players that haven't shattered will remain throughout rounds.
-- **Pestilence** — Neutral / NeutralKilling; Classic / transformation; TOU Mira. The Pestilence is a Neutral Killing role that can kill and is invincible to everything but being exiled or guessing incorrectly. They win by being the last killer alive.
-- **Plaguebearer** — Neutral / NeutralKilling; Classic / transformation; TOU Mira. The Plaguebearer is a Neutral Killing role that needs to infect all other players to turn into the Pestilence.
-- **Vampire** — Neutral / NeutralKilling; Classic / transformation; TOU Mira. The Vampire is a Neutral Killing role that wins by being the last killer(s) alive. They can bite, changing others into Vampires, or kill players.
-- **Werewolf** — Neutral / NeutralKilling; Classic / transformation; TOU Mira. The Werewolf is a Neutral Killing role that wins by being the last killer alive. They can go on a rampage to gain the ability to kill.
-- **Chef** — Neutral / NeutralOutlier; Classic / transformation; TOU Mira. The Chef is a Neutral Outlier role that wins with any other faction as long as they have served enough dead bodies to the crew.
-- **Inquisitor** — Neutral / NeutralOutlier; Classic / transformation; Reworked TOU Mira. The Inquisitor is a Neutral Outlier role that wins if their targets (Heretics) die. The only information provided is their roles, and it's up to the Inquisitor to identify those players (marked with [symbol] to the dead) and get them killed by any means necessary.
+[Full roles](ROLES.md) · [Modifiers](MODIFIERS.md) · [Known issues](KNOWN_ISSUES.md). Category headings also identify each role's team; goals appear in the full list.
 
-## Assignable modifier types
+## Classic — Crewmate Investigative
 
-See MODIFIERS.md for descriptions, eligibility restrictions, and internal effects. Test-only helpers and zero-chance defaults are not promises of regular lobby availability.
+- **Exorcist** — Gather three bodies, or all available if fewer. Pray to learn an eligible killer's name and role at the next meeting.
+- **Aurial** — Sense nearby ability use. Very close use can reveal the player color.
+- **Forensic** — Inspect crime scenes and check players for evidence they were there.
+- **Investigator** — Follow player footprints. Invisible players leave no visible trail.
+- **Lookout** — Watch players, then learn who or which roles interacted with them at the meeting.
+- **Medium** — Leave your body to move through walls and see ghosts. Your unattended body can be killed.
+- **Mystic** — Receive death alerts and arrows toward bodies.
+- **Seer** — Check a player to reveal their alliance.
+- **Snitch** — Finish your tasks to reveal Impostors; approaching completion also exposes you to them.
+- **Sonar** — Track players with directional arrows.
+- **Spy** — See player colors on Admin instead of only room counts.
+- **Trapper** — Place traps to learn the roles of players who passed through at the next meeting.
 
-- **Alliance**: Lover.
-- **AssailantUtility**: Assassin, Double Shot, Overclocker, Triple Shot.
-- **CrewmateAlliance**: Crewpostor, Egotist.
-- **CrewmatePassive**: Multitasker, Taskmaster.
-- **CrewmatePostmortem**: Aftermath, Bait, Celebrity, Diseased, Frosty, Noisemaker, Rotting.
-- **CrewmateUtility**: Investigator, Operative, Scientist, Spy.
-- **CrewmateVisibility**: Scout, Torch.
-- **HiderPassive**: Multitasker, Oblivious.
-- **HiderPostmortem**: Frosty, Transporter.
-- **HiderVisibility**: Giant, Mini.
-- **ImpostorPassive**: Circumvent, Deadly Quota, Saboteur, Underdog, Simp.
-- **ImpostorPostmortem**: Telepath.
-- **ImpostorUtility**: Disperser.
-- **UniversalPassive**: Drunk, Immovable, Sixth Sense, Sleuth, Tiebreaker, Balloon, Big Brain, Kemada, One More Chance.
-- **UniversalUtility**: Button Barry, Radar, Satellite.
-- **UniversalVisibility**: Flash, Giant, Mini, Shy.
+## Classic — Crewmate Killing
+
+- **Composter** — Place invisible, single-use traps. The first other player to enter dies; you are immune.
+- **Furas** — Set spawn points and control your pet to attack. Your body stays vulnerable; killing Crew may cost your abilities.
+- **Deputy** — Camp a player. If they die, try to shoot their killer at the next meeting; a wrong attempt kills nobody.
+- **Hunter** — Stalk a player. If they use an ability, you may kill them. Killing a caught Crewmate that round makes you leave after the meeting.
+- **Officer** — Load limited ammunition and shoot suspects. Misfires carry a penalty.
+- **Sheriff** — Shoot suspected evils. Shooting a Crewmate can kill you or cost your gun, depending on settings.
+- **Veteran** — Go on alert to kill anyone who interacts with you.
+- **Vigilante** — Guess roles at meetings. A correct guess kills the target; a wrong guess kills you.
+
+## Classic — Crewmate Power
+
+- **Bandit** — Choose a target. Borrow their role after the next meeting, then return it after the following meeting. You stay Crew.
+- **Necromancer** — Control a corpse for one attack, or send it toward its killer. Your body stays still; the dead player remains dead.
+- **Jailor** — Jail a player, question them privately and choose whether to execute them at the meeting.
+- **Mayor** — Reveal yourself to gain extra votes and show your role to everyone.
+- **Monarch** — Knight players to give them extra meeting votes.
+- **Politician** — Campaign to half the Crewmates, then reveal as Mayor.
+- **Prosecutor** — Force an ejection with extra votes and see who voted for whom.
+- **Swapper** — Swap the votes received by two players at a meeting.
+- **Time Lord** — Rewind recent movement. The configured rewind risk can cause a random death.
+
+## Classic — Crewmate Protective
+
+- **Doctor** — Shield players and mark living Crewmates to unlock Reveal. Revealing too early disables marking for one round.
+- **Altruist** — Revive dead Crewmates. You and revived players cannot call emergency meetings.
+- **Cleric** — Cleanse harmful effects or place barriers that block interactions.
+- **Medic** — Give a player a protective shield.
+- **Mirrorcaster** — Protect a player with a mirror. A blocked direct attack lets you unleash against another player.
+- **Oracle** — Ask players to confess or protect them from meeting abilities. Your death can reveal a confession.
+- **Warden** — Fortify players to block interactions outside meetings.
+
+## Classic — Crewmate Support
+
+- **Wladca** — Empower temporarily improves vision and resistance to Lights and Comms, as enabled in lobby settings.
+- **Barkeeper** — Share drinks to roleblock players; spilled drinks can change movement speed.
+- **Engineer** — Fix sabotages remotely and use vents.
+- **Imitator** — Copy a dead Crewmate role. Some roles are restricted when several Imitators are alive.
+- **Plumber** — Drop nails into a nearby vent to trap eligible vent users. The trap disappears after triggering.
+- **Sentry** — Place cameras and watch them like Security.
+- **Transporter** — Swap the positions of two players, alive or dead.
+
+## Classic — Impostor Power
+
+- **Hugger** — Hug to kill instantly. At meetings, once each per game: kill a non-Impostor or give an Impostor Double Shot.
+- **Sweets** — Give flowers to non-Impostors, then Pollinate for a chance to kill each recipient. Flowers reset so you can repeat.
+- **Ambassador** — Retrain Impostors into other allowed roles.
+- **Herbalist** — Use plants to expose roles, confuse players or protect a target.
+- **Puppeteer** — Control another player and make them attack.
+- **Spellslinger** — Hex players, then trigger a Hex Bomb when the remaining targets are marked.
+- **Traitor** — Join the Impostors when the original Impostors are gone.
+
+## Classic — Neutral Benign
+
+- **Dirtek** — An assigned player cannot be killed while you live. Your death kills them; you cannot be protected.
+- **Amnesiac** — Remember a dead player to take their role and win condition.
+- **Fairy** — Protect your assigned target and share their victory.
+- **Mercenary** — Bribe players to gain access to their win conditions.
+- **Survivor** — Stay alive; use vests to survive attacks.
+
+## Classic — Neutral Evil
+
+- **Gambler** — Mark players at meetings. The first active marked death next round earns a Cash Out shot. Land it and survive to win.
+- **Doomsayer** — Guess enough player roles correctly to win.
+- **Executioner** — Get your target voted out. If enabled, change to a random Crewmate target or become Amnesiac once in the first round.
+- **Jester** — Get voted out to win. A normal kill does not count.
+
+## Classic — Neutral Killing
+
+- **Barszcz** — After a kill, swap with the farthest living player and reveal the body with an arrow to everyone.
+- **Arsonist** — Douse players, then ignite your marked targets.
+- **Glitch** — Hack players to block abilities, or mimic their appearance.
+- **Juggernaut** — Each kill reduces your kill cooldown.
+- **Medusa** — Petrify attackers and hide their bodies as statues.
+- **Pestilence** — Kill as the transformed Plaguebearer. Meeting-guess protection depends on lobby settings.
+- **Plaguebearer** — Infect everyone to transform into Pestilence.
+- **Vampire** — Kill or convert eligible players to build the Vampire faction.
+- **Werewolf** — Rampage to gain the ability to kill.
+
+## Town of Polus — Crewmate
+
+- **Engineer** — Fix one sabotage per game from anywhere.
+- **Crewmate (mode-specific variant)** — Complete tasks and vote out Impostors.
+
+## Classic — Crewmate Afterlife
+
+- **Haunter** — Finish your ghost tasks to reveal Impostors to everyone. An Impostor can stop you by catching you first.
+
+## Hide and Seek — Crewmate Hider
+
+- **Chameleon** — Turn invisible briefly to hide from the seeker.
+- **Mystic** — An arrow points to each new kill.
+- **Snitch** — Tasks reduce the timer faster, but reveal your location to the seeker.
+
+## Kill Frenzy — Frenzy Killer
+
+- **Bomber** — Place bombs that kill players in range after a delay.
+- **Escapist** — Mark a location, then teleport back to it.
+- **Glitch** — Hack players to block abilities, or mimic their appearance.
+- **Grenadier** — Throw a flashbang to blind nearby players.
+- **Juggernaut** — Each kill reduces your kill cooldown.
+- **Outcast** — Use vents and extended vision to hunt other killers.
+- **Scavenger** — Kill assigned targets for a shorter cooldown. Killing others increases it.
+- **Vampire** — Kill or convert eligible players to build the Vampire faction.
+- **Venerer** — Kills upgrade your power: camouflage, sprint, then freeze nearby players.
+- **Veteran** — Go on alert to kill anyone who interacts with you.
+- **Werewolf** — Rampage to gain the ability to kill.
+
+## Classic — Game Outlier
+
+- **Spectator** — Watch the match without taking part.
+
+## Town of Polus — Impostor
+
+- **Swooper** — Turn invisible briefly to approach or escape players.
+- **Impostor (mode-specific variant)** — Kill Crewmates and use sabotage to help the Impostors win.
+
+## Classic — Impostor Concealing
+
+- **Eclipsal** — Reduce other players' vision.
+- **Escapist** — Mark a location, then teleport back to it.
+- **Grenadier** — Throw a flashbang to blind nearby players.
+- **Morphling** — Sample a player, then copy their appearance.
+- **Swooper** — Turn invisible briefly to approach or escape players.
+- **Venerer** — Kills upgrade your power: camouflage, sprint, then freeze nearby players.
+
+## Classic — Impostor Killing
+
+- **Ambusher** — Track a player, then ambush someone near them. A successful kill returns you with the body.
+- **Bomber** — Place bombs that kill players in range after a delay.
+- **Parasite** — Control an infected player, then leave them to die away from you.
+- **Scavenger** — Kill assigned targets for a shorter cooldown. Killing others increases it.
+- **Warlock** — Curse a player, then use them to kill someone nearby.
+
+## Hide and Seek — Impostor Seeker
+
+- **Camouflager** — Disguise as a hider to blend in while hunting.
+
+## Classic — Impostor Support
+
+- **Blackmailer** — Silence a player during the next meeting.
+- **Bootlegger** — Share a drink to roleblock a player.
+- **Hypnotist** — Hypnotize players, then trigger Mass Hysteria to distort what they see.
+- **Janitor** — Clean bodies so they cannot be reported.
+- **Miner** — Place connected vents around the map.
+- **Undertaker** — Drag and drop bodies to hide them.
+
+## Town of Polus — Neutral
+
+- **Serial Killer** — Hunt players as an independent killer.
+
+## Classic — Neutral Afterlife
+
+- **Spectre** — Complete your tasks as a ghost to earn your own victory.
+
+## Kill Frenzy — Neutral Benign
+
+- **FrenzyGhostRole (mode-specific variant)** — Spectate after death and keep your original role's win condition.
+
+## Classic — Neutral Outlier
+
+- **Chef** — Cook bodies and serve enough portions to meet your quota.
+- **Inquisitor** — Find the players holding your target roles and kill them. Killing a non-target removes Vanquish.
+
+## Modifiers
+
+MTOU additions: Balloon, Big Brain, Kemada, One More Chance, Simp and Triple Shot. All existing ToU variants and eligibility rules are listed in [MODIFIERS.md](MODIFIERS.md).

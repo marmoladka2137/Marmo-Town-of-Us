@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased — text revision 1.1.0.13
+
+- Shorten English role and modifier descriptions to abilities, goals and essential limits.
+- Replace repetitive role catalogs with compact tables; preserve all 111 role variants and 51 assignable modifier variants.
+- Correct outdated descriptions of Dirtek target assignment and repeatable Sweets flower cycles.
+- Add missing One More Chance locale entries. Gameplay rules are unchanged.
+
 ## 1.1.0-beta — publication candidate, 2026-11-17
 
 Prepared from the latest local feature baseline internally numbered 1.1.5-beta. The installed test DLL was internally 1.1.4; the older source ZIP was 1.1.0-beta. Normalizing the publication version is not a rollback of source fixes. Display version remains 1.1 BETA and plugin ID remains pl.marmo.toumarmo. Do not mix these binaries despite the same display label.
