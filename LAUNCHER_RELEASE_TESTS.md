@@ -1,4 +1,4 @@
-# Launcher release verification Ă˘â‚¬â€ť assembly 1.1.0.19
+# Launcher release verification — 1.1.0 Beta
 
 Executed locally on Windows, 2026-11-19:
 
