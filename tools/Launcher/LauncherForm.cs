@@ -113,8 +113,7 @@ namespace Marmo.Launcher
             if (busy) return; Busy(true); status.Text = "Checking public GitHub releases…";
             try
             {
-                latest = await Task.Run(() => ReleaseUpdate.Select(System.Text.Encoding.UTF8.GetString(ReleaseUpdate.Download(ReleaseUpdate.Feed))));
-                if (latest == null) { status.Text = "No compatible public mod package is published yet."; return; }
+                latest = await Task.Run(() => ReleaseUpdate.Latest());
                 release = await Task.Run(() => new JavaScriptSerializer().Deserialize<ReleaseManifest>(
                     System.Text.Encoding.UTF8.GetString(ReleaseUpdate.Download(latest.ManifestUrl))));
                 ReleaseUpdate.Validate(release);

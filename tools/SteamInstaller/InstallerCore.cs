@@ -303,11 +303,46 @@ namespace Marmo.SteamInstaller
                 }
             if (extracted.Count != pins.Count) throw new IOException("Required dependency files are missing from the archive.");
         }
+        public string ResolvePayload()
+        {
+            string loose = SafePath(PackageRoot, Manifest.Payload.Path);
+            if (File.Exists(loose)) { CheckPin(loose, Manifest.Payload); return loose; }
+            if (Manifest.Payload.Bytes < 0 || Manifest.Payload.Bytes > 128L * 1024 * 1024
+                || !Regex.IsMatch(Manifest.Payload.Sha256, "^[a-fA-F0-9]{64}$"))
+                throw new IOException("Invalid plugin payload pin.");
+            string cache = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "MTOU", "InstallerCache");
+            Directory.CreateDirectory(cache); NoLinks(cache);
+            string target = Path.Combine(cache, "payload-" + Manifest.Payload.Sha256 + ".dll");
+            if (File.Exists(target)) { CheckPin(target, Manifest.Payload); return target; }
+            string temporary = target + "." + Guid.NewGuid().ToString("N") + ".tmp";
+            try
+            {
+                using (var zip = ZipFile.OpenRead(SafePath(PackageRoot, "MTOU-Mods-Windows.zip")))
+                {
+                    var entry = zip.GetEntry("BepInEx/plugins/TOU-Marmo.dll");
+                    if (entry == null || entry.Length != Manifest.Payload.Bytes) throw new IOException("Missing or invalid plugin payload.");
+                    using (var input = entry.Open()) using (var output = new FileStream(temporary, FileMode.CreateNew))
+                    {
+                        var buffer = new byte[65536]; long length = 0; int count;
+                        while ((count = input.Read(buffer, 0, buffer.Length)) > 0)
+                        {
+                            length += count;
+                            if (length > Manifest.Payload.Bytes) throw new IOException("Plugin exceeds its pinned size.");
+                            output.Write(buffer, 0, count);
+                        }
+                    }
+                }
+                CheckPin(temporary, Manifest.Payload);
+                File.Move(temporary, target); return target;
+            }
+            finally { if (File.Exists(temporary)) File.Delete(temporary); }
+        }
+
         public string Install(string source, string destination, string archiveOverride)
         {
             source = Full(source); destination = Full(destination);
             ValidateSource(source); ValidateDestination(source, destination, PackageRoot);
-            CheckPin(SafePath(PackageRoot, Manifest.Payload.Path), Manifest.Payload);
+            string payload = ResolvePayload();
             if (Manifest.Launcher != null) CheckPin(SafePath(PackageRoot, Manifest.Launcher.Path), Manifest.Launcher);
             var files = GameFiles(source);
             long size = files.Sum(f => new FileInfo(f).Length) + Manifest.RuntimeFiles.Sum(f => f.Bytes) + Manifest.Payload.Bytes;
@@ -332,7 +367,7 @@ namespace Marmo.SteamInstaller
                 ExtractRuntime(archive, stage);
                 string plugin = Path.Combine(stage, "BepInEx", "plugins", "TOU-Marmo.dll");
                 Directory.CreateDirectory(Path.GetDirectoryName(plugin));
-                File.Copy(SafePath(PackageRoot, Manifest.Payload.Path), plugin, false);
+                File.Copy(payload, plugin, false);
                 CheckPin(plugin, Manifest.Payload);
                 if (Manifest.Launcher != null)
                 {

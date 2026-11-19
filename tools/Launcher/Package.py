@@ -12,10 +12,10 @@ def sha(path):
 def pin(path, name):
     return dict(Path=name, Bytes=path.stat().st_size, Sha256=sha(path))
 
-def archive(folder, target):
+def archive(folder, target, exclude=()):
     with zipfile.ZipFile(target, 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as z:
         for p in sorted(folder.rglob('*')):
-            if p.is_file(): z.write(p, p.relative_to(folder).as_posix())
+            if p.is_file() and p.relative_to(folder).as_posix() not in exclude: z.write(p, p.relative_to(folder).as_posix())
 
 def main():
     a=argparse.ArgumentParser()
@@ -42,7 +42,7 @@ def main():
         put(source/name,'MTOU Notices/'+name)
     for p in (source/'LICENSES').glob('*'):
         if p.is_file(): put(p,'MTOU Notices/LICENSES/'+p.name)
-    (files/'MTOU Notices/SOURCE.txt').write_text('MTOU corresponding source: https://github.com/marmoladka2137/Marmo-Town-of-Us/tree/'+o.commit+'\nThe release includes the matching MTOU source archive. Additional GPL plugin source archives accompany their binaries.\n',encoding='utf-8')
+    (files/'MTOU Notices/SOURCE.txt').write_text('MTOU corresponding source: https://github.com/marmoladka2137/Marmo-Town-of-Us/tree/'+o.commit+'\nMatching source archive: https://github.com/marmoladka2137/Marmo-Town-of-Us/archive/'+o.commit+'.zip\nAdditional GPL plugin source archives accompany their binaries.\n',encoding='utf-8')
     payload=package/'Payload';payload.mkdir();shutil.copy2(source/'bin/Release/net6.0/TOU-Marmo.dll',payload/'TOU-Marmo.dll')
     shutil.copy2(o.launcher,package/'Marmo Town of Us.exe')
     archive(files,package/'MTOU-Mods-Windows.zip')
@@ -60,7 +60,7 @@ def main():
     (package/'installer-manifest.json').write_text(json.dumps(installer,indent=2),encoding='utf-8')
     shutil.copytree(files/'MTOU Notices',package/'Notices')
     (package/'START-HERE.txt').write_text('Marmo Town of Us 1.1.0 Beta\n\nExtract this complete ZIP, then run Marmo Town of Us.exe. Select Steam or Epic Games and an installed, purchased Among Us. Install into a NEW separate folder. Keep the storefront client running. No game files are included. Public GitHub updates are checked automatically. Epic gameplay and multiplayer remain unverified.\n\nDiscord: https://dc.gg/mtou\nSource: https://github.com/marmoladka2137/Marmo-Town-of-Us/tree/'+o.commit+'\n',encoding='utf-8')
-    archive(package,o.output/'MTOU-1.1.0-beta-Launcher-Windows.zip')
+    archive(package,o.output/'MTOU-1.1.0-beta-Launcher-Windows.zip',exclude={'Payload/TOU-Marmo.dll'})
     # Export the index, not the workspace: ignored retired frames/cache are absent.
     names=subprocess.check_output(['git','ls-files','-z'],cwd=source).decode().split('\0')
     with zipfile.ZipFile(o.output/'MTOU-1.1.0-beta-source.zip','w',zipfile.ZIP_DEFLATED,compresslevel=9) as z:

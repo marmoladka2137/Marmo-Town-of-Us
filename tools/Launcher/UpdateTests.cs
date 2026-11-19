@@ -29,8 +29,12 @@ public static class UpdateTests
             + "{\"name\":\"MTOU-Mods-Windows.zip\",\"browser_download_url\":\"" + url + "MTOU-Mods-Windows.zip\"}]}]";
         Check(ReleaseUpdate.Select(feed).Tag == "vtest", "Choose a public release and skip drafts");
         Check(ReleaseUpdate.Select("[]") == null, "Handle a repository without eligible releases");
+        Check(ReleaseUpdate.Latest(address => Encoding.UTF8.GetBytes("[]")).Tag == "public-downloads", "Use the public channel when no eligible Release exists");
+        Check(ReleaseUpdate.Latest(address => { throw new System.Net.WebException("rate limit"); }).Tag == "public-downloads", "Use the public channel if the release API is unavailable");
         Check(ReleaseUpdate.Trusted(url + "x"), "Accept release assets in this repository");
         Check(!ReleaseUpdate.Trusted("https://github.com/other/repo/releases/download/v/x"), "Reject another repository");
+        Check(ReleaseUpdate.Trusted(ReleaseUpdate.Channel().ManifestUrl), "Accept the public downloads channel");
+        Check(!ReleaseUpdate.Trusted("https://raw.githubusercontent.com/other/repo/downloads/mtou-release.json"), "Reject another raw-file channel");
         Check(!ReleaseUpdate.Trusted("http://github.com/marmoladka2137/Marmo-Town-of-Us/releases/download/v/x"), "Require HTTPS");
         Check(ReleaseUpdate.Newer("1.1.0.18", "1.1.0.17"), "Detect a newer assembly revision");
         Check(!ReleaseUpdate.Newer("1.1.0.17", "1.1.0.18"), "Do not downgrade installations");

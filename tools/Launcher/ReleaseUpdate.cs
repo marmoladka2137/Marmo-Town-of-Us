@@ -34,6 +34,17 @@ namespace Marmo.Launcher
     {
         public const string Repository = "marmoladka2137/Marmo-Town-of-Us";
         public const string Feed = "https://api.github.com/repos/" + Repository + "/releases?per_page=30";
+        public const string PublicChannelRoot = "https://raw.githubusercontent.com/" + Repository + "/downloads/";
+        public static PublicRelease Channel()
+        {
+            return new PublicRelease { Tag = "public-downloads", Url = "https://github.com/" + Repository + "/tree/downloads",
+                ManifestUrl = PublicChannelRoot + "mtou-release.json", ArchiveUrl = PublicChannelRoot + "MTOU-Mods-Windows.zip" };
+        }
+        public static PublicRelease Latest(Func<string, byte[]> fetch = null)
+        {
+            try { return Select(System.Text.Encoding.UTF8.GetString((fetch ?? Download)(Feed))) ?? Channel(); }
+            catch (WebException) { return Channel(); }
+        }
         public static PublicRelease Select(string json)
         {
             var releases = new JavaScriptSerializer().Deserialize<List<Dictionary<string, object>>>(json);
@@ -57,7 +68,8 @@ namespace Marmo.Launcher
             Uri uri;
             return Uri.TryCreate(url, UriKind.Absolute, out uri) && uri.Scheme == "https"
                 && (uri.Host == "api.github.com" && uri.AbsolutePath.StartsWith("/repos/" + Repository + "/", StringComparison.Ordinal)
-                    || uri.Host == "github.com" && uri.AbsolutePath.StartsWith("/" + Repository + "/releases/download/", StringComparison.Ordinal));
+                    || uri.Host == "github.com" && uri.AbsolutePath.StartsWith("/" + Repository + "/releases/download/", StringComparison.Ordinal)
+                    || uri.Host == "raw.githubusercontent.com" && uri.AbsolutePath.StartsWith("/" + Repository + "/downloads/", StringComparison.Ordinal));
         }
         public static byte[] Download(string url)
         {

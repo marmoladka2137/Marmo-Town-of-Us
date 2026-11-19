@@ -115,6 +115,14 @@ public static class InstallerTests
             Put(Path.Combine(package, "Marmo Town of Us.exe"), "fixture launcher");
             Put(Path.Combine(package, "Payload", "TOU-Marmo.dll"), "corrupt payload");
             Reject(() => engine.Install(source, Path.Combine(root, "bad-payload"), zip), "Reject a modified MTOU payload");
+            string compact = Path.Combine(root, "compact package"); Directory.CreateDirectory(compact);
+            File.Copy(Zip("supplement.zip", new Dictionary<string, string> { { "BepInEx/plugins/TOU-Marmo.dll", "fixture mod" } }), Path.Combine(compact, "MTOU-Mods-Windows.zip"));
+            var compactEngine = new InstallerCore(manifest, compact);
+            Check(File.ReadAllText(compactEngine.ResolvePayload()) == "fixture mod", "Resolve the pinned plugin directly from the supplement ZIP");
+            Check(!Directory.Exists(Path.Combine(compact, "Payload")), "Compact launcher needs no duplicate loose plugin");
+            string payloadHash = manifest.Payload.Sha256; manifest.Payload.Sha256 = new string('F',64);
+            Reject(() => compactEngine.ResolvePayload(), "Reject an extracted plugin with the wrong SHA-256");
+            manifest.Payload.Sha256 = payloadHash;
             Console.WriteLine("PASS: " + checks + " installer checks. Fixtures retained at " + root);
             return 0;
         }

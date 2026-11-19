@@ -2,7 +2,7 @@
 
 ![Marmo Town of Us](Resources/Branding/MarmoLogo.png)
 
-**1.1.0-beta · 1.1.0 Beta · community modification**
+**1.1.0-beta Â· 1.1.0 Beta Â· community modification**
 
 Marmo Town of Us is an independent community modification based on Town of Us: Mira. It combines the Mira role framework with additional roles, modifiers, configurable abilities and reworked features in one `TOU-Marmo.dll`.
 
@@ -34,7 +34,7 @@ These describe implemented code. Full gameplay and host/client regression remain
 | Neutral Evil | Gambler |
 | Neutral Killing | Barszcz |
 
-[Complete role catalog](ROLES.md) · [Concise catalog for SUS Modder](SUSMODDER_ROLES.md).
+[Complete role catalog](ROLES.md) Â· [Concise catalog for SUS Modder](SUSMODDER_ROLES.md).
 
 ## Modifiers
 
@@ -54,7 +54,7 @@ Development reference: **Among Us 2026.9.29, Unity 2022.3.44f1, Windows x64**. T
 
 ## Installation
 
-Download the complete launcher ZIP from [Releases](https://github.com/marmoladka2137/Marmo-Town-of-Us/releases). Extract it and run **Marmo Town of Us.exe**. Choose **Steam** or **Epic Games**, then install a separate copy using your purchased, locally installed game. Epic support is implemented but remains unverified in a real Epic game session. [Launcher instructions](tools/Launcher/README.md).
+[Download the Windows launcher ZIP](https://raw.githubusercontent.com/marmoladka2137/Marmo-Town-of-Us/downloads/MTOU-1.1.0-beta-Launcher-Windows.zip), or check [Releases](https://github.com/marmoladka2137/Marmo-Town-of-Us/releases). The `downloads` branch is the public bootstrap/update channel until a compatible Release is attached. Extract it and run **Marmo Town of Us.exe**. Choose **Steam** or **Epic Games**, then install a separate copy using your purchased, locally installed game. Epic support is implemented but remains unverified in a real Epic game session. [Launcher instructions](tools/Launcher/README.md).
 
 The launcher checks published GitHub releases automatically and verifies downloads before updating. All participants need matching mod versions. The package recreates the seven-plugin TEST MODY set, using the public MiraAPI 0.6.0 dependency baseline. It contains no complete game, profiles or separate TownOfUsMira plugin.
 
@@ -68,15 +68,15 @@ A legally owned compatible Among Us PC installation, BepInEx IL2CPP, Reactor, Mi
 
 ## Known Issues
 
-This is a **beta**, not a stable or fully multiplayer-tested release. Local compilation, deterministic state tests and native Unity fixtures passed. Full role interactions, host/client gameplay, public-dependency clean installation and SUS Modder installation remain unverified. Retired procedural animation replacements are excluded from the current source tree; native Mira presentations are used. [Full limitations](KNOWN_ISSUES.md) · [Executed tests](LAUNCHER_RELEASE_TESTS.md).
+This is a **beta**, not a stable or fully multiplayer-tested release. Local compilation, deterministic state tests and native Unity fixtures passed. Full role interactions, host/client gameplay, public-dependency clean installation and SUS Modder installation remain unverified. Retired procedural animation replacements are excluded from the current source tree; native Mira presentations are used. [Full limitations](KNOWN_ISSUES.md) Â· [Executed tests](LAUNCHER_RELEASE_TESTS.md).
 
 ## Releases
 
-[Downloads](https://github.com/marmoladka2137/Marmo-Town-of-Us/releases) · [1.1.0-beta](https://github.com/marmoladka2137/Marmo-Town-of-Us/releases/tag/v1.1.0-beta). Publish/use the matching source archive and SHA-256 list with the DLL. Release availability does not imply SUS Modder acceptance.
+[Downloads](https://github.com/marmoladka2137/Marmo-Town-of-Us/releases) Â· [1.1.0-beta](https://github.com/marmoladka2137/Marmo-Town-of-Us/releases/tag/v1.1.0-beta). Publish/use the matching source archive and SHA-256 list with the DLL. Release availability does not imply SUS Modder acceptance.
 
 ## Credits
 
-Based on [Town of Us: Mira](https://github.com/AU-Avengers/TOU-Mira), its contributors and predecessors. **Original MTOU artwork — created by Marmo**. [CREDITS.md](CREDITS.md), [ASSET_CREDITS.md](ASSET_CREDITS.md) and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) retain the original authors and separate terms.
+Based on [Town of Us: Mira](https://github.com/AU-Avengers/TOU-Mira), its contributors and predecessors. **Original MTOU artwork â€” created by Marmo**. [CREDITS.md](CREDITS.md), [ASSET_CREDITS.md](ASSET_CREDITS.md) and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) retain the original authors and separate terms.
 
 ## License
 
@@ -84,7 +84,7 @@ Combined code: [GNU GPLv3](LICENSE). Original MTOU graphics: [CC BY 4.0](MTOU_AR
 
 ## Disclaimer
 
-This mod is not affiliated with Among Us or Innersloth LLC, and the content contained therein is not endorsed or otherwise sponsored by Innersloth LLC. Portions of the materials contained herein are property of Innersloth LLC. © Innersloth LLC.
+This mod is not affiliated with Among Us or Innersloth LLC, and the content contained therein is not endorsed or otherwise sponsored by Innersloth LLC. Portions of the materials contained herein are property of Innersloth LLC. Â© Innersloth LLC.
 
 ## Support and Bug Reports
 
