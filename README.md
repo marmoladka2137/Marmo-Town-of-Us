@@ -1,13 +1,18 @@
-# Marmo Town of Us public downloads
+# Download Marmo Town of Us
 
-[Download launcher 2.1.0](https://raw.githubusercontent.com/marmoladka2137/Marmo-Town-of-Us/downloads/MTOU-Launcher-2.1.0-Windows.zip). Extract the complete ZIP and run Marmo Town of Us.exe.
+## [⬇ Pobierz / Download MTOU for Windows](https://github.com/marmoladka2137/Marmo-Town-of-Us/releases/download/v1.1.0-beta.19/MTOU-Launcher-2.1.0-Windows.zip)
 
-Choose Steam or Epic Games. The launcher detects installed games, offers an executable picker if needed, and defaults to a separate user-writable MTOU copy. Click INSTALL MTOU, then PLAY MTOU. No game files are distributed. Existing public update parts are verified and assembled automatically.
+**MTOU 1.1.0 Beta · Launcher 2.1.0**
 
-The gameplay version remains 1.1.0 Beta, assembly 1.1.0.19. Gameplay DLL and mod/dependency pins are unchanged by this launcher-only update. Epic gameplay and multiplayer remain unverified.
+Rozpakuj ZIP, uruchom **Marmo Town of Us.exe**, wybierz Steam lub Epic Games i kliknij **INSTALL MTOU**.
+
+Extract the ZIP, run **Marmo Town of Us.exe**, select your store and choose **INSTALL MTOU**. Your own purchased Among Us installation is required. No game files are included.
+
+[Current release](https://github.com/marmoladka2137/Marmo-Town-of-Us/releases/tag/v1.1.0-beta.19) · [Direct backup download](https://raw.githubusercontent.com/marmoladka2137/Marmo-Town-of-Us/downloads/MTOU-Launcher-2.1.0-Windows.zip) · [Installation guide](https://github.com/marmoladka2137/Marmo-Town-of-Us/blob/main/INSTALLATION.md)
+
+Only the ZIP is needed. The .part files and mtou-release.json are updater data; the launcher downloads and verifies them automatically. Do not assemble them manually.
+
+The gameplay payload remains assembly 1.1.0.19. Actual Epic gameplay and multiplayer remain unverified. The launcher is unsigned and Windows SmartScreen may display an unknown-publisher warning. Checksums and launcher tests are retained here.
 
 Launcher source: https://github.com/marmoladka2137/Marmo-Town-of-Us/archive/81045f3619ab86ff3b68835fc474f32740a409b1.zip
-
 MTOU payload source: https://github.com/marmoladka2137/Marmo-Town-of-Us/archive/2fd1b45fec0afd063cd307c13f27e3ca021db620.zip
-
-The launcher is unsigned. A successful local Defender scan does not remove an unknown-publisher/SmartScreen warning. See LAUNCHER_2_1_TESTS.md for executed checks.
