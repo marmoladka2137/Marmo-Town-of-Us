@@ -44,6 +44,20 @@ public static class UpdateTests
         var archive = Zip(path, bytes);
         var manifest = new ReleaseManifest { Schema = 1, Revision = "1.1.0.18", ArchiveSha256 = ReleaseUpdate.Hash(archive),
             Files = new[] { new ReleaseFile { Path = path, Bytes = bytes.Length, Sha256 = ReleaseUpdate.Hash(bytes) } } };
+        var left = new byte[archive.Length / 2]; var right = new byte[archive.Length - left.Length];
+        Buffer.BlockCopy(archive, 0, left, 0, left.Length); Buffer.BlockCopy(archive, left.Length, right, 0, right.Length);
+        manifest.ArchiveParts = new[] {
+            new ReleaseFile { Path = "MTOU-Mods-Windows.zip.part01", Bytes = left.Length, Sha256 = ReleaseUpdate.Hash(left) },
+            new ReleaseFile { Path = "MTOU-Mods-Windows.zip.part02", Bytes = right.Length, Sha256 = ReleaseUpdate.Hash(right) } };
+        var assembled = ReleaseUpdate.DownloadArchive(manifest, ReleaseUpdate.Channel().ArchiveUrl, address => address.EndsWith("part01") ? left : right);
+        Check(ReleaseUpdate.Hash(assembled) == ReleaseUpdate.Hash(archive), "Reassemble verified public update parts");
+        Reject(() => ReleaseUpdate.DownloadArchive(manifest, ReleaseUpdate.Channel().ArchiveUrl, address => new byte[] { 0 }), "Reject a corrupt or missing update part");
+        manifest.ArchiveParts[0].Path = "../outside";
+        Reject(() => ReleaseUpdate.Validate(manifest), "Reject traversal in update part names");
+        manifest.ArchiveParts[0].Path = "MTOU-Mods-Windows.zip.part01";
+        string archiveHash = manifest.ArchiveSha256; manifest.ArchiveSha256 = new string('0',64);
+        Reject(() => ReleaseUpdate.DownloadArchive(manifest, ReleaseUpdate.Channel().ArchiveUrl, address => address.EndsWith("part01") ? left : right), "Reject a mismatched assembled archive hash");
+        manifest.ArchiveSha256 = archiveHash; manifest.ArchiveParts = null;
         ReleaseUpdate.Apply(root, manifest, archive);
         Check(File.ReadAllText(InstallerCore.SafePath(root, path)) == "new plugin contents", "Install a verified package");
         File.WriteAllText(InstallerCore.SafePath(root, path), "keep me");

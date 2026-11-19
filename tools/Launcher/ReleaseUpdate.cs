@@ -25,6 +25,7 @@ namespace Marmo.Launcher
         public string Version { get; set; }
         public string ArchiveSha256 { get; set; }
         public ReleaseFile[] Files { get; set; }
+        public ReleaseFile[] ArchiveParts { get; set; }
     }
     public sealed class PublicRelease
     {
@@ -94,6 +95,26 @@ namespace Marmo.Launcher
         {
             using (var sha = SHA256.Create()) return BitConverter.ToString(sha.ComputeHash(data)).Replace("-", "");
         }
+        public static byte[] DownloadArchive(ReleaseManifest manifest, string address, Func<string, byte[]> fetch = null)
+        {
+            Validate(manifest); fetch = fetch ?? Download;
+            if (manifest.ArchiveParts == null || manifest.ArchiveParts.Length == 0 || !address.StartsWith(PublicChannelRoot, StringComparison.Ordinal))
+                return fetch(address);
+            using (var result = new MemoryStream())
+            {
+                foreach (var part in manifest.ArchiveParts)
+                {
+                    var bytes = fetch(PublicChannelRoot + part.Path);
+                    if (bytes.LongLength != part.Bytes || !String.Equals(Hash(bytes), part.Sha256, StringComparison.OrdinalIgnoreCase))
+                        throw new IOException("Update part failed verification: " + part.Path);
+                    result.Write(bytes, 0, bytes.Length);
+                }
+                var archive = result.ToArray();
+                if (!String.Equals(Hash(archive), manifest.ArchiveSha256, StringComparison.OrdinalIgnoreCase))
+                    throw new IOException("The assembled update failed SHA-256 verification.");
+                return archive;
+            }
+        }
         public static bool Newer(string candidate, string installed)
         {
             Version next, current;
@@ -108,6 +129,18 @@ namespace Marmo.Launcher
                 throw new IOException("Unsupported or incomplete release manifest.");
             var paths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             long total = 0;
+            if (manifest.ArchiveParts != null)
+            {
+                if (manifest.ArchiveParts.Length > 16) throw new IOException("Too many update parts.");
+                long size = 0; var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                foreach (var part in manifest.ArchiveParts)
+                {
+                    if (part.Path == null || !System.Text.RegularExpressions.Regex.IsMatch(part.Path, "^MTOU-Mods-Windows\\.zip\\.part[0-9]{2}$")
+                        || !names.Add(part.Path) || part.Bytes <= 0 || part.Bytes > 32L * 1024 * 1024 || (size += part.Bytes) > 256L * 1024 * 1024
+                        || part.Sha256 == null || !System.Text.RegularExpressions.Regex.IsMatch(part.Sha256, "^[a-fA-F0-9]{64}$"))
+                        throw new IOException("Invalid update part.");
+                }
+            }
             foreach (var file in manifest.Files)
             {
                 InstallerCore.SafePath(Path.GetTempPath(), file.Path);

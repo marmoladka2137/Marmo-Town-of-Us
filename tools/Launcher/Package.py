@@ -47,12 +47,21 @@ def main():
     shutil.copy2(o.launcher,package/'Marmo Town of Us.exe')
     archive(files,package/'MTOU-Mods-Windows.zip')
     manifest=dict(Schema=1,Version='1.1.0 Beta',Revision='1.1.0.18',SourceCommit=o.commit,ArchiveSha256=sha(package/'MTOU-Mods-Windows.zip'),Files=[])
+    channel=o.output/'public-channel';channel.mkdir()
+    manifest['ArchiveParts']=[]
+    with (package/'MTOU-Mods-Windows.zip').open('rb') as archive_file:
+        for i in range(1,17):
+            part=archive_file.read(20*1024*1024)
+            if not part: break
+            target=channel/f'MTOU-Mods-Windows.zip.part{i:02}'
+            target.write_bytes(part);manifest['ArchiveParts'].append(pin(target,target.name))
     for p in sorted(files.rglob('*')):
         if p.is_file():
             item=pin(p,p.relative_to(files).as_posix())
             item['PreserveExisting']=item['Path'].startswith('BepInEx/config/')
             manifest['Files'].append(item)
     (package/'mtou-release.json').write_text(json.dumps(manifest,indent=2),encoding='utf-8')
+    shutil.copy2(package/'mtou-release.json',channel/'mtou-release.json')
     installer=json.loads((source/'tools/SteamInstaller/installer-manifest.json').read_text(encoding='utf-8-sig'))
     installer.update(Version='1.1.0 Beta',AssemblyRevision='1.1.0.18',SourceCommit=o.commit,
                      Payload=pin(payload/'TOU-Marmo.dll','Payload/TOU-Marmo.dll'),
@@ -61,17 +70,17 @@ def main():
     shutil.copytree(files/'MTOU Notices',package/'Notices')
     (package/'START-HERE.txt').write_text('Marmo Town of Us 1.1.0 Beta\n\nExtract this complete ZIP, then run Marmo Town of Us.exe. Select Steam or Epic Games and an installed, purchased Among Us. Install into a NEW separate folder. Keep the storefront client running. No game files are included. Public GitHub updates are checked automatically. Epic gameplay and multiplayer remain unverified.\n\nDiscord: https://dc.gg/mtou\nSource: https://github.com/marmoladka2137/Marmo-Town-of-Us/tree/'+o.commit+'\n',encoding='utf-8')
     archive(package,o.output/'MTOU-1.1.0-beta-Launcher-Windows.zip',exclude={'Payload/TOU-Marmo.dll'})
+    archive(package,channel/'MTOU-1.1.0-beta-Launcher-Windows.zip',exclude={'Payload/TOU-Marmo.dll','MTOU-Mods-Windows.zip'})
     # Export the index, not the workspace: ignored retired frames/cache are absent.
-    names=subprocess.check_output(['git','ls-files','-z'],cwd=source).decode().split('\0')
-    with zipfile.ZipFile(o.output/'MTOU-1.1.0-beta-source.zip','w',zipfile.ZIP_DEFLATED,compresslevel=9) as z:
-        for name in sorted(filter(None,names)):
-            p=source/name
-            if not p.is_file(): raise SystemExit('Tracked source missing: '+name)
-            z.writestr('Marmo-Town-of-Us/'+name,subprocess.check_output(['git','show',':'+name],cwd=source))
+    tree=subprocess.check_output(['git','write-tree'],cwd=source).decode().strip()
+    subprocess.run(['git','archive','--format=zip','--prefix=Marmo-Town-of-Us/',
+                    '--output='+str((o.output/'MTOU-1.1.0-beta-source.zip').resolve()),tree],cwd=source,check=True)
     sums=[]
     for p in [*sorted(o.output.glob('*.zip')),package/'mtou-release.json',package/'MTOU-Mods-Windows.zip',payload/'TOU-Marmo.dll',package/'Marmo Town of Us.exe']:
         sums.append(sha(p)+'  '+p.relative_to(o.output).as_posix())
     (o.output/'SHA256SUMS.txt').write_text('\n'.join(sums)+'\n',encoding='utf-8')
+    (channel/'SHA256SUMS.txt').write_text('\n'.join(sha(p)+'  '+p.name for p in sorted(channel.iterdir()) if p.is_file())+'\n',encoding='utf-8')
+    (channel/'README.md').write_text('# MTOU public downloads\n\nDownload the launcher ZIP, extract it and run Marmo Town of Us.exe. The launcher downloads and verifies the mod parts automatically; do not join them manually. No Among Us game files are distributed.\n\nMatching complete source: https://github.com/marmoladka2137/Marmo-Town-of-Us/archive/'+o.commit+'.zip\n\nEpic gameplay and multiplayer remain unverified. See the main branch documentation for tests, credits and independent third-party terms.\n',encoding='utf-8')
     print('\n'.join(sums))
 
 if __name__=='__main__': main()

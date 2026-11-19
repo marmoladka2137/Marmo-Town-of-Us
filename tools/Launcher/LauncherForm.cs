@@ -125,7 +125,7 @@ namespace Marmo.Launcher
                 {
                     string folder = gamePath.Text; var manifest = release; string address = latest.ArchiveUrl;
                     status.Text = "Downloading and installing " + release.Revision + "…";
-                    await Task.Run(() => ReleaseUpdate.Apply(folder, manifest, ReleaseUpdate.Download(address)));
+                    await Task.Run(() => ReleaseUpdate.Apply(folder, manifest, ReleaseUpdate.DownloadArchive(manifest, address)));
                     ShowRevision(); status.Text = "Updated. Ready to play.";
                 }
             }
@@ -167,9 +167,35 @@ namespace Marmo.Launcher
                 var manifest = InstallerManifest.Read(manifestPath); manifest.Platform = epic ? "Epic" : "Steam";
                 var core = new InstallerCore(manifest, root);
                 core.Progress = delegate(int percent, string message) { BeginInvoke((Action)(() => status.Text = percent + "%  " + message)); };
-                string game = await Task.Run(() => core.Install(source, destination, null));
+                core.ValidateSource(source); InstallerCore.ValidateDestination(source, destination, root);
                 var updateManifest = new JavaScriptSerializer().Deserialize<ReleaseManifest>(File.ReadAllText(Path.Combine(root, "mtou-release.json")));
-                await Task.Run(() => ReleaseUpdate.Apply(game, updateManifest, File.ReadAllBytes(Path.Combine(root, "MTOU-Mods-Windows.zip"))));
+                ReleaseUpdate.Validate(updateManifest);
+                status.Text = "Preparing verified mod files…";
+                string localArchive = Path.Combine(root, "MTOU-Mods-Windows.zip");
+                byte[] modArchive = await Task.Run(() => File.Exists(localArchive) ? File.ReadAllBytes(localArchive)
+                    : ReleaseUpdate.DownloadArchive(updateManifest, ReleaseUpdate.Channel().ArchiveUrl));
+                if (!String.Equals(ReleaseUpdate.Hash(modArchive), updateManifest.ArchiveSha256, StringComparison.OrdinalIgnoreCase))
+                    throw new IOException("Mod package failed SHA-256 verification.");
+                string cache = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "MTOU", "InstallerCache");
+                Directory.CreateDirectory(cache); InstallerCore.NoLinks(cache);
+                string cachedArchive = Path.Combine(cache, updateManifest.ArchiveSha256 + "-mods.zip");
+                InstallerCore.NoLinks(cachedArchive);
+                if (!File.Exists(cachedArchive))
+                {
+                    string temporary = cachedArchive + "." + Guid.NewGuid().ToString("N") + ".tmp";
+                    try
+                    {
+                        File.WriteAllBytes(temporary, modArchive);
+                        try { File.Move(temporary, cachedArchive); }
+                        catch (IOException) { if (!File.Exists(cachedArchive)) throw; }
+                    }
+                    finally { if (File.Exists(temporary)) File.Delete(temporary); }
+                }
+                if (!String.Equals(InstallerCore.Hash(cachedArchive), updateManifest.ArchiveSha256, StringComparison.OrdinalIgnoreCase))
+                    throw new IOException("Cached mod package failed verification.");
+                core.ModArchivePath = cachedArchive;
+                string game = await Task.Run(() => core.Install(source, destination, null));
+                await Task.Run(() => ReleaseUpdate.Apply(game, updateManifest, modArchive));
                 gamePath.Text = game; LauncherCore.Remember(game, saved); ShowRevision(); status.Text = "Installed. Ready to play.";
             }
             catch (Exception error) { MessageBox.Show(this, error.Message, "Installation failed"); status.Text = error.Message; }

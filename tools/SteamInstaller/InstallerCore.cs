@@ -42,6 +42,7 @@ namespace Marmo.SteamInstaller
     {
         public readonly InstallerManifest Manifest;
         public readonly string PackageRoot;
+        public string ModArchivePath;
         public Action<int, string> Progress = delegate { };
         public Action<string> Log = delegate { };
         static readonly string[] RootFiles = {
@@ -317,7 +318,7 @@ namespace Marmo.SteamInstaller
             string temporary = target + "." + Guid.NewGuid().ToString("N") + ".tmp";
             try
             {
-                using (var zip = ZipFile.OpenRead(SafePath(PackageRoot, "MTOU-Mods-Windows.zip")))
+                using (var zip = ZipFile.OpenRead(ModArchivePath ?? SafePath(PackageRoot, "MTOU-Mods-Windows.zip")))
                 {
                     var entry = zip.GetEntry("BepInEx/plugins/TOU-Marmo.dll");
                     if (entry == null || entry.Length != Manifest.Payload.Bytes) throw new IOException("Missing or invalid plugin payload.");

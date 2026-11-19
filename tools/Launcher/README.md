@@ -12,3 +12,5 @@ The Discord link opens `https://dc.gg/mtou`. Artwork: Marmo; see ASSET_CREDITS.m
 
 Build: `powershell -File tools/Launcher/Build.ps1 -OutputDirectory artifacts/launcher`.
 Tests: `Test.ps1` (discovery/process launch), `Test-Updates.ps1` (manifest, verification, rollback and Epic discovery); `tools/SteamInstaller/Test.ps1` (isolated installer fixtures). These do not certify multiplayer or Epic gameplay.
+
+The public bootstrap ZIP omits the duplicate plugin/archive payload. On first install, the launcher downloads pinned archive parts from the public channel, verifies each part and the assembled ZIP, and extracts the pinned DLL into its cache. It never asks users to combine parts manually. The locally assembled complete launcher ZIP can install using its bundled supplement.
