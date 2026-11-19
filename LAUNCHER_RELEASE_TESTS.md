@@ -3,7 +3,7 @@
 Executed locally on Windows, 2026-11-19:
 
 - MTOU Release build: 0 errors, 425 existing warnings. Visible version: 1.1.0 Beta.
-- Launcher 2.0.1.0 build: 0 errors or warnings, .NET Framework 4.8 / x64.
+- Launcher build: 0 errors or warnings, .NET Framework 4.8 / x64.
 - Launcher discovery/process tests: 14 assertions passed. The real launcher executable starts a fixture child with the right working directory; no game/DRM arguments are injected.
 - Installer fixtures: 39 assertions passed, including separate destination, immutable source, pinned downloads/payload, traversal rejection and failure isolation.
 - Update/Epic discovery tests: 29 assertions passed. Includes drafts, revision comparison, SHA-256 verification, corrupt/incomplete ZIPs, locked-file rollback including an already replaced earlier file, configuration preservation and Epic manifest discovery.
@@ -29,4 +29,8 @@ The canonical source archive was checked against every Git blob in the published
 
 ## Dependency correction discovered by native startup
 
-AleLuduMod 1.2.2 threw `Null method for aleludu.miraapi.patch` against public MiraAPI 0.6 because CustomPlayerMenu.Begin gained parameters. The official AleLuduMod 1.2.3 fixes this reflection lookup. The final seven-plugin package upgrades AleLuduMod to that official version, with its tagged sources and MIT notice. A repeat native startup reached the main menu, displayed the Discord link and logged successful patching of both Begin overloads without that initialization exception. This does not turn the unsuccessful Practice/vent test into a gameplay pass. The visible version stays 1.1.0 Beta; internal revision 19 makes existing revision-18 installations eligible for this dependency correction.
+AleLuduMod 1.2.2 threw `Null method for aleludu.miraapi.patch` against public MiraAPI 0.6 because CustomPlayerMenu.Begin gained parameters. The official AleLuduMod 1.2.3 fixes this reflection lookup. The final seven-plugin package upgrades AleLuduMod to that official version, with its tagged sources and MIT notice. A repeat native startup reached the main menu, displayed the Discord link and logged successful patching of both Begin overloads without that initialization exception. This does not turn the unsuccessful Practice/vent test into a gameplay pass. The visible version stays 1.1.0 Beta; internal revision 19 makes installations with a lower internal revision eligible for this dependency correction.
+
+## Unified launcher version — 2026-11-19
+
+Launcher rebuild: zero errors. Discovery/process tests: 26 assertions passed. Setup UI state tests: 11 assertions passed. Update/Epic discovery tests: 29 assertions passed on the rebuilt launcher sources. ProductVersion is 1.1.0 Beta; file/assembly version is 1.1.0.19, derived from the game project. This launcher-only change does not claim another gameplay test.

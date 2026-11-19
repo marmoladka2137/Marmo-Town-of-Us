@@ -1,10 +1,10 @@
 # Dependencies and development baseline
 
-The publication ZIP is **plugin-only**. It does not bundle the loader, runtime libraries, game files, another TownOfUsMira plugin or other mods from the owner's installation. Use upstream distributions subject to their licenses; a complete dependency pack is not cleared by this review.
+The current launcher supplies a verified mod supplement and obtains a pinned loader/dependency baseline. It does not distribute game files or a separate TownOfUsMira plugin. Dependency versions and independent license/source obligations are retained below.
 
-## Steam installer baseline — 2026-11-18
+## Installation baseline
 
-The optional Steam installer uses the unchanged MTOU 1.1.0.13 DLL and downloads selected files directly from the official [TOU Mira 1.7.9-beta1 Windows x64 archive](https://github.com/AU-Avengers/TOU-Mira/releases/tag/1.7.9-beta1). It selects BepInEx be.753, its core/runtime, Reactor 2.5.1, CorsacCosmetics 4.0.0 and **MiraAPI 0.6.0**. It does not install the separate TownOfUsMira plugin, AchievementsAPI or other optional mods. The dependency archive is not included in the installer ZIP.
+The installer uses the pinned MTOU 1.1.0 Beta DLL and downloads selected files directly from the official [TOU Mira 1.7.9-beta1 Windows x64 archive](https://github.com/AU-Avengers/TOU-Mira/releases/tag/1.7.9-beta1). It selects BepInEx be.753, its core/runtime, Reactor 2.5.1, CorsacCosmetics 4.0.0 and **MiraAPI 0.6.0**. It does not install the separate TownOfUsMira plugin, AchievementsAPI or other optional mods. The dependency archive is not included in the installer ZIP.
 
 The MiraAPI DLL from that TOU release has SHA-256 `337CB6D8C2B75105578A05EC48A2364BF006E9EEE9BBF0D753E59B2105F92E9D`; it differs from the earlier local 0.5.0-dev build and from the separately published MiraAPI 0.6.0 asset. The complete archive and all 233 selected files are pinned in [installer-manifest.json](tools/SteamInstaller/installer-manifest.json). Never substitute an arbitrary latest library.
 
@@ -19,7 +19,7 @@ A real Steam copy was installed from these public files, generated fresh wrapper
 | BepInEx | 6.0.0-be.753+0d275a4df3b6bbcb990a9715d0f037789624c377 | External IL2CPP loader. [Source](https://github.com/BepInEx/BepInEx/tree/0d275a4df3b6bbcb990a9715d0f037789624c377); loader core/runtime subdependencies are not all source-matched. |
 | Reactor | 2.5.1 | External required plugin. [Upstream](https://github.com/nuclearpowered/Reactor/releases/tag/2.5.1). |
 | MiraAPI | 0.5.0-dev | External required development plugin. Local source pin 7a4e891 plus a credit patch is available as provenance, but it is not a certified match for this DLL. [Source](https://github.com/All-Of-Us-Mods/MiraAPI). This is a fresh-developer-build blocker until matched/rebuilt. |
-| AchievementsAPI (historical) | Previously 2.0.0+e62c9c9032d293187d170f2e4ac37d05c1c11a63 | Removed from MTOU's compiled references and required plugins in beta.6. Historical [binary-identified source](https://github.com/am-clonec/AchievementsAPI/tree/e62c9c9032d293187d170f2e4ac37d05c1c11a63) and notices are retained as provenance. |
+| AchievementsAPI (historical) | Previously 2.0.0+e62c9c9032d293187d170f2e4ac37d05c1c11a63 | Removed from MTOU's compiled references and required plugins. Historical [binary-identified source](https://github.com/am-clonec/AchievementsAPI/tree/e62c9c9032d293187d170f2e4ac37d05c1c11a63) and notices are retained as provenance. |
 | CorsacCosmetics | 4.0.0+9ddf4833e47104f58889fd6b275c32c838b1b7d5 | External direct reference. [Binary-identified source](https://github.com/XtraCube/CorsacCosmetics/tree/9ddf4833e47104f58889fd6b275c32c838b1b7d5). Downloaded cosmetics have separate rights. |
 | HarmonyX | 2.10.2, assembly 0Harmony | External loader-provided dependency; not vanilla Harmony. |
 | Il2CppInterop Runtime/Common | 1.5.3 with hash 5d129493f28ff78d6e3316149698597d76012587 in metadata | Version label known; the queried commit was unavailable upstream. Exact binary match not established. Generator/HarmonySupport are CI builds 1.5.0-ci.620+763f4279… rather than the same source label. |
@@ -37,7 +37,7 @@ Core and interop wildcard references are obtained only from GameRoot and use Pri
 
 ## Compatibility scope
 
-MiraAPI and Reactor are declared as BepInDependency attributes; CorsacCosmetics is also a direct compiled reference. Build checks require these three plugins. AchievementsAPI was removed as a reference and prerequisite in beta.6: MTOU achievement integration is inactive. Historical dependency inventories below are records of the earlier baseline, not the beta.6 dependency graph.
+MiraAPI and Reactor are declared as BepInDependency attributes; CorsacCosmetics is also a direct compiled reference. Build checks require these three plugins. AchievementsAPI was removed as a reference and prerequisite: MTOU achievement integration is inactive. Historical dependency inventories below are records of the earlier baseline, not the current dependency graph.
 
 AleLuduMod, AUnlocker and Mini.RegionInstall were present in the owner's installation but were not loaded by the isolated startup test and are not required or packaged. TownOfUsMira.dll conflicts with this integrated arrangement and is not a prerequisite. Other optional compatibility integrations exist in inherited code; their plugins are not bundled or certified here.
 

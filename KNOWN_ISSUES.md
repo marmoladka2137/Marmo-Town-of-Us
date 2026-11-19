@@ -1,14 +1,11 @@
-## Launcher revision 1.1.0.18
+# Known issues and unverified cases — 1.1.0 Beta
 
-Epic detection/copy support is experimental: real Epic account authentication and gameplay were not tested. Live updates require a published GitHub release with both exact update assets; older releases without the manifest are skipped. The launcher updates mods, not its own executable. Retired procedural animation code/frames are absent from this source tree; native upstream resource rights are not certified. Full host/client and every-role regression remain unverified.
+- Actual Epic game authentication/gameplay, full role regression and host/client multiplayer have not been verified.
+- Practice Plumber gameplay tests timed out; native vent switching and synchronization are unverified.
+- Unsigned Windows launcher may show SmartScreen's unknown-publisher warning. No security protections are disabled.
+- Mod updates are checked automatically; replacing the launcher itself requires downloading the current launcher ZIP.
+- Double Shot/Triple Shot remain registered; their requested retirement is unresolved. Hugger's current interaction is preserved.
+- Native Mira asset-specific permissions and some exact binary/source matches remain unverified; see LICENSE_AUDIT.md.
+- SUS Modder acceptance and installer integration are not confirmed.
 
-# Known issues and unverified cases — 1.1.0-beta
-
-- Full gameplay for every role/inter-role interaction, actual host/client RPC transport, attack/meeting/exile synchronization and several consecutive matches have not been verified by the local fixtures.
-- Clean installation using only publicly available dependency builds, Steam/Epic parity, Android/iOS runtime and official-server behavior remain unverified. The recorded MiraAPI development build does not have a proven exact source/binary match. No external implementation DLL is distributed here.
-- Double Shot and Triple Shot remain registered, and Hugger retains its current Double Shot interaction. The owner requested preserving the supplied code while recording retirement as unresolved; no silent retirement change was made.
-- The original resource pipeline intentionally changes appearance/audio style. It passed local material, clip, cue and prefab fixtures; no long multi-match memory soak was run.
-- AutoRejoin's new deadline/mode/cancellation state passed deterministic tests; its real end-of-match click remains unverified.
-- SUS Modder intake format, installation and moderator acceptance are not confirmed. No submission was sent.
-
-See RUNTIME_MOTION_TESTS.md, DEPENDENCIES.md, LICENSE_AUDIT.md and RELEASE_CHECKLIST.md. Publication does not mean all roles are guaranteed bug-free. Reports should include exact settings and a reproducible scenario.
+Report exact settings, reproduction steps and logs without credentials. Compilation and fixture passes are not a guarantee that every role works.

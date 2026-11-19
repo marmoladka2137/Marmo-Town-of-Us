@@ -35,7 +35,7 @@ namespace Marmo.Launcher
             preferences = profileDirectory ?? Path.Combine(localData,"MTOU","Launcher");
             saved = Path.Combine(preferences,"game-path.txt");
             discover = installations ?? (epic => epic ? InstallerCore.FindEpicGames(InstallerCore.EpicManifestRoot) : InstallerCore.FindSteamGames());
-            Text = "Marmo Town of Us"; ClientSize = new Size(1040, 710); MinimumSize = new Size(940, 700);
+            Text = "Marmo Town of Us " + LauncherVersion.DisplayVersion; ClientSize = new Size(1040, 710); MinimumSize = new Size(940, 700);
             FormBorderStyle = FormBorderStyle.FixedSingle; MaximizeBox = false;
             AutoScaleMode = AutoScaleMode.Dpi; StartPosition = FormStartPosition.CenterScreen;
             Font = new Font("Segoe UI", 10); BackColor = Color.FromArgb(17, 20, 29); ForeColor = Color.WhiteSmoke;
@@ -47,7 +47,7 @@ namespace Marmo.Launcher
                 Bounds = new Rectangle(750, 46, 188, 140) }; Controls.Add(mark);
             AddLabel("MARMO", 724, 204, 280, 44, 26, true);
             AddLabel("TOWN OF US", 727, 252, 280, 32, 17, true);
-            AddLabel("1.1.0 Beta", 729, 295, 260, 28, 12, false).ForeColor = Color.FromArgb(242, 96, 110);
+            AddLabel(LauncherVersion.DisplayVersion, 729, 295, 260, 28, 12, false).ForeColor = Color.FromArgb(242, 96, 110);
             AddLabel("Steam  ·  Epic Games", 729, 338, 280, 27, 11, false);
             var line = new Panel { Bounds = new Rectangle(28, 390, 984, 1), BackColor = Color.FromArgb(53, 58, 75) };
             line.Anchor = AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Top; Controls.Add(line);
@@ -176,7 +176,8 @@ namespace Marmo.Launcher
         void ShowRevision()
         {
             bool ready=LauncherCore.IsModdedGame(gamePath.Text);
-            installed.Text=ready?"MTOU ready  ·  revision "+Revision():"Not installed yet  ·  Choose INSTALL MTOU to create your separate copy.";
+            installed.Text=ready?"MTOU "+LauncherCore.DisplayVersion(gamePath.Text)+"  ·  Ready to play":"Not installed yet  ·  Choose INSTALL MTOU to create your separate copy.";
+            tips.SetToolTip(installed,ready?"Build "+Revision():"");
             play.Enabled=!busy&&ready;
             install.Enabled=!busy&&!ready&&SelectedSource()!=null;
         }
@@ -231,12 +232,12 @@ namespace Marmo.Launcher
                 ReleaseUpdate.Validate(release);
                 if (!LauncherCore.IsModdedGame(gamePath.Text)) { status.Text = "Available  " + release.Version; return; }
                 if (!ReleaseUpdate.Newer(release.Revision, Revision())) { status.Text = "Your MTOU is up to date."; return; }
-                status.Text = "New public release  " + release.Revision;
+                status.Text = "New MTOU version  " + release.Version;
                 if (LauncherCore.IsRunning(gamePath.Text)) { status.Text = "Update ready. Close MTOU to install it."; return; }
                 if (autoUpdate.Checked || explicitClick)
                 {
                     string folder = gamePath.Text; var manifest = release; string address = latest.ArchiveUrl;
-                    status.Text = "Downloading and installing " + release.Revision + "…";
+                    status.Text = "Downloading and installing MTOU " + release.Version + "…";
                     await Task.Run(() => ReleaseUpdate.Apply(folder, manifest, ReleaseUpdate.DownloadArchive(manifest, address)));
                     ShowRevision(); status.Text = "Updated. Ready to play.";
                 }

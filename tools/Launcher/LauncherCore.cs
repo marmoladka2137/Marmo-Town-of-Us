@@ -9,6 +9,17 @@ namespace Marmo.Launcher
 {
     public static class LauncherCore
     {
+        public static string DisplayVersion(string folder)
+        {
+            try
+            {
+                string path=Path.Combine(folder,"BepInEx","plugins","TOU-Marmo.dll");
+                string product=FileVersionInfo.GetVersionInfo(path).ProductVersion;
+                return String.IsNullOrWhiteSpace(product)?AssemblyName.GetAssemblyName(path).Version.ToString():product;
+            }
+            catch(IOException){return "";}catch(ArgumentException){return "";}
+            catch(UnauthorizedAccessException){return "";}catch(BadImageFormatException){return "";}
+        }
         public static bool IsModdedGame(string folder)
         {
             if (String.IsNullOrWhiteSpace(folder)) return false;

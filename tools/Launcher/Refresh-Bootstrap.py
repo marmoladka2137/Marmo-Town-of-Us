@@ -1,5 +1,6 @@
 """Refresh the launcher while retaining the exact existing mod/dependency pins."""
 import argparse, hashlib, json, zipfile
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 def sha(data): return hashlib.sha256(data).hexdigest().upper()
@@ -28,14 +29,15 @@ def main():
     entries['Marmo Town of Us.exe']=args.launcher.read_bytes()
     old['Launcher']={'Path':'Marmo Town of Us.exe','Bytes':len(entries['Marmo Town of Us.exe']),
                      'Sha256':sha(entries['Marmo Town of Us.exe'])}
-    old['LauncherVersion']='2.1.0'
+    version=ET.parse(Path(__file__).resolve().parents[2]/'TOU-Marmo.csproj').findtext('.//InformationalVersion')
+    old['LauncherVersion']=version
     old['LauncherSourceCommit']=args.source_commit
     entries['installer-manifest.json']=json.dumps(old,indent=2).encode()
     url='https://github.com/marmoladka2137/Marmo-Town-of-Us/archive/'+args.source_commit+'.zip'
-    entries['Notices/LauncherSource.txt']=('Marmo Town of Us launcher 2.1.0\nCode: GPL-3.0; artwork: existing credited terms.\n'
+    entries['Notices/LauncherSource.txt']=('Marmo Town of Us launcher '+version+'\nCode: GPL-3.0; artwork: existing credited terms.\n'
         'Complete launcher source: '+url+'\nBuild: tools/Launcher/Build.ps1\n'
         'The plugin payload has its own unchanged source commit in installer-manifest.json.\n').encode()
-    entries['START-HERE.txt']=('Marmo Town of Us 1.1.0 Beta — launcher 2.1.0\n\n'
+    entries['START-HERE.txt']=('Marmo Town of Us '+version+'\n\n'
         'Extract the complete ZIP and run Marmo Town of Us.exe.\n'
         '1. Choose Steam or Epic Games. Auto-detect selects your installed Among Us.\n'
         '2. Leave the default separate MTOU folder, or use Choose folder.\n'

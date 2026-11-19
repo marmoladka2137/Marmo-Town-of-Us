@@ -1,5 +1,3 @@
-# MTOU 1.1.0 Beta
+# Current publication information
 
-Public SemVer: 1.1.0-beta. Visible label: 1.1.0 Beta. Internal file/assembly revision: 1.1.0.12.
-
-Includes original runtime resources and the repository's Source Code menu link. Role mechanics are unchanged by this publication follow-up. Local native fixtures and deterministic tests are documented in RUNTIME_MOTION_TESTS.md. Full gameplay and multiplayer remain unverified. Download hashes are provided in SHA256SUMS.txt with the release.
+MTOU and launcher: **1.1.0 Beta**. See [current test evidence](LAUNCHER_RELEASE_TESTS.md), [known issues](KNOWN_ISSUES.md) and [installation](INSTALLATION.md). Only the executed checks documented there are claimed. For source and asset obligations, see [license audit](LICENSE_AUDIT.md).

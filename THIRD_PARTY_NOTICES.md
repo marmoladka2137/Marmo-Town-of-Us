@@ -1,10 +1,8 @@
-> Current revision 1.1.0.19 (2026-11-18): native Mira presentation resources are restored; procedural replacements described in older sections below are retired and excluded from this source tree. Their former clearance does not apply to restored upstream animations/audio. No new permission or blanket legal clearance is claimed. The original MTOU artwork attribution (Marmo, CC BY 4.0) is unchanged. See LAUNCHER_RELEASE_TESTS.md and tools/Launcher/README.md for the current package and tests.
-
-# Third-party notices â€” runtime-motion candidate
+# Third-party notices â€” current publication
 
 Combined TOU Mira/MTOU C# is GPLv3. Preserve copyright, modification notices and corresponding source. Original MTOU graphics are separately CC BY 4.0, Marmo attribution. The retained Liberation Sans font is OFL-1.1. Full texts are in LICENSES.
 
-Static TOU Mira sprites keep AU-Avengers/AtonyGit/other original credits under the official credited-sprite permission. No inherited animation, controller graph, recording or compiled shader is conveyed in the rebuilt main bundles. See ASSET_CREDITS.md and LICENSE_AUDIT.md for exact replacement scope. Names, layouts and duration contracts are functional interfaces, not a claim that upstream art became Marmo's.
+Static TOU Mira sprites keep AU-Avengers/AtonyGit/other original credits under the official credited-sprite permission. Native Mira presentation resources retain independent rights; see ASSET_CREDITS.md and LICENSE_AUDIT.md for unresolved permissions.
 
 ## External dependencies â€” no DLL payload included
 
@@ -25,7 +23,7 @@ Dynamic separate references and complete application source support library repl
 
 TownOfUs-Cosmetics has an explicit [GPLv3 license](https://github.com/AU-Avengers/TownOfUs-Cosmetics/blob/c39926b6f1037304caa558687fe07558ebb27c86/LICENSE); all 17 installed bundle hashes match its inspected tree. They are runtime downloads, not ZIP payload. Their GPL text is included as provenance/notice. Artist-specific sub-assets, preferred editable source and future mutable-main downloads are not certified.
 
-AchievementsAPI was removed from MTOU's references and required plugins in beta.6; the prior row calling it a direct dependency was stale. Its old GPLv3 text at e62c9c9 remains historical evidence. Fody 6.5.5 and Costura.Fody 5.7.0 were checked from their exact packages (MIT) but are absent from the current build and release payload. No Costura-embedded implementation DLLs were found.
+AchievementsAPI was removed from MTOU's references and required plugins from the current build; the prior row calling it a direct dependency was stale. Its old GPLv3 text at e62c9c9 remains historical evidence. Fody 6.5.5 and Costura.Fody 5.7.0 were checked from their exact packages (MIT) but are absent from the current build and release payload. No Costura-embedded implementation DLLs were found.
 
 .NET, Unity, Rewired and the game-provided Discord/TMP/IL2CPP wrappers are references to the development/game environment, not redistributed files or open-source licenses inferred from MTOU. A complete .NET/native/loader pack would require its own version-specific notices. AleLuduMod, AUnlocker, Mini.RegionInstall and the separate TownOfUsMira plugin are not MTOU prerequisites or package payload.
 

@@ -2,9 +2,9 @@
 
 ## Download / Pobierz
 
-### [⬇ Pobierz MTOU dla Windows / Download for Windows](https://github.com/marmoladka2137/Marmo-Town-of-Us/releases/download/v1.1.0-beta.19/MTOU-Launcher-2.1.0-Windows.zip)
+### [⬇ Pobierz MTOU dla Windows / Download for Windows](https://github.com/marmoladka2137/Marmo-Town-of-Us/releases/download/v1.1.0-beta.19/MTOU-1.1.0-beta-Launcher-Windows.zip)
 
-**MTOU 1.1.0 Beta · Launcher 2.1.0**
+**MTOU 1.1.0 Beta · Launcher 1.1.0 Beta**
 
 Rozpakuj ZIP → uruchom **Marmo Town of Us.exe** → wybierz Steam/Epic i **INSTALL MTOU**.
 
@@ -64,7 +64,7 @@ Development reference: **Among Us 2026.9.29, Unity 2022.3.44f1, Windows x64**. T
 
 ## Installation
 
-[Download the Windows launcher ZIP](https://github.com/marmoladka2137/Marmo-Town-of-Us/releases/download/v1.1.0-beta.19/MTOU-Launcher-2.1.0-Windows.zip), or check [Releases](https://github.com/marmoladka2137/Marmo-Town-of-Us/releases). Use the current launcher download above. The `downloads` branch also supplies verified updater data. Extract it and run **Marmo Town of Us.exe**. Choose **Steam** or **Epic Games**, then install a separate copy using your purchased, locally installed game. Epic support is implemented but remains unverified in a real Epic game session. [Launcher instructions](tools/Launcher/README.md).
+[Download the Windows launcher ZIP](https://github.com/marmoladka2137/Marmo-Town-of-Us/releases/download/v1.1.0-beta.19/MTOU-1.1.0-beta-Launcher-Windows.zip), or check [Releases](https://github.com/marmoladka2137/Marmo-Town-of-Us/releases). Use the current launcher download above. The `downloads` branch also supplies verified updater data. Extract it and run **Marmo Town of Us.exe**. Choose **Steam** or **Epic Games**, then install a separate copy using your purchased, locally installed game. Epic support is implemented but remains unverified in a real Epic game session. [Launcher instructions](tools/Launcher/README.md).
 
 The launcher checks published GitHub releases automatically and verifies downloads before updating. All participants need matching mod versions. The package recreates the seven-plugin TEST MODY set, using the public MiraAPI 0.6.0 dependency baseline. It contains no complete game, profiles or separate TownOfUsMira plugin.
 

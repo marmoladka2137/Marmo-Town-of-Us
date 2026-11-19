@@ -1,13 +1,9 @@
-# Publication status â€” 1.1.0 Beta / assembly 1.1.0.19
+# Publication status — 1.1.0 Beta
 
-Repository: https://github.com/marmoladka2137/Marmo-Town-of-Us
+Current publication: 2026-11-19. Game and launcher: **1.1.0 Beta**; file/assembly revision **1.1.0.19**.
 
-This beta adds a Windows launcher, public GitHub update verification, the seven-plugin TEST MODY set, configurable Plumber nails and a main-menu-only Discord link. It includes the earlier 14â€“17 source fixes. Source publication and final release upload are separate operations; the release page determines what is actually downloadable.
+[Download](https://github.com/marmoladka2137/Marmo-Town-of-Us/releases/tag/v1.1.0-beta.19). Extract the complete ZIP and run Marmo Town of Us.exe. The source commit for the launcher and the separate unchanged mod payload are recorded in installer-manifest.json. No Among Us executable is distributed.
 
-The launcher never distributes Among Us. It copies a locally installed Steam/Epic game into a new directory and downloads a pinned official loader baseline. The extra plugin supplement includes matching tagged sources and notices. MiraAPI 0.6.0 is the public dependency baseline; it is not claimed to match the user's historical 0.5.0-dev binary.
+Combined source remains GPLv3; original MTOU graphics are Marmo / CC BY 4.0. Native Mira presentation resources retain their own rights. Resource-specific permission for upstream animations/audio is unverified; publication is not legal clearance or moderator approval. See LICENSE_AUDIT.md.
 
-Code GPLv3; original MTOU artwork Marmo / CC BY 4.0. Native Mira resources were restored at the user's request, so older statements that procedural replacements cleared all animation/audio concerns no longer describe this revision. Upstream resource-specific rights remain unverified where no permission was established. Publication is not a legal clearance or a moderator approval.
-
-See LAUNCHER_RELEASE_TESTS.md. Epic gameplay, multiplayer, every role interaction and SUS Modder installation remain unverified. No zero-bug guarantee is made. The working TEST MODY installation remains separate and is not automatically overwritten.
-
-The public `downloads` branch hosts the bootstrap launcher and update channel separately from source. This is not a GitHub Release entry. The updater prefers compatible published Releases and falls back to the public branch when none exists or the Release API is unavailable.
+Steam download/install and native startup have recorded checks. Actual Epic gameplay, complete role regression, multiplayer and SUS Modder integration remain unverified. The updater uses public Releases with compatible update assets and otherwise the downloads branch. Existing TEST MODY files are not changed by this publication.
