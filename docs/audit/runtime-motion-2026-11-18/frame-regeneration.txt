@@ -1,1 +1,0 @@
-Generated 1511 entirely procedural PNG frames for 55 contracts; no input pixels or motion curves read.

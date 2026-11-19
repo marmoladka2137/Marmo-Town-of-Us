@@ -1,1 +1,0 @@
-Play an altered version of TOU, with a finer selection of roles, where the only teams are Townies, Neutrals, Mafia, Coven, and Apocalypse!

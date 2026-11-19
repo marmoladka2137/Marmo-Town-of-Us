@@ -1,1 +1,0 @@
-These roles can only spawn in Hide and Seek.

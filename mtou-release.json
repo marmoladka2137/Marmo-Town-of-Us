@@ -1,0 +1,278 @@
+{
+  "Schema": 1,
+  "Version": "1.1.0 Beta",
+  "Revision": "1.1.0.18",
+  "SourceCommit": "ff9c4d50b719d2723a3461cecddb4708a18811b2",
+  "ArchiveSha256": "AA8B8E2CBB82C9FFFF79E31BD361C5D8344B357E584E11FAF06F6E6D659E2596",
+  "Files": [
+    {
+      "Path": "BepInEx/config/AUnlocker.cfg",
+      "Bytes": 152,
+      "Sha256": "CD7FAD903718B6EB8A5C7093B97F371EB61BB3FE617C94E29B69BF43A4ECAF72",
+      "PreserveExisting": true
+    },
+    {
+      "Path": "BepInEx/plugins/AleLuduMod.dll",
+      "Bytes": 116224,
+      "Sha256": "07D707D287C72888AB8449EE77849EF3E10D9C29B94414E5D913FA15D4FDAB8F",
+      "PreserveExisting": false
+    },
+    {
+      "Path": "BepInEx/plugins/AUnlocker_v1.3.2.dll",
+      "Bytes": 44544,
+      "Sha256": "714707896F01261461E31EA3EF9BA92F0C48294FC0A2B735FD60A0FF2204D204",
+      "PreserveExisting": false
+    },
+    {
+      "Path": "BepInEx/plugins/Mini.RegionInstall.dll",
+      "Bytes": 41985,
+      "Sha256": "9015448B849CBE5EDF71A62D77B32E16786E4515919751C2078062046F7DE98B",
+      "PreserveExisting": false
+    },
+    {
+      "Path": "BepInEx/plugins/TOU-Marmo.dll",
+      "Bytes": 56214016,
+      "Sha256": "77A1CA68B29FBC6075271796C801E7EB08447CF052686711DCA459064FC6F090",
+      "PreserveExisting": false
+    },
+    {
+      "Path": "MTOU Notices/ASSET_CREDITS.md",
+      "Bytes": 4139,
+      "Sha256": "640D0845AFFB2C2F04285675D9B230CAA56C1C469D749C44300286950DF4B7FD",
+      "PreserveExisting": false
+    },
+    {
+      "Path": "MTOU Notices/CorrespondingSource/AleLuduMod-source.zip",
+      "Bytes": 767580,
+      "Sha256": "BAB1C3EAC2E0908EEFDA8500D0D4E6E9737E6001D06E458741C8EC8937DF8887",
+      "PreserveExisting": false
+    },
+    {
+      "Path": "MTOU Notices/CorrespondingSource/AUnlocker-source.zip",
+      "Bytes": 365637,
+      "Sha256": "BD14CA0AB5D395F0C5B2499A8FFFD20C521088FB0E71DFE26A9E3B31069955F7",
+      "PreserveExisting": false
+    },
+    {
+      "Path": "MTOU Notices/CorrespondingSource/Mini.RegionInstall-source.zip",
+      "Bytes": 29617,
+      "Sha256": "6945E83D673DA8F59E6E55C08B158020470DA5ADD12FBCB38E89BAAE7985F323",
+      "PreserveExisting": false
+    },
+    {
+      "Path": "MTOU Notices/CREDITS.md",
+      "Bytes": 4721,
+      "Sha256": "25BC3F690CB0228019AE20E7B3CB2C68059F305201C12A26E67C315FBC25B2EA",
+      "PreserveExisting": false
+    },
+    {
+      "Path": "MTOU Notices/LICENSE",
+      "Bytes": 35823,
+      "Sha256": "230184F60BAE2FEAF244F10A8BAC053C8FF33A183BCC365B4D8B876D2B7F4809",
+      "PreserveExisting": false
+    },
+    {
+      "Path": "MTOU Notices/LICENSES/AchievementsAPI-e62c9c9.txt",
+      "Bytes": 35150,
+      "Sha256": "E57F1C320B8CF8798A7D2FF83A6F9E06A33A03585F6E065FEA97F1D86DB84052",
+      "PreserveExisting": false
+    },
+    {
+      "Path": "MTOU Notices/LICENSES/AleLuduMod.txt",
+      "Bytes": 1073,
+      "Sha256": "0049864D84DCB0A53B868CEC985E3A433B8B509BC3A5E532027019DB938BBE9F",
+      "PreserveExisting": false
+    },
+    {
+      "Path": "MTOU Notices/LICENSES/AsmResolver-70794cde-MIT.txt",
+      "Bytes": 1108,
+      "Sha256": "2E1387C6998DB3A2ADAB1CB1F86E33326AE950D0487D6151FED0776B7AC392C3",
+      "PreserveExisting": false
+    },
+    {
+      "Path": "MTOU Notices/LICENSES/AssetRipper-CIL-a0c48e02-MIT.txt",
+      "Bytes": 1062,
+      "Sha256": "039CD624A13919C3AF1AEC3CE2217C3F50D6E3053F6E9EF64D9CF37E12812A76",
+      "PreserveExisting": false
+    },
+    {
+      "Path": "MTOU Notices/LICENSES/AssetRipper-Primitives-9c4a7d81-MIT.txt",
+      "Bytes": 1062,
+      "Sha256": "DAE6148FF7AD3331A6380A2CE0CBB87F71B8F177891ABA1661B1D3A6FE52D5DE",
+      "PreserveExisting": false
+    },
+    {
+      "Path": "MTOU Notices/LICENSES/AssetRipper-Primitives-uTinyRipper-MIT.txt",
+      "Bytes": 1063,
+      "Sha256": "4BCFD56E4CF313D10CC6A0A3A4A9862076A40B430BB51EFE9E9C827FF5C94FFE",
+      "PreserveExisting": false
+    },
+    {
+      "Path": "MTOU Notices/LICENSES/AUnlocker.txt",
+      "Bytes": 35149,
+      "Sha256": "3972DC9744F6499F0F9B2DBF76696F2AE7AD8AF9B23DDE66D6AF86C9DFB36986",
+      "PreserveExisting": false
+    },
+    {
+      "Path": "MTOU Notices/LICENSES/BepInEx-0d275a4.txt",
+      "Bytes": 25339,
+      "Sha256": "A357BE14871574E038F9002D1F51BC3E4FD7A31630A99CE53E6F391B87A260FF",
+      "PreserveExisting": false
+    },
+    {
+      "Path": "MTOU Notices/LICENSES/Capstone-NET-b90e380c-MIT.txt",
+      "Bytes": 1062,
+      "Sha256": "79463FA3B9FACDA0F90E33EDA09FF57C6C4D5620BA8B01E5C48A68834E20DE4E",
+      "PreserveExisting": false
+    },
+    {
+      "Path": "MTOU Notices/LICENSES/CC-BY-4.0.txt",
+      "Bytes": 18657,
+      "Sha256": "9BA9550AD48438D0836DDAB3DA480B3B69FFA0AAC7B7878B5A0039E7AB429411",
+      "PreserveExisting": false
+    },
+    {
+      "Path": "MTOU Notices/LICENSES/CorsacCosmetics-9ddf483.txt",
+      "Bytes": 1079,
+      "Sha256": "D2BDDB95782E9ED2F282C9CBF96AD527BD6B48F323BE0D72519FE840776FBC9A",
+      "PreserveExisting": false
+    },
+    {
+      "Path": "MTOU Notices/LICENSES/Cpp2IL-edbb9949-MIT.txt",
+      "Bytes": 1066,
+      "Sha256": "1A80D1B99E958385045DA1E383A105895D1C997EF2B36448430DBFE3763FE670",
+      "PreserveExisting": false
+    },
+    {
+      "Path": "MTOU Notices/LICENSES/Dobby-upstream-Apache-2.0-NOT-source-matched.txt",
+      "Bytes": 11356,
+      "Sha256": "43070E2D4E532684DE521B885F385D0841030EFA2B1A20BAFB76133A5E1379C1",
+      "PreserveExisting": false
+    },
+    {
+      "Path": "MTOU Notices/LICENSES/Fody-6.5.5-historical.txt",
+      "Bytes": 1062,
+      "Sha256": "967178895CCC4C3A45B7C76C430DF06EC567C361F085A4569E8CA8D2EE16F25C",
+      "PreserveExisting": false
+    },
+    {
+      "Path": "MTOU Notices/LICENSES/HarmonyX-2.10.2.txt",
+      "Bytes": 1064,
+      "Sha256": "00DE20316BB5F2B227A7219384785E0970AB0C800DAF374C1962E370C33497DE",
+      "PreserveExisting": false
+    },
+    {
+      "Path": "MTOU Notices/LICENSES/Iced-601c4057-MIT.txt",
+      "Bytes": 1114,
+      "Sha256": "93A47598376FD3F276B631E75149340087153C6FF1635A53C5790249E9124E2D",
+      "PreserveExisting": false
+    },
+    {
+      "Path": "MTOU Notices/LICENSES/Il2CppInterop-CI-763f427-GPL-3.0.txt",
+      "Bytes": 35149,
+      "Sha256": "3972DC9744F6499F0F9B2DBF76696F2AE7AD8AF9B23DDE66D6AF86C9DFB36986",
+      "PreserveExisting": false
+    },
+    {
+      "Path": "MTOU Notices/LICENSES/Il2CppInterop-v1.5.3.txt",
+      "Bytes": 42803,
+      "Sha256": "A66CC080F0BBDF2C47C356B7B0B4F93502D549348374D7AE4503A226CC3FF29A",
+      "PreserveExisting": false
+    },
+    {
+      "Path": "MTOU Notices/LICENSES/LiberationSans-2.00.1-OFL-1.1.txt",
+      "Bytes": 4414,
+      "Sha256": "93FED46019C38BBE566B479D22148E2E8A1E85ADA614ACCB0211C37B2C61C19B",
+      "PreserveExisting": false
+    },
+    {
+      "Path": "MTOU Notices/LICENSES/Mini.RegionInstall.txt",
+      "Bytes": 35149,
+      "Sha256": "3972DC9744F6499F0F9B2DBF76696F2AE7AD8AF9B23DDE66D6AF86C9DFB36986",
+      "PreserveExisting": false
+    },
+    {
+      "Path": "MTOU Notices/LICENSES/MiraAPI-7a4e891.txt",
+      "Bytes": 26527,
+      "Sha256": "6DA7DDF40CFEA6F568961825B14478E879875F6AD033FAD57889AE5BD52103F4",
+      "PreserveExisting": false
+    },
+    {
+      "Path": "MTOU Notices/LICENSES/Mono-Cecil-0.11.4-MIT.txt",
+      "Bytes": 1098,
+      "Sha256": "13D58ECBED676511C0C4C4009BFF107025E50007FF5E7901DC562700EC62509E",
+      "PreserveExisting": false
+    },
+    {
+      "Path": "MTOU Notices/LICENSES/MonoMod-22.7.31.1-MIT.txt",
+      "Bytes": 1080,
+      "Sha256": "0B64833222E3C6A426AD29362D26334619FE02EAF2B89EA9C37805521896C920",
+      "PreserveExisting": false
+    },
+    {
+      "Path": "MTOU Notices/LICENSES/PerfectComms-59068ee.txt",
+      "Bytes": 26527,
+      "Sha256": "6DA7DDF40CFEA6F568961825B14478E879875F6AD033FAD57889AE5BD52103F4",
+      "PreserveExisting": false
+    },
+    {
+      "Path": "MTOU Notices/LICENSES/Reactor-2.5.1.txt",
+      "Bytes": 7653,
+      "Sha256": "1A45B1D0A8603DFE2CFC644F9DAB970B1762F92BABE2AAC6EB2F5D4572C4A680",
+      "PreserveExisting": false
+    },
+    {
+      "Path": "MTOU Notices/LICENSES/SemanticVersioning-2.0.2-MIT.txt",
+      "Bytes": 1054,
+      "Sha256": "26A00BAD0D14CA2FC93C10398D477FA9609D6FD36068867DE53384218C1F64A3",
+      "PreserveExisting": false
+    },
+    {
+      "Path": "MTOU Notices/LICENSES/TOU-Mira-GPL-3.0.txt",
+      "Bytes": 35823,
+      "Sha256": "230184F60BAE2FEAF244F10A8BAC053C8FF33A183BCC365B4D8B876D2B7F4809",
+      "PreserveExisting": false
+    },
+    {
+      "Path": "MTOU Notices/LICENSES/TownOfUs-Cosmetics-GPL-3.0.txt",
+      "Bytes": 35131,
+      "Sha256": "7EED6FEBB5A9D442EEEA9EA90D2B3921ABE944AD8A57AA373E5534B9111F1490",
+      "PreserveExisting": false
+    },
+    {
+      "Path": "MTOU Notices/MTOU_ARTWORK_LICENSE.md",
+      "Bytes": 1354,
+      "Sha256": "B45ECD8F2DE5344FE2AE50B22E3408E80C9B1EF605611CFCEE60AFB1225710A3",
+      "PreserveExisting": false
+    },
+    {
+      "Path": "MTOU Notices/SOURCE.txt",
+      "Bytes": 320,
+      "Sha256": "CB2B46B7345FA25624339FF8EE745D76DD416C158929856116931B0706DECE31",
+      "PreserveExisting": false
+    },
+    {
+      "Path": "MTOU Notices/THIRD_PARTY_NOTICES.md",
+      "Bytes": 7359,
+      "Sha256": "2AFFD7605371AB0A8FA6FF7CA72020B4C3F91D9752905F3862FAE06134F4C50E",
+      "PreserveExisting": false
+    }
+  ],
+  "ArchiveParts": [
+    {
+      "Path": "MTOU-Mods-Windows.zip.part01",
+      "Bytes": 20971520,
+      "Sha256": "ACCDC6A15DBADB20CD4411BAF8F542FCB723ABDA7058E76B2F65E4B5D95EAF72"
+    },
+    {
+      "Path": "MTOU-Mods-Windows.zip.part02",
+      "Bytes": 20971520,
+      "Sha256": "F1433E7FB7F2A6250D54DF37871F22F1F4D7E2FE57EB535F34BDDA80D9C53426"
+    },
+    {
+      "Path": "MTOU-Mods-Windows.zip.part03",
+      "Bytes": 10060847,
+      "Sha256": "0FD8699E503EE08234FD62816201B4E68EBAF61320F4E7FF1C3033730A93E1B0"
+    }
+  ]
+}

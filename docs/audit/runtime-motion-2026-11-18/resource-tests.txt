@@ -1,1 +1,0 @@
-PASS: 2623 resource-content assertions; both serialized platforms, not Android runtime.

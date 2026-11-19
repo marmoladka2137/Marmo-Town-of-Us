@@ -1,7 +1,0 @@
-settings.amogus unchanged: True
-settings.amogus_TOUMira unchanged: True
-player.amogus unchanged: True
-settings.amogus_TOU unchanged: True
-player.amogus_TOUMira unchanged: True
-player.amogus_TOU unchanged: True
-Unity display registry restored: True

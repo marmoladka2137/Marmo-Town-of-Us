@@ -1,1 +1,0 @@
-A mode where your only choice is to kill or be killed.
