@@ -38,6 +38,9 @@ static class SetupTests
                 Check(!Field<Button>(form,"play").Enabled,"No game detected keeps Play disabled");
                 Check(Field<ComboBox>(form,"sourceGame").Text.Contains("Choose"),"Missing games have an actionable selection hint");
             }
+            using(var form=new LauncherForm(root,false,Path.Combine(root,"epic-only-profile"),isEpic=>isEpic?new[]{epic}:new string[0]))
+                Check(Field<ComboBox>(form,"platform").SelectedIndex==1&&Field<ComboBox>(form,"sourceGame").SelectedItem as string==epic,
+                    "An Epic-only computer automatically chooses the Epic installation");
             Console.WriteLine("PASS "+checks+" isolated setup assertions. No downloads or game processes.");return 0;
         }
         catch(Exception error){Console.Error.WriteLine(error);return 1;}

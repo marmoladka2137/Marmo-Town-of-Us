@@ -54,7 +54,7 @@ Development reference: **Among Us 2026.9.29, Unity 2022.3.44f1, Windows x64**. T
 
 ## Installation
 
-[Download the Windows launcher ZIP](https://raw.githubusercontent.com/marmoladka2137/Marmo-Town-of-Us/downloads/MTOU-1.1.0-beta-Launcher-Windows.zip), or check [Releases](https://github.com/marmoladka2137/Marmo-Town-of-Us/releases). The `downloads` branch is the public bootstrap/update channel until a compatible Release is attached. Extract it and run **Marmo Town of Us.exe**. Choose **Steam** or **Epic Games**, then install a separate copy using your purchased, locally installed game. Epic support is implemented but remains unverified in a real Epic game session. [Launcher instructions](tools/Launcher/README.md).
+[Download the Windows launcher ZIP](https://raw.githubusercontent.com/marmoladka2137/Marmo-Town-of-Us/downloads/MTOU-Launcher-2.1.0-Windows.zip), or check [Releases](https://github.com/marmoladka2137/Marmo-Town-of-Us/releases). The `downloads` branch is the public bootstrap/update channel until a compatible Release is attached. Extract it and run **Marmo Town of Us.exe**. Choose **Steam** or **Epic Games**, then install a separate copy using your purchased, locally installed game. Epic support is implemented but remains unverified in a real Epic game session. [Launcher instructions](tools/Launcher/README.md).
 
 The launcher checks published GitHub releases automatically and verifies downloads before updating. All participants need matching mod versions. The package recreates the seven-plugin TEST MODY set, using the public MiraAPI 0.6.0 dependency baseline. It contains no complete game, profiles or separate TownOfUsMira plugin.
 
@@ -89,3 +89,4 @@ This mod is not affiliated with Among Us or Innersloth LLC, and the content cont
 ## Support and Bug Reports
 
 Community: [dc.gg/mtou](https://dc.gg/mtou). [Report an issue](https://github.com/marmoladka2137/Marmo-Town-of-Us/issues). Include mod/game/store versions, role/settings, host/client perspective, reproduction steps and a redacted log. Never upload credentials, player profiles or the base game. Upstream maintainers are not responsible for MTOU-specific issues.
+
