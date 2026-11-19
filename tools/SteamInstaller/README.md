@@ -1,4 +1,8 @@
-# Marmo Town of Us — Steam installer
+# Installer engine
+
+For players, use the [current launcher and installation guide](../../INSTALLATION.md). The standalone revision-13 installer downloads have been retired. This folder contains the installation engine still used by the current launcher, plus its tests and historical implementation details below. It is not a second download choice.
+
+## Historical standalone Steam installer
 
 ## Instalacja po polsku
 
