@@ -1,104 +1,98 @@
 using Il2CppInterop.Runtime.Attributes;
 using Reactor.Utilities.Attributes;
-using TouMarmo.Modules.OriginalAnimations;
+using TownOfUs.Utilities.Appearances;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace TouMarmo.Modules.Deputy;
 
-/// <summary>Original graphic shot cue. Does not clone or play a Mira/native kill-animation prefab.</summary>
 [RegisterInIl2Cpp]
 public sealed class DeputyShotEffect(IntPtr ptr) : MonoBehaviour(ptr)
 {
-    public const float Duration = AnimationTiming.DeputyDuration;
+    public const float Duration = .25f + 1.23f + .16666667f;
     private DeputyShotPresentation.Shot? shot;
-    private ProceduralStage? stage;
-    private Transform canvas = null!, weapon = null!, flash = null!, pulse = null!;
-    private Transform actor = null!;
-    private SpriteRenderer shade = null!;
+    private HorseWrangleOverlay actor = null!;
+    private GameObject flame = null!;
+    private SpriteRenderer background = null!;
+    private Transform closeup = null!;
+    private Vector3 closeupStart;
+    private Bounds closeupBounds;
+    private int screenWidth, screenHeight;
+    private readonly List<Material> ownedMaterials = new();
     private float began;
-    private bool configured, finished, sounded;
+    private bool configured, finished;
     internal byte OwnerId => shot?.Owner.PlayerId ?? byte.MaxValue;
 
     [HideFromIl2Cpp]
     internal void Configure(DeputyShotPresentation.Shot request)
     {
         shot = request;
-        stage = new ProceduralStage(transform, 200);
-        canvas = stage.Group("Original shot composition");
-        shade = stage.Quad("Dark panel", Vector2.zero, new Vector2(8, 4.5f), new Color(.03f,.08f,.12f,.85f), canvas);
-        shade.sortingOrder = 180;
-        var stripe = stage.Quad("Gold rule", new Vector2(0,-1.65f), new Vector2(6.3f,.035f), new Color(1,.76f,.28f), canvas);
-        stripe.sortingOrder = 181;
-
-        // A live meeting icon owns loaded cosmetic handles; cloning it can share stale loading state.
-        var player = Object.Instantiate(HudManager.Instance.IntroPrefab.PlayerPrefab, canvas);
-        actor = player.transform; actor.name = "Native shooter idle portrait";
-        actor.localPosition = new Vector3(-1.25f, -.75f, -.1f);
-        actor.localRotation = Quaternion.identity; actor.localScale = Vector3.one * 1.25f;
-        player.gameObject.SetActive(true);
-        // The shooter is a plain native crewmate with this effect's own gold insignia.
-        // No custom costume/addressable needs to finish loading before this short cue can play.
-        player.SetBodyType(PlayerBodyTypes.Normal);
-        player.SetBodyColor(request.DisplayKiller.DefaultOutfit.ColorId);
-        player.SetHatAndVisorMaskType(PlayerMaterial.MaskType.None);
-        if (player.cosmetics.skin) player.cosmetics.skin.gameObject.SetActive(false);
-        if (player.cosmetics.hat) player.cosmetics.hat.gameObject.SetActive(false);
-        if (player.cosmetics.visor) player.cosmetics.visor.gameObject.SetActive(false);
-        player.ToggleName(false); player.TogglePet(false); player.SetFlipX(false);
-        foreach (var r in player.GetComponentsInChildren<SpriteRenderer>(true)) r.sortingOrder += 185;
-        foreach (var t in player.GetComponentsInChildren<Transform>(true)) t.gameObject.layer = gameObject.layer;
-        var badge = stage.Ring("Original gold insignia", .12f, .035f, new Color(1,.76f,.28f), canvas);
-        badge.localPosition = new Vector3(-1.32f,-.60f,-.2f);
-
-        weapon = stage.Group("Original raised sidearm", canvas);
-        stage.Quad("Grip outline", new Vector2(-.18f,-.17f), new Vector2(.22f,.49f), new Color(.07f,.09f,.12f), weapon);
-        stage.Quad("Grip", new Vector2(-.18f,-.17f), new Vector2(.16f,.43f), new Color(.25f,.21f,.17f), weapon);
-        stage.Quad("Barrel outline", new Vector2(.02f,.05f), new Vector2(.79f,.25f), new Color(.07f,.09f,.12f), weapon);
-        stage.Quad("Barrel", new Vector2(.02f,.05f), new Vector2(.73f,.19f), new Color(.78f,.83f,.88f), weapon);
-        stage.Quad("Barrel highlight", new Vector2(.02f,.1f), new Vector2(.65f,.025f), Color.white, weapon);
-        var chamber = stage.Ring("Cylinder", .07f,.025f,new Color(.28f,.34f,.4f),weapon);
-        chamber.localPosition = new Vector3(-.15f,.05f,-.01f);
-        stage.Quad("Sight", new Vector2(.25f,.17f), new Vector2(.07f,.08f), Color.white, weapon);
-        pulse = stage.Ring("Expanding shot ring", .5f,.035f,new Color(1,.79f,.27f),canvas);
-        pulse.localPosition = new Vector3(.9f,.05f,-.2f);
-        flash = stage.Group("Muzzle rays", canvas);
-        flash.localPosition = new Vector3(.15f,.05f,-.3f);
-        for (int i=0;i<7;i++)
+        var template = request.Overlay.HorseWrangleAnims.FirstOrDefault();
+        if (template == null || !template) throw new InvalidOperationException("HorseWrangle reveal prefab is unavailable.");
+        actor = Object.Instantiate(template, transform).Cast<HorseWrangleOverlay>();
+        actor.transform.localPosition = template.transform.localPosition;
+        actor.transform.localRotation = Quaternion.identity;
+        actor.transform.localScale = Vector3.one;
+        // The meeting effect uses classic portraits. A player's world body can already
+        // have been destroyed when the confirmation reaches another client.
+        var victimOutfit = new VisualAppearance(request.Victim.DefaultOutfit, TownOfUsAppearances.Camouflage)
         {
-            float angle = (i-3)*17;
-            var ray = stage.Quad("Ray",new Vector2(.23f,0),new Vector2(.55f,.045f),new Color(1,.91f,.55f),flash);
-            ray.transform.localEulerAngles = new Vector3(0,0,angle);
+            HatId = "hat_NoHat", SkinId = "skin_None", VisorId = "visor_EmptyVisor",
+            PetId = "pet_EmptyPet", PlayerName = string.Empty, NameVisible = false
+        };
+        var data = new KillOverlayInitData(request.DisplayKiller.DefaultOutfit, PlayerBodyTypes.Classic,
+            victimOutfit, PlayerBodyTypes.Classic);
+        actor.Initialize(data);
+        // Do not use HorseWrangleOverlay.victimSprites: its native getter assumes a different hierarchy.
+        // Keep the referenced body objects alive; hiding them does not invalidate the animation's references.
+        if (actor.victimParts) actor.victimParts.gameObject.SetActive(false);
+        if (actor.killerParts) actor.killerParts.gameObject.SetActive(false);
+        closeup = actor.GetComponentsInChildren<Transform>(true).First(t => t.name == "Sheriff Closeup");
+        var outfit = closeup.GetComponentsInChildren<SpriteRenderer>(true)
+            .First(r => r != actor.impostorForeground && r != actor.impostorHand);
+        float oldHeight = outfit.sprite ? outfit.sprite.bounds.size.y : 0f;
+        outfit.sprite = TouAssets.DeputyOutfit.LoadAsset();
+        if (oldHeight > 0 && outfit.sprite.bounds.size.y > 0)
+            outfit.transform.localScale *= oldHeight / outfit.sprite.bounds.size.y;
+        bool haveBounds = false;
+        foreach (var image in closeup.GetComponentsInChildren<SpriteRenderer>(true))
+        {
+            if (!image.sprite) continue;
+            var bounds = image.sprite.bounds;
+            foreach (float x in new[] { bounds.min.x, bounds.max.x })
+            foreach (float y in new[] { bounds.min.y, bounds.max.y })
+            {
+                var point = closeup.InverseTransformPoint(image.transform.TransformPoint(new Vector3(x, y, 0)));
+                if (!haveBounds) { closeupBounds = new Bounds(point, Vector3.zero); haveBounds = true; }
+                else closeupBounds.Encapsulate(point);
+            }
         }
-        ProceduralStage.NonInteractive(gameObject);
-        Fit();
+        FitCloseup();
+
+        background = Object.Instantiate(request.Overlay.background, transform);
+        flame = Object.Instantiate(request.Overlay.flameParent, transform);
+        var flameImage = flame.GetComponentsInChildren<SpriteRenderer>(true).First(r => r.name == "BackgroundFlame");
+        flameImage.sprite = TouAssets.DeputyRevealBg.LoadAsset();
+        flameImage.transform.localPosition = new Vector3(0, -2f, 0);
+        foreach (var renderer in GetComponentsInChildren<SpriteRenderer>(true))
+        {
+            renderer.gameObject.layer = request.Overlay.gameObject.layer;
+            if (!renderer.sharedMaterial) continue;
+            var material = new Material(renderer.sharedMaterial);
+            renderer.material = material; ownedMaterials.Add(material);
+        }
+        PlayerMaterial.SetColors(actor.killerParts.ColorId, actor.impostorForeground);
+        PlayerMaterial.SetColors(actor.killerParts.ColorId, actor.impostorHand);
+        foreach (var collider in GetComponentsInChildren<Collider2D>(true)) collider.enabled = false;
+        foreach (var collider in GetComponentsInChildren<Collider>(true)) collider.enabled = false;
+        foreach (var button in GetComponentsInChildren<PassiveButton>(true)) button.enabled = false;
+        actor.gameObject.SetActive(false);
+        background.enabled = true; flame.SetActive(false);
         began = Time.unscaledTime; configured = true;
-        Draw(0);
-        DeputyShotPresentation.Log.LogDebug($"Original effect {GetInstanceID()} began, source={OwnerId}, target={request.Victim.PlayerId}");
+        TouAudio.PlaySound(TouAudio.DeputyReveal);
+        DeputyShotPresentation.Log.LogDebug($"Begin effect {GetInstanceID()}, source={OwnerId}, target={request.Victim.PlayerId}");
     }
 
-    private void Fit()
-    {
-        var camera = Camera.main;
-        float height = camera && camera.orthographic ? camera.orthographicSize * 2 : 6;
-        float aspect = camera ? camera.aspect : (float)Math.Max(1,Screen.width)/Math.Max(1,Screen.height);
-        var inherited = transform.lossyScale;
-        float scale = AnimationTiming.Fit(height,aspect,inherited.x,inherited.y);
-        canvas.localScale = new Vector3(scale,scale,1);
-    }
-    private void Draw(float t)
-    {
-        float alpha = AnimationTiming.DeputyOpacity(t);
-        ProceduralStage.Alpha(canvas,alpha);
-        shade.color = new Color(.03f,.08f,.12f,alpha*.85f);
-        weapon.localPosition = new Vector3(-.25f-.16f*AnimationTiming.Recoil(t),0,-.2f);
-        weapon.localEulerAngles = new Vector3(0,0,-28*(1-AnimationTiming.Ramp(t,0,.26f))+12*AnimationTiming.Recoil(t));
-        actor.localPosition = new Vector3(-1.25f-.07f*AnimationTiming.Recoil(t),-.75f,-.1f);
-        ProceduralStage.Alpha(flash,AnimationTiming.Flash(t));
-        pulse.localScale = Vector3.one*(.3f+1.4f*AnimationTiming.Ramp(t,.30f,.73f));
-        ProceduralStage.Alpha(pulse,AnimationTiming.Window(t,.30f,.37f,.75f));
-        if(t>=.30f&&!sounded){sounded=true;PresentationSound.Play(false);}
-    }
     private void Update()
     {
         if (!configured || finished || shot == null) return;
@@ -106,23 +100,62 @@ public sealed class DeputyShotEffect(IntPtr ptr) : MonoBehaviour(ptr)
         {
             if (!shot.Overlay || !shot.Area || shot.Owner.Disconnected || shot.Owner.IsDead ||
                 (shot.HadMeeting && (!shot.Meeting || shot.Meeting != MeetingHud.Instance))) { Finish(false); return; }
-            float elapsed = Time.unscaledTime-began;
-            if(AnimationTiming.Finished(elapsed,Duration)){Finish(true);return;}
-            Fit(); Draw(elapsed);
+            float elapsed = Time.unscaledTime - began;
+            if (elapsed >= Duration) { Finish(true); return; }
+            if (screenWidth != Screen.width || screenHeight != Screen.height) FitCloseup();
+            background.enabled = elapsed < 1f / 12f;
+            flame.SetActive(elapsed >= 1f / 12f);
+            if (elapsed < 1f / 6f)
+            {
+                flame.transform.localScale = new Vector3(1f, .3f, 1f);
+                flame.transform.localEulerAngles = new Vector3(0, 0, 25f);
+            }
+            else if (elapsed < .25f)
+            {
+                flame.transform.localScale = new Vector3(1f, .5f, 1f);
+                flame.transform.localEulerAngles = new Vector3(0, 0, -15f);
+            }
+            else
+            {
+                actor.gameObject.SetActive(elapsed < 1.48f);
+                closeup.localPosition = closeupStart + Vector3.right * (.185f * Mathf.Clamp01((elapsed - .25f) / 1.23f));
+                flame.transform.localEulerAngles = Vector3.zero;
+                flame.transform.localScale = new Vector3(1, 1 - Mathf.Clamp01((elapsed - 1.48f) / .16666667f), 1);
+            }
         }
-        catch(Exception error)
-        { DeputyShotPresentation.Log.LogError($"Original Deputy effect aborted: {error}"); Finish(false); }
+        catch (Exception error)
+        {
+            DeputyShotPresentation.Log.LogError($"Deputy effect {GetInstanceID()} aborted: {error}");
+            Finish(false);
+        }
     }
+
+    private void FitCloseup()
+    {
+        screenWidth = Screen.width; screenHeight = Screen.height;
+        var camera = Camera.main;
+        float height = camera && camera.orthographic ? camera.orthographicSize * 2 : 6;
+        float aspect = camera ? camera.aspect : (float)Math.Max(1, screenWidth) / Math.Max(1, screenHeight);
+        var parentScale = closeup.parent.lossyScale;
+        float scale = Mathf.Min(height * .68f / Mathf.Max(.01f, closeupBounds.size.y * Mathf.Abs(parentScale.y)),
+            height * aspect * .7f / Mathf.Max(.01f, closeupBounds.size.x * Mathf.Abs(parentScale.x)));
+        closeup.localScale = new Vector3(scale, scale, 1);
+        closeupStart = new Vector3(-closeupBounds.center.x * scale, -closeupBounds.center.y * scale, 0);
+        closeup.localPosition = closeupStart;
+    }
+
     [HideFromIl2Cpp]
     internal void Finish(bool completed)
     {
-        if(finished)return;
-        finished=true;
-        gameObject.SetActive(false);
-        stage?.Dispose(); stage=null;
+        if (finished) return;
+        finished = true;
+        DeputyShotPresentation.Log.LogDebug($"Close effect {GetInstanceID()}, completed={completed}");
+        gameObject.SetActive(false); // Hide synchronously; Destroy completes at the end of the frame.
+        foreach (var material in ownedMaterials) if (material) Object.Destroy(material);
+        ownedMaterials.Clear();
         Object.Destroy(gameObject);
-        if(shot!=null)DeputyShotPresentation.Closed(this,shot,completed);
+        if (shot != null) DeputyShotPresentation.Closed(this, shot, completed);
     }
-    private void OnDisable(){if(configured&&!finished)Finish(false);}
-    private void OnDestroy(){if(!finished)Finish(false);}
+    private void OnDisable() { if (configured && !finished) Finish(false); }
+    private void OnDestroy() { if (!finished) Finish(false); }
 }

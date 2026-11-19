@@ -16,7 +16,7 @@ public static class AprilFoolsPatches
     public static int CurrentMode;
 #pragma warning disable S1075 // URIs should not be hardcoded
     public static string DiscordServerUrl =
-        TouMarmo.Modules.MenuCommunityLink.Url;
+        "https://dc.gg/mtou";
     public static string SourceCodeUrl =
         "https://github.com/marmoladka2137/Marmo-Town-of-Us";
 #pragma warning restore S1075 // URIs should not be hardcoded

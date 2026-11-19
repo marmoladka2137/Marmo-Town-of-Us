@@ -1,13 +1,14 @@
-# Marmo Town of Us app
+# Marmo Town of Us launcher
 
-Run **Marmo Town of Us.exe**. Its icon is the same `mtou_logo` artwork used by the MTOU Discord widget.
+Windows x64 launcher, built with .NET Framework 4.8. Extract the complete launcher ZIP and run **Marmo Town of Us.exe**. Keep the Steam or Epic Games client running.
 
-If MTOU is already installed, the app opens it directly. It first checks the folder beside the launcher, then a previously selected installation and the default Desktop/Marmo Town of Us folder. If the app package includes the installer and no game is installed yet, it opens setup. The installed desktop shortcut points to this launcher and uses its icon.
+Choose an existing MTOU folder, or use **Install a new copy** and select Steam/Epic Games. Installation reads the storefront manifest and copies your locally installed Among Us into a separate folder. No game executable is distributed. Epic detection is implemented, but an actual Epic Among Us installation was unavailable for gameplay testing.
 
-The standalone launcher can also be placed inside your existing modded game folder. If it cannot find an installation, select the MTOU folder once. It remembers that path in LocalAppData/MTOU/Launcher/game-path.txt. It never selects an unmodified Steam game as a substitute and does not patch the game's executable, profiles, skins or plugin DLL.
+The launcher checks public releases of `marmoladka2137/Marmo-Town-of-Us`, including published beta releases. Drafts are ignored. A release must attach `mtou-release.json` and `MTOU-Mods-Windows.zip`. A higher numeric assembly revision triggers an update. The manifest pins SHA-256 and length for every file and the complete ZIP; validation finishes before installed files are replaced. Locked files cause rollback. Close the game before updating. Existing configuration files marked PreserveExisting remain unchanged. Offline checks display an error and still allow launching an existing installation. Updates cover mod files; the launcher executable itself is replaced by downloading a new launcher package.
 
-Keep Steam running. Download/install the app package only; the resulting local game folder contains your copy of Among Us and must not be redistributed.
+The bundled plugin additions reproduce the TEST MODY set: MTOU, AleLuduMod, AUnlocker, Mini.RegionInstall, CorsacCosmetics, MiraAPI and Reactor. The initial loader and three required plugins are obtained from the pinned official upstream distribution. MiraAPI uses the public 0.6.0 baseline instead of the historical local 0.5.0-dev binary. AUnlocker's guest/minor overrides remain disabled. No accounts, private profiles, cache or local game files are packaged.
 
-Source is GPLv3. The Discord artwork was selected by Marmo for this app; original MTOU artwork terms and underlying Among Us IP notices remain in the project credits. The PNG is converted into a multi-resolution Windows ICO without changing the artwork. Source asset: https://cdn.discordapp.com/app-assets/1571528434805510255/1571542621472423986.png
+The Discord link opens `https://dc.gg/mtou`. Artwork: Marmo; see ASSET_CREDITS.md. Launcher code: GPLv3.
 
-Build on Windows with .NET Framework 4.8 using Build.ps1. Build-Icon.ps1 regenerates Logo.ico from DiscordLogo.png. Test.ps1 runs launcher discovery and child-process tests. `--wait --no-remember` is provided for isolated launch tests; `--game-log PATH` redirects the game's diagnostic log. Normal use needs no arguments.
+Build: `powershell -File tools/Launcher/Build.ps1 -OutputDirectory artifacts/launcher`.
+Tests: `Test.ps1` (discovery/process launch), `Test-Updates.ps1` (manifest, verification, rollback and Epic discovery); `tools/SteamInstaller/Test.ps1` (isolated installer fixtures). These do not certify multiplayer or Epic gameplay.

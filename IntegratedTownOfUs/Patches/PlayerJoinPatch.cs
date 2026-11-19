@@ -128,16 +128,8 @@ public static class PlayerJoinPatch
             MiscUtils.AddSimpleSystemChat(title, msg);
         }
 
-        if (!SentOnce && LocalSettingsTabSingleton<TouLocalTabPractice>.Instance.ShowWelcomeMessageToggle.Value)
-        {
-            var msg = MiraLocaleManager.Get("WelcomeMessageBlurb").Replace("<modVersion>", TownOfUsPlugin.Version);
-            MiscUtils.AddSystemChat(PlayerControl.LocalPlayer.Data, systemName, msg, true);
-            time = 5f;
-        }
-        else if (!LocalSettingsTabSingleton<TouLocalTabPractice>.Instance.ShowWelcomeMessageToggle.Value)
-        {
-            time = 2.48f;
-        }
+        // No automatic welcome advertisement, including for existing saved configurations.
+        time = 2.48f;
 
         if (time == 0)
         {

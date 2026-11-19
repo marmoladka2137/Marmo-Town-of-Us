@@ -83,10 +83,9 @@ public static class DeputyShotPresentation
     private static void CompleteVoteArea(Shot shot, bool completed)
     {
         if (!shot.Area || !shot.Meeting || shot.Meeting != MeetingHud.Instance) return;
-        // Finish the existing dead-nameplate state without importing Mira's meeting-death clips.
-        // The full original shot effect above already presents the elimination.
-        CustomTouMurderRpcs.EliminatePlayer(shot.Area);
-        if (completed && shot.Area.XMark) shot.Area.XMark.gameObject.SetActive(true);
+        if (completed)
+            Coroutines.Start(CustomTouMurderRpcs.CoAnimateDeath(shot.Area, UnityEngine.Random.Range(0, 2), true));
+        else CustomTouMurderRpcs.EliminatePlayer(shot.Area);
     }
 
     public static void CancelAll()

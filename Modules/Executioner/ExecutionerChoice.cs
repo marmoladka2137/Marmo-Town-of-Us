@@ -108,7 +108,6 @@ public static class ExecutionerChoice
                     component.RemoveModifier(marker);
             }
             exe.Target = null;
-            exe.Voters.Clear();
             exe.AboutToWin = false;
             exe.TargetVoted = false;
             exe.TargetVotedAsEvil = false;

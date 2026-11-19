@@ -27,6 +27,7 @@ public static class SweetsRuntime
     public static int FlowersGiven;
     public static bool Pollinated;
     private static float ReadyAt;
+    public static float CooldownRemaining => Mathf.Max(0, ReadyAt - Time.time);
 
     public static SweetsOptions Options => OptionGroupSingleton<SweetsOptions>.Instance;
 

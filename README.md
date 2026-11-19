@@ -16,9 +16,9 @@ Every participant, including the host, needs the same compatible MTOU installati
 - Twelve MTOU roles, additional modifiers and configurable mechanics.
 - Role/modifier search and All/ToU/MToU filters.
 - Reworked protection, transformation and meeting interactions.
-- Original runtime animation frames, synthesized cues, Marmo branding and Discord Rich Presence.
+- Marmo branding, Discord Rich Presence and a Steam/Epic launcher with public GitHub update checks.
 
-These describe implemented code. Full gameplay and host/client regression remain unverified; see [test results](RUNTIME_MOTION_TESTS.md) and [known issues](KNOWN_ISSUES.md).
+These describe implemented code. Full gameplay and host/client regression remain unverified; see [test results](LAUNCHER_RELEASE_TESTS.md) and [known issues](KNOWN_ISSUES.md).
 
 ## Custom Roles
 
@@ -54,15 +54,9 @@ Development reference: **Among Us 2026.9.29, Unity 2022.3.44f1, Windows x64**. T
 
 ## Installation
 
-**MTOU app:** [Download the app ZIP](https://github.com/marmoladka2137/Marmo-Town-of-Us/releases/download/v1.1.0-beta.13/MTOU-1.1.0-beta-Steam-App.zip), extract it and run **Marmo Town of Us.exe**. It uses the Discord widget icon and opens your installed MTOU game directly. On first use without an installation, it opens setup. [App instructions](tools/Launcher/README.md).
+Download the complete launcher ZIP from [Releases](https://github.com/marmoladka2137/Marmo-Town-of-Us/releases). Extract it and run **Marmo Town of Us.exe**. Choose **Steam** or **Epic Games**, then install a separate copy using your purchased, locally installed game. Epic support is implemented but remains unverified in a real Epic game session. [Launcher instructions](tools/Launcher/README.md).
 
-**Steam / Windows x64:** [Download the installer ZIP](https://github.com/marmoladka2137/Marmo-Town-of-Us/releases/download/v1.1.0-beta.13/MTOU-1.1.0-beta-Steam-Installer.zip). Extract it, run `MTOU Installer.exe` and choose a new destination. It copies your own supported Steam game locally, downloads pinned official dependencies and installs MTOU without changing your Steam installation. [Installer instructions](tools/SteamInstaller/README.md) · [Executed installer tests](STEAM_INSTALLER_TESTS.md).
-
-Use the [beta release](https://github.com/marmoladka2137/Marmo-Town-of-Us/releases/tag/v1.1.0-beta) and [INSTALLATION.md](INSTALLATION.md). The thin archive places `TOU-Marmo.dll` in `BepInEx/plugins`. Install prerequisites separately and use the same version on every client. No game files, loader libraries or separate original TOU plugin are bundled.
-
-
-
-**Manual installation, earlier revision 1.1.0.12:** [Steam mod files](https://github.com/marmoladka2137/Marmo-Town-of-Us/releases/download/v1.1.0-beta/MTOU-1.1.0-beta-Steam.zip) · [Steam instructions](INSTALLATION_STEAM.md). These earlier thin files require prerequisites installed separately. The installer above includes the newer text revision 1.1.0.13. Neither download contains the base game.
+The launcher checks published GitHub releases automatically and verifies downloads before updating. All participants need matching mod versions. The package recreates the seven-plugin TEST MODY set, using the public MiraAPI 0.6.0 dependency baseline. It contains no complete game, profiles or separate TownOfUsMira plugin.
 
 ## Requirements
 
@@ -74,7 +68,7 @@ A legally owned compatible Among Us PC installation, BepInEx IL2CPP, Reactor, Mi
 
 ## Known Issues
 
-This is a **beta**, not a stable or fully multiplayer-tested release. Local compilation, deterministic state tests and native Unity fixtures passed. Full role interactions, host/client gameplay, public-dependency clean installation and SUS Modder installation remain unverified. The original-resource pipeline changes the visual/audio style. [Full limitations](KNOWN_ISSUES.md) · [Executed tests](RUNTIME_MOTION_TESTS.md).
+This is a **beta**, not a stable or fully multiplayer-tested release. Local compilation, deterministic state tests and native Unity fixtures passed. Full role interactions, host/client gameplay, public-dependency clean installation and SUS Modder installation remain unverified. Retired procedural animation replacements are excluded from the current source tree; native Mira presentations are used. [Full limitations](KNOWN_ISSUES.md) · [Executed tests](LAUNCHER_RELEASE_TESTS.md).
 
 ## Releases
 

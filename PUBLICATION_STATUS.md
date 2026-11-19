@@ -1,15 +1,11 @@
-# Publication status — 1.1.0-beta
+# Publication status — 1.1.0 Beta / assembly 1.1.0.18
 
-Public repository: https://github.com/marmoladka2137/Marmo-Town-of-Us
+Repository: https://github.com/marmoladka2137/Marmo-Town-of-Us
 
-Steam installer revision: a separate installer creates a local game copy, downloads pinned official dependencies and installs the unchanged 1.1.0.13 plugin. Installation and native startup with public MiraAPI 0.6.0 passed; full match/multiplayer testing remains unverified. No Among Us game files or dependency implementations are included in the installer archive. See [installer evidence](STEAM_INSTALLER_TESTS.md).
+This beta adds a Windows launcher, public GitHub update verification, the seven-plugin TEST MODY set, configurable Plumber nails and a main-menu-only Discord link. It includes the earlier 14–17 source fixes. Source publication and final release upload are separate operations; the release page determines what is actually downloadable.
 
-Current source adds the text-only revision 1.1.0.13: concise English role/modifier descriptions and compact catalogs. Gameplay C# is unchanged. The existing `v1.1.0-beta` download remains revision 1.1.0.12; its matching tagged source and archives are preserved. See [text verification](TEXT_UPDATE_TESTS.md).
+The launcher never distributes Among Us. It copies a locally installed Steam/Epic game into a new directory and downloads a pinned official loader baseline. The extra plugin supplement includes matching tagged sources and notices. MiraAPI 0.6.0 is the public dependency baseline; it is not claimed to match the user's historical 0.5.0-dev binary.
 
-The 1.1.0-beta publication is a public beta with complete code, original-resource sources, documentation and plugin-only artifacts. Public label: 1.1.0 Beta; internal assembly revision: 1.1.0.12. Plugin identity is unchanged. The Source Code menu link now points to this repository.
+Code GPLv3; original MTOU artwork Marmo / CC BY 4.0. Native Mira resources were restored at the user's request, so older statements that procedural replacements cleared all animation/audio concerns no longer describe this revision. Upstream resource-specific rights remain unverified where no permission was established. Publication is not a legal clearance or a moderator approval.
 
-The former animation/audio/shader-content hold was resolved for this candidate through original replacements. See LICENSE_AUDIT.md, ASSET_CREDITS.md and the exact manifests. Code GPLv3, original MTOU graphics CC BY 4.0, retained font OFL-1.1; third-party notices remain separate.
-
-Local Release compilation, native presentation/resource fixtures and deterministic state tests passed. Full gameplay, host/client transport, clean public dependency installation, additional platforms, official-server behavior and SUS Modder installation/acceptance remain unverified. A public beta is not certification of every role or a legal/moderator approval.
-
-The release does not contain a complete game or external loader/dependency implementation DLLs. Do not add unreviewed third-party payload or older resource-bearing DLLs to it. The original local working installation was not overwritten.
+See LAUNCHER_RELEASE_TESTS.md. Epic gameplay, multiplayer, every role interaction and SUS Modder installation remain unverified. No zero-bug guarantee is made. The working TEST MODY installation remains separate and is not automatically overwritten.

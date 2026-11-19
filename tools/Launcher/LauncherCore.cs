@@ -36,6 +36,8 @@ namespace Marmo.Launcher
             catch (IOException) { }
             catch (UnauthorizedAccessException) { }
             candidates.Add(Path.Combine(desktop, "Marmo Town of Us"));
+            candidates.Add(Path.Combine(desktop, "Marmo Town of Us Epic"));
+            candidates.Add(Path.Combine(desktop, "TEST MODY"));
             candidates.Add(Path.Combine(appFolder, "Marmo Town of Us"));
             foreach (string candidate in candidates)
                 if (IsModdedGame(candidate)) return Path.GetFullPath(candidate);

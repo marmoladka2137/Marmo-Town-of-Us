@@ -20,6 +20,7 @@ public static class CoStartGameHostPatch
 
     public static bool Prefix(Il2CppObjectBase __instance, ref bool __result)
     {
+        if (GameOptionsManager.Instance.CurrentGameOptions.MapId != 3) return true;
         var wrapper = new StateMachineWrapper<AmongUsClient>(__instance);
         if (wrapper.GetState() != 0)
         {

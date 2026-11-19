@@ -70,18 +70,20 @@ public sealed class NecromancerPuppet : IDisposable
                 PlayerMaterial.SetColors(outfit.ColorId,renderer);
             }
             stage="create animator";
-            animator = cosmetics.currentBodySprite.BodySprite.GetComponent<SpriteAnim>() ??
-                cosmetics.currentBodySprite.BodySprite.gameObject.AddComponent<SpriteAnim>();
+            animator = image.GetComponent<SpriteAnim>() ?? image.gameObject.AddComponent<SpriteAnim>();
             previous=body.position;
             stage="find animation clips";
             var animations=AmongUsClient.Instance.PlayerPrefab.GetComponent<PlayerPhysics>().Animations;
             var group=animations.group;
-            if (group == null)
+            if (group == null || !group.IdleAnim || !group.RunAnim)
+            {
+                group = null;
                 for(int i=0;i<animations.animationGroups.Count;i++)
                 {
                     var candidate=animations.animationGroups[i];
                     if (candidate != null && candidate.IdleAnim && candidate.RunAnim) { group=candidate; break; }
                 }
+            }
             if (group == null) throw new InvalidOperationException("Living player animations are unavailable.");
             idle=group.IdleAnim; run=group.RunAnim;
             stage="play idle";

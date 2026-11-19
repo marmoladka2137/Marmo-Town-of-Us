@@ -1,3 +1,5 @@
+> Current revision 1.1.0.18 (2026-11-18): native Mira presentation resources are restored; procedural replacements described in older sections below are retired and excluded from this source tree. Their former clearance does not apply to restored upstream animations/audio. No new permission or blanket legal clearance is claimed. The original MTOU artwork attribution (Marmo, CC BY 4.0) is unchanged. See LAUNCHER_RELEASE_TESTS.md and tools/Launcher/README.md for the current package and tests.
+
 # Credits
 
 Marmo Town of Us is an independent community modification based on Town of Us: Mira. Original code and contributors retain their authorship and GPL notices. Upstream: AU-Avengers/TOU-Mira, available source baseline b56f24a0e5fed86ce7decddf227e292672ebd857. Original TOU/TOUR predecessors and cited contributors remain credited in source comments and SOURCE_PROVENANCE.md.

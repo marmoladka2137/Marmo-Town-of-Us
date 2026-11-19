@@ -1,3 +1,5 @@
+> Current revision 1.1.0.18 (2026-11-18): native Mira presentation resources are restored; procedural replacements described in older sections below are retired and excluded from this source tree. Their former clearance does not apply to restored upstream animations/audio. No new permission or blanket legal clearance is claimed. The original MTOU artwork attribution (Marmo, CC BY 4.0) is unchanged. See LAUNCHER_RELEASE_TESTS.md and tools/Launcher/README.md for the current package and tests.
+
 # License audit — original runtime resources, 2026-11-18
 
 The owner-confirmed original MTOU graphics are cleared under the owner's selected CC BY 4.0 terms. The earlier request for animation permission no longer applies to the removed animation payload in this new candidate. The full-source/binary candidate is prepared for public beta review with transparent technical limitations. This is not a blanket opinion on every historical release or a promise of moderator acceptance.

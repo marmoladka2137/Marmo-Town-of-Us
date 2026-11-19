@@ -331,11 +331,9 @@ public static class TownOfUsEventHandlers
             mod.ModifierComponent?.RemoveModifier(mod);
         }
 
-        var exeButton = CustomButtonSingleton<ExeTormentButton>.Instance;
         var jestButton = CustomButtonSingleton<JesterHauntButton>.Instance;
         var phantomButton = CustomButtonSingleton<PhantomSpookButton>.Instance;
 
-        exeButton.Show = false;
         jestButton.Show = false;
         phantomButton.Show = false;
     }

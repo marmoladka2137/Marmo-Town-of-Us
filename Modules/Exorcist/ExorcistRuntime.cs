@@ -42,6 +42,7 @@ public static class ExorcistRuntime
         return s;
     }
     public static int PrayersUsed => PlayerControl.LocalPlayer ? For(PlayerControl.LocalPlayer).Used : 0;
+    public static float PrayerCooldownRemaining(PlayerControl player) => Mathf.Max(0, For(player).ReadyAt - Time.time);
 
     public static bool IsExorcist(PlayerControl? p) => p && p!.Data?.Role is ExorcistRole;
 
@@ -157,14 +158,6 @@ public static class ExorcistRuntime
         notification.AdjustNotification();
         Coroutines.Start(MiscUtils.CoFlash(success ? Color.green : Color.red, .35f, .22f));
         if (success) TouAudio.PlaySound(TouAudio.MayorRevealSound, 1f);
-        else Coroutines.Start(ResetFailedPrayer());
-    }
-
-    private static System.Collections.IEnumerator ResetFailedPrayer()
-    {
-        // TownOfUsButton applies its cooldown after OnClick returns.
-        yield return null;
-        CustomButtonSingleton<ExorcistPrayerButton>.Instance.Timer = 0f;
     }
 
     [RegisterEvent]

@@ -15,9 +15,11 @@ public static class LocalSettings
 {
     [HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.FixedUpdate))]
     [HarmonyPostfix]
-    public static void HideGhosts()
+    public static void HideGhosts(PlayerControl __instance)
     {
-        if (AmongUsClient.Instance.GameState != InnerNetClient.GameStates.Started)
+        if (!__instance || !__instance.AmOwner || !AmongUsClient.Instance ||
+            !PlayerControl.LocalPlayer || !PlayerControl.LocalPlayer.Data ||
+            AmongUsClient.Instance.GameState != InnerNetClient.GameStates.Started)
         {
             return;
         }
@@ -39,6 +41,7 @@ public static class LocalSettings
 
         foreach (var player in PlayerControl.AllPlayerControls)
         {
+            if (!player || !player.Data || !player.cosmetics) continue;
             if (player.AmOwner)
             {
                 continue;
@@ -57,23 +60,25 @@ public static class LocalSettings
             }
 
             var show = LocalSettingsTabSingleton<TouLocalTabPreferences>.Instance.DeadSeeGhostsToggle.Value;
+            if (player.transform.childCount < 2) continue;
             var bodyForms = player.gameObject.transform.GetChild(1).gameObject;
 
             foreach (var form in bodyForms.GetAllChildren())
             {
                 if (form.activeSelf)
                 {
-                    form.GetComponent<SpriteRenderer>().color = new Color(1f, 1f, 1f, show ? 1f : 0f);
+                    var renderer = form.GetComponent<SpriteRenderer>();
+                    if (renderer) renderer.color = new Color(1f, 1f, 1f, show ? 1f : 0f);
                 }
             }
 
-            if (player.cosmetics.HasPetEquipped())
+            if (player.cosmetics.HasPetEquipped() && player.cosmetics.CurrentPet)
             {
                 player.cosmetics.CurrentPet.Visible = show;
             }
 
             player.cosmetics.gameObject.SetActive(show);
-            player.gameObject.transform.GetChild(3).gameObject.SetActive(show);
+            if (player.transform.childCount > 3) player.gameObject.transform.GetChild(3).gameObject.SetActive(show);
         }
 
         if (OptionGroupSingleton<SentryOptions>.Instance.DeployedCamerasVisibility is SentryDeployedCamerasVisibility.AfterMeeting)

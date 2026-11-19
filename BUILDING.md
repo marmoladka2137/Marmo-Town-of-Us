@@ -45,11 +45,6 @@ This pure managed test runner uses .NET 10 and links the same cosmetic-store sou
 
 This revision supplies a complete source candidate with preferred frames and sanitized resource graphs. Earlier reduced code-review archives are historical and are not matching source for this DLL. Rebuild against separately obtained legally owned game references; do not publish those references as part of the source package.
 
-## Original resource pipeline (no Unity Editor)
+## Presentation resources
 
-Main C# remains net6.0. The included development generators/tests use .NET SDK 10. PNGs and rebuilt bundles are supplied, so ordinary mod compilation does not run Python or the frame generator.
-
-To regenerate original frames: `dotnet run --project tools/OriginalMotionGenerator -c Release -- tools/OriginalMotionGenerator/contracts.json Resources/OriginalMotion`.
-To rebuild native bundles from sanitized preferred sources: create a Python 3.11+ virtual environment, install `tools/OriginalResources/requirements.txt`, then run `python tools/OriginalResources/Build.py`. Default build reads only supplied zero-object format schemas, JSON object graphs and preferred PNGs. The private bootstrap import is not needed, and no old restricted bundle, Editor, administrator installation or login is required. Schema files contain type/format metadata and zero serialized resource objects.
-
-Code-only changes can compile against the supplied rebuilt bundles. If modifying frames, update their manifest and rebuild bundles before producing a binary. Supply the complete source ZIP corresponding to the distributed DLL; the old reduced review archive is not its source substitute.
+Compile against the checked-in native bundle resources. Procedural animation replacement tools and frames from earlier experiments are excluded from this revision. Their dated audit reports describe historical builds, not the current DLL. Upstream resource authorship and separate rights remain applicable; no blanket legal clearance is asserted by compilation.

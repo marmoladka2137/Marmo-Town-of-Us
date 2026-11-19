@@ -20,11 +20,14 @@ public static class ImpostorKillTimerPatch
         {
             if (GameOptionsManager.Instance.CurrentGameOptions.GetFloat(FloatOptionNames.KillCooldown) <= 0f)
             {
+                __instance.killTimer = 0f;
+                if (__instance.AmOwner && HudManager.Instance && HudManager.Instance.KillButton)
+                    HudManager.Instance.KillButton.SetCoolDown(0f, .01f);
                 return false;
             }
 
             // Record kill cooldown change for Time Lord rewind
-            var cdDefault = PlayerControl.LocalPlayer.GetKillCooldown();
+            var cdDefault = __instance.GetKillCooldown();
             var cooldownBefore = __instance.killTimer;
             var maxvalue = time > cdDefault
                 ? time + 1f
@@ -38,7 +41,7 @@ public static class ImpostorKillTimerPatch
             }
             
             __instance.killTimer = cooldownAfter;
-            if (HudManager.InstanceExists && HudManager.Instance.KillButton != null)
+            if (__instance.AmOwner && HudManager.InstanceExists && HudManager.Instance.KillButton != null)
             {
                 HudManager.Instance.KillButton.SetCoolDown(__instance.killTimer, maxvalue);
             }

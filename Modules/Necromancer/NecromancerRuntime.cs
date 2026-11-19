@@ -71,23 +71,30 @@ public static class NecromancerRuntime
     [MethodRpc(1081,LocalHandling=RpcLocalHandling.Before)]
     public static void RpcBegin(PlayerControl p,byte bodyId,bool automatic,byte killerId,Vector2 position)
     {
-        if (!FindBody(bodyId))
+        if (!BodyReady(bodyId))
         {
             if (pendingBodies.Add(p.PlayerId)) Coroutines.Start(WaitForBody(p,bodyId,automatic,killerId,position));
             return;
         }
         BeginLocal(p,bodyId,automatic,killerId,position);
     }
+
+    private static bool BodyReady(byte bodyId)
+    {
+        var dead = MarmoSession.Player(bodyId);
+        return dead && dead!.Data && dead.Data.IsDead && !dead.Data.Disconnected && FindBody(bodyId);
+    }
+
     private static IEnumerator WaitForBody(PlayerControl p,byte id,bool automatic,byte killer,Vector2 position)
     {
         var ship=ShipStatus.Instance;
         var deadline=Time.realtimeSinceStartup+3f;
         while (pendingBodies.Contains(p.PlayerId) && MarmoSession.Alive(p) && ship && ShipStatus.Instance==ship && MarmoSession.InRound &&
-            !FindBody(id) && Time.realtimeSinceStartup<deadline)
+            !BodyReady(id) && Time.realtimeSinceStartup<deadline)
             yield return null;
         if (ShipStatus.Instance!=ship) yield break;
         var requested=pendingBodies.Remove(p.PlayerId);
-        if (requested && MarmoSession.Alive(p) && ShipStatus.Instance==ship && MarmoSession.InRound && FindBody(id))
+        if (requested && MarmoSession.Alive(p) && ShipStatus.Instance==ship && MarmoSession.InRound && BodyReady(id))
             BeginLocal(p,id,automatic,killer,position);
     }
     private static void BeginLocal(PlayerControl p,byte bodyId,bool automatic,byte killerId,Vector2 position)

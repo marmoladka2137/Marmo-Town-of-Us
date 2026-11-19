@@ -23,7 +23,7 @@ public sealed class ExeTormentButton : TownOfUsButton
 
     public override bool Enabled(RoleBehaviour? role)
     {
-        return Show && ModifierUtils.GetActiveModifiers<MisfortuneTargetModifier>().HasAny();
+        return false;
     }
 
     protected override void OnClick()
@@ -65,6 +65,6 @@ public sealed class ExeTormentButton : TownOfUsButton
             return false;
         }
 
-        return ModifierUtils.GetActiveModifiers<MisfortuneTargetModifier>().HasAny();
+        return false;
     }
 }

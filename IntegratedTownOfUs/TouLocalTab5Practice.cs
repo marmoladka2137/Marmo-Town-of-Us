@@ -16,9 +16,8 @@ public class TouLocalTabPractice(ConfigFile config) : LocalSettingsTab(config)
         HideIconOnHover = false,
     };
 
-    [LocalToggleSetting]
     public ConfigEntry<bool> ShowWelcomeMessageToggle { get; private set; } =
-        config.Bind("Lobby", "ShowWelcomeMessage", true);
+        config.Bind("Lobby", "ShowWelcomeMessage", false);
 
     [LocalToggleSetting]
     public ConfigEntry<bool> ShowRulesOnLobbyJoinToggle { get; private set; } =

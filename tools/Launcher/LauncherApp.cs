@@ -7,8 +7,8 @@ using System.Windows.Forms;
 
 [assembly: AssemblyTitle("Marmo Town of Us")]
 [assembly: AssemblyProduct("Marmo Town of Us Launcher")]
-[assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
+[assembly: AssemblyVersion("2.0.0.0")]
+[assembly: AssemblyFileVersion("2.0.0.0")]
 
 namespace Marmo.Launcher
 {
@@ -22,6 +22,11 @@ namespace Marmo.Launcher
             try
             {
                 string app = AppDomain.CurrentDomain.BaseDirectory;
+                if (!args.Contains("--wait") && !args.Contains("--game-log"))
+                {
+                    Application.Run(new LauncherForm(app));
+                    return 0;
+                }
                 string saved = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "MTOU", "Launcher", "game-path.txt");
                 string game = LauncherCore.FindGame(app, Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), saved);
                 if (game == null)

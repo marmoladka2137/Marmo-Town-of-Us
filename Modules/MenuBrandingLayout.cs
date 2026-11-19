@@ -19,9 +19,9 @@ public sealed class MenuBrandingLayout(IntPtr ptr) : MonoBehaviour(ptr)
         {
             nextSweep = Time.unscaledTime + .25f;
             HideAchievementButtons(menu!.transform);
-            MenuCommunityLink.Ensure(menu!);
         }
         Fit(menu!);
+        MenuCommunityLink.Ensure(menu!);
         MenuCommunityLink.Position(menu!);
         TouMarmo.Modules.Profile.CosmeticSelectionRuntime.Tick();
     }
@@ -96,7 +96,6 @@ public static class MainMenuBrandingSetup
         var layout = __instance.GetComponent<MenuBrandingLayout>() ?? __instance.gameObject.AddComponent<MenuBrandingLayout>();
         layout.Initialize(__instance);
         MenuBrandingLayout.HideAchievementButtons(__instance.transform);
-        MenuCommunityLink.Ensure(__instance);
     }
 }
 
@@ -106,3 +105,4 @@ public static class HideAchievementsOptionsEntry
     [HarmonyPostfix]
     public static void Postfix(OptionsMenuBehaviour __instance) => MenuBrandingLayout.HideAchievementButtons(__instance.transform);
 }
+

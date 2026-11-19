@@ -1,4 +1,6 @@
-# Asset credits — current runtime-motion candidate
+> Current revision 1.1.0.18 (2026-11-18): native Mira presentation resources are restored; procedural replacements described in older sections below are retired and excluded from this source tree. Their former clearance does not apply to restored upstream animations/audio. No new permission or blanket legal clearance is claimed. The original MTOU artwork attribution (Marmo, CC BY 4.0) is unchanged. See LAUNCHER_RELEASE_TESTS.md and tools/Launcher/README.md for the current package and tests.
+
+# Asset credits â€” current runtime-motion candidate
 
 ## Launcher icon
 
@@ -6,7 +8,7 @@ The app uses the existing MTOU Discord application artwork `mtou_logo`, selected
 
 ## Original MTOU graphics
 
-**Original MTOU artwork — created by Marmo. CC BY 4.0.** Keep attribution, license reference and modification notices. The owner selected these terms; no foreign resource is relicensed by that choice.
+**Original MTOU artwork â€” created by Marmo. CC BY 4.0.** Keep attribution, license reference and modification notices. The owner selected these terms; no foreign resource is relicensed by that choice.
 
 - MTOU_ARTWORK_MANIFEST.csv: 40 exact paths / 38 unique PNGs, including logo, role, modifier, ability, pet and Composter trap art. The two integrated duplicate icons are exact copies of verified originals. Old ambiguous files are excluded.
 - ORIGINAL_MOTION_MANIFEST.csv: 1,511 new original procedural frames, 55 functional animation series. Source: tools/OriginalMotionGenerator; no copied animation curves or pixels.  The resource source's animated-texture aliases are byte copies of these frames, not further upstream art.
@@ -16,7 +18,7 @@ The app uses the existing MTOU Discord application artwork `mtou_logo`, selected
 
 Permitted static TOU Mira sprites retain AU-Avengers, AtonyGit and existing artist credits. The original source and notice boundary is [TownOfUs-Mira-Unity](https://github.com/AU-Avengers/TownOfUs-Mira-Unity/blob/0224bd7a0a98e3aebb70ebfe1f7c388ae6b5d3ec/README.md). Remaining upstream static textures are exported losslessly as editable PNGs under tools/OriginalResources/Sources/Textures. They are not called Marmo artwork.
 
-Liberation Sans Regular 2.00.1 remains OFL-1.1: digitized data © 2010 Google Corporation; © 2012 Red Hat, Inc.; designer Steve Matteson. Full required notice: LICENSES/LiberationSans-2.00.1-OFL-1.1.txt. Font textures/native font metadata remain part of this separately licensed material.
+Liberation Sans Regular 2.00.1 remains OFL-1.1: digitized data Â© 2010 Google Corporation; Â© 2012 Red Hat, Inc.; designer Steve Matteson. Full required notice: LICENSES/LiberationSans-2.00.1-OFL-1.1.txt. Font textures/native font metadata remain part of this separately licensed material.
 
 ## Replaced / omitted
 
@@ -25,3 +27,7 @@ Inherited motion curves, animator controllers, animated pixel sheets/silhouettes
 Both legacy-assets bundles contain only static image resources and retain upstream credits. Optional TownOfUs.*.ccb cosmetics are remote runtime downloads, not release ZIP content; artist/sub-asset and source concerns are not silently cleared. Innersloth game IP, fonts, Unity, trademarks and service materials retain independent rights.
 
 Historical attribution is preserved in CREDITS.md, SOURCE_PROVENANCE.md and dated audits. The current package does not include the private upstream Unity snapshots, old recordings, installers, game files or failed prototype bundles.
+
+## Launcher banner
+
+tools/Launcher/Banner.png: Original MTOU artwork — created by Marmo; supplied for this launcher. CC BY 4.0, subject to underlying Among Us IP. The launcher icon remains tools/Launcher/DiscordLogo.png, selected by Marmo.

@@ -1,9 +1,7 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using BepInEx.Logging;
-using BepInEx.Unity.IL2CPP.Utils.Collections;
 using HarmonyLib;
 using MiraAPI.GameOptions;
 using MiraAPI.Modifiers;
@@ -73,6 +71,7 @@ public static class RoleSettingFilterPatches
     // Each tab keeps its own query and origin choice on the shared toolbar.
     private static bool _modifierMode;
     private static bool _needsRoleFilterApply;
+    private static bool _applyingRoleFilter;
     private static bool _modifierSearchActive;
 
     private static RolesSettingsMenu? _menu;
@@ -142,7 +141,7 @@ public static class RoleSettingFilterPatches
     public static void OpenChancesTabPostfix(RolesSettingsMenu __instance)
     {
         _menu = __instance;
-        __instance.StartCoroutine(CoApplyAfterRebuild(__instance).WrapToIl2Cpp());
+        _needsRoleFilterApply = true;
     }
 
     [HarmonyPostfix]
@@ -150,7 +149,7 @@ public static class RoleSettingFilterPatches
     public static void OpenMenuPostfix(RolesSettingsMenu __instance)
     {
         _menu = __instance;
-        __instance.StartCoroutine(CoApplyAfterRebuild(__instance).WrapToIl2Cpp());
+        _needsRoleFilterApply = true;
     }
 
     [HarmonyPostfix]
@@ -326,9 +325,7 @@ public static class RoleSettingFilterPatches
             if (_searchInput == null || !_searchInput) return;
             if (_searchInput.text == value) return;
 
-            _searchInput.onValueChanged = null;
-            _searchInput.text = value ?? string.Empty;
-            _searchInput.onValueChanged = _searchChanged;
+            _searchInput.SetTextWithoutNotify(value ?? string.Empty);
         }
         catch
         {
@@ -589,22 +586,6 @@ public static class RoleSettingFilterPatches
         _lastContainerId = 0;
         _lastChildCount = -1;
         FilterPills.Clear();
-    }
-
-    private static IEnumerator CoApplyAfterRebuild(RolesSettingsMenu menu)
-    {
-        // Let the original/MiraAPI coroutines build or rebuild the list.
-        yield return null;
-        yield return null;
-        yield return new WaitForSeconds(0.05f);
-
-        if (!menu) yield break;
-        _menu = menu;
-        if (!ShouldShow(menu)) yield break;
-
-        EnsureBar(StableParent() ?? menu.transform);
-        if (_bar != null && _bar) _bar.SetActive(true);
-        ApplyFilter(menu);
     }
 
     private static bool ShouldShow(RolesSettingsMenu menu)
@@ -926,17 +907,6 @@ public static class RoleSettingFilterPatches
         }
     }
 
-    private static void ApplyAndScrollToTop(RolesSettingsMenu menu)
-    {
-        ApplyFilter(menu);
-
-        try
-        {
-            if (menu.scrollBar != null) menu.scrollBar.ScrollToTop();
-        }
-        catch { /* scroller unavailable */ }
-    }
-
     /// <summary>
     /// Called whenever the search box or a pill changes: routes the change to whichever list
     /// currently owns the toolbar (roles or modifiers) and scrolls that list to the top.
@@ -957,13 +927,19 @@ public static class RoleSettingFilterPatches
             return;
         }
 
-        if (_menu != null && _menu) ApplyAndScrollToTop(_menu);
+        if (_menu != null && _menu)
+        {
+            _needsRoleFilterApply = true;
+            if (_menu.scrollBar) _menu.scrollBar.ScrollToTop();
+        }
     }
 
     // ------------------------------------------------------------------ filtering / layout
 
     private static void ApplyFilter(RolesSettingsMenu menu)
     {
+        if (_applyingRoleFilter) return;
+        _applyingRoleFilter = true;
         try
         {
             if (!menu || !menu.RoleChancesSettings) return;
@@ -979,12 +955,9 @@ public static class RoleSettingFilterPatches
             var search = (_roleSearch ?? string.Empty).Trim();
             var hasSearch = search.Length > 0;
 
-            HideInactiveHeaders(container);
-
             foreach (var entry in entries)
             {
                 entry.Match = hasSearch && entry.Name.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0;
-                entry.Setting.gameObject.SetActive(false);
                 RestoreTitleColor(entry.Setting);
             }
 
@@ -994,6 +967,12 @@ public static class RoleSettingFilterPatches
 
             // Search results retain their original faction/alignment category headers.
             rows.AddRange(OrderGrouped(filtered.Where(x => !hasSearch || x.Match).ToList(), container));
+
+            var visibleIds = rows.OfType<Component>().Select(row => row.gameObject.GetInstanceID()).ToHashSet();
+            foreach (var entry in entries)
+                SetRowVisible(entry.Setting.gameObject, visibleIds.Contains(entry.Setting.gameObject.GetInstanceID()));
+            foreach (var header in container.GetComponentsInChildren<CategoryHeaderMasked>(true))
+                SetRowVisible(header.gameObject, visibleIds.Contains(header.gameObject.GetInstanceID()));
 
             Layout(rows);
 
@@ -1005,6 +984,15 @@ public static class RoleSettingFilterPatches
         {
             Log.LogWarning($"Role filter apply failed: {e}");
         }
+        finally
+        {
+            _applyingRoleFilter = false;
+        }
+    }
+
+    private static void SetRowVisible(GameObject row, bool visible)
+    {
+        if (row && row.activeSelf != visible) row.SetActive(visible);
     }
 
     /// <summary>
@@ -1109,14 +1097,12 @@ public static class RoleSettingFilterPatches
             {
                 if (!firstRow) y -= GroupGap;
 
-                header.gameObject.SetActive(true);
                 if (header.name.StartsWith(MarmoHeaderName, StringComparison.Ordinal)) StyleMarmoHeader(header);
                 header.transform.localPosition = new Vector3(HeaderX, y, -2f);
                 y -= HeaderStep;
             }
             else if (row is RoleOptionSetting setting)
             {
-                setting.gameObject.SetActive(true);
                 setting.transform.localPosition = new Vector3(RoleX, y, -2f);
                 y -= RoleStep;
             }
@@ -1142,23 +1128,6 @@ public static class RoleSettingFilterPatches
         catch
         {
             /* header already in teardown */
-        }
-    }
-
-    /// <summary>
-    /// Hides every group header (including our Marmo one) so that <see cref="Layout"/> can
-    /// switch on exactly the headers that belong to the current ordering.
-    /// </summary>
-    private static void HideInactiveHeaders(Transform container)
-    {
-        for (var i = 0; i < container.childCount; i++)
-        {
-            var child = container.GetChild(i);
-            if (child == null) continue;
-            if (child.GetComponent<CategoryHeaderMasked>() == null) continue;
-
-            var go = child.gameObject;
-            if (go.activeSelf) go.SetActive(false);
         }
     }
 

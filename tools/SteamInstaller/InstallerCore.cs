@@ -22,6 +22,7 @@ namespace Marmo.SteamInstaller
     public sealed class InstallerManifest
     {
         public string Version { get; set; }
+        public string Platform { get; set; }
         public string AssemblyRevision { get; set; }
         public string SourceCommit { get; set; }
         public string ArchiveUrl { get; set; }
@@ -46,7 +47,8 @@ namespace Marmo.SteamInstaller
         static readonly string[] RootFiles = {
             "Among Us.exe", "UnityPlayer.dll", "GameAssembly.dll", "baselib.dll",
             "UnityCrashHandler64.exe", "crashpad_handler.exe", "msvcp140.dll",
-            "vcruntime140.dll", "vcruntime140_1.dll", "steam_api64.dll"
+            "vcruntime140.dll", "vcruntime140_1.dll", "steam_api64.dll",
+            "EOSSDK-Win64-Shipping.dll", "EOSBootstrapper.exe"
         };
         public InstallerCore(InstallerManifest manifest, string packageRoot)
         {
@@ -138,11 +140,62 @@ namespace Marmo.SteamInstaller
                     }
             return games.ToArray();
         }
+        public static string[] FindEpicGames(string manifestRoot)
+        {
+            var games = new List<string>();
+            if (!Directory.Exists(manifestRoot)) return games.ToArray();
+            foreach (string file in Directory.GetFiles(manifestRoot, "*.item"))
+            {
+                try
+                {
+                    var item = new JavaScriptSerializer().Deserialize<Dictionary<string, object>>(File.ReadAllText(file));
+                    object name, location;
+                    if (item.TryGetValue("DisplayName", out name) && Convert.ToString(name).Equals("Among Us", StringComparison.OrdinalIgnoreCase)
+                        && item.TryGetValue("InstallLocation", out location) && File.Exists(Path.Combine(Convert.ToString(location), "Among Us.exe")))
+                        games.Add(Full(Convert.ToString(location)));
+                }
+                catch (IOException) { }
+                catch (ArgumentException) { }
+                catch (UnauthorizedAccessException) { }
+                catch (InvalidOperationException) { }
+            }
+            return games.Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+        }
+        public static string EpicManifestRoot
+        {
+            get { return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
+                "Epic", "EpicGamesLauncher", "Data", "Manifests"); }
+        }
         public void ValidateSource(string source)
         {
             NoLinks(source);
             if (!File.Exists(Path.Combine(source, "Among Us.exe")) || !Directory.Exists(Path.Combine(source, "Among Us_Data")))
                 throw new IOException("Select the Among Us game folder from Steam > Properties > Installed Files > Browse.");
+            if (Manifest.Platform == "Epic")
+            {
+                if (!FindEpicGames(EpicManifestRoot).Any(p => p.Equals(Full(source), StringComparison.OrdinalIgnoreCase)))
+                    throw new IOException("Select Among Us installed through Epic Games Launcher.");
+                // Epic builds use their own GameAssembly. Verify the storefront manifest version,
+                // retaining the full original game's authentication and platform libraries.
+                bool supported = false;
+                foreach (string file in Directory.GetFiles(EpicManifestRoot, "*.item"))
+                {
+                    try
+                    {
+                    var item = new JavaScriptSerializer().Deserialize<Dictionary<string, object>>(File.ReadAllText(file));
+                    object location, version;
+                    if (item.TryGetValue("InstallLocation", out location) && Full(Convert.ToString(location)).Equals(Full(source), StringComparison.OrdinalIgnoreCase)
+                        && item.TryGetValue("AppVersionString", out version))
+                        supported |= Convert.ToString(version).Contains("2026.9.29") || Convert.ToString(version).StartsWith("19.0.0", StringComparison.Ordinal);
+                    }
+                    catch (IOException) { }
+                    catch (UnauthorizedAccessException) { }
+                    catch (ArgumentException) { }
+                    catch (InvalidOperationException) { }
+                }
+                if (!supported) throw new IOException("This Epic build is unverified. MTOU requires Among Us 2026.9.29 (19.0.0).");
+                return;
+            }
             var common = Directory.GetParent(Full(source));
             if (common == null || common.Parent == null || common.Parent.Parent == null
                 || !String.Equals(common.Name, "common", StringComparison.OrdinalIgnoreCase)
@@ -273,7 +326,7 @@ namespace Marmo.SteamInstaller
                     string target = SafePath(stage, relative);
                     Directory.CreateDirectory(Path.GetDirectoryName(target)); File.Copy(file, target, false);
                     copied += new FileInfo(file).Length;
-                    Progress(42 + (int)(copied * 40 / Math.Max(1, size)), "Copying your Steam game: " + (copied / 1048576) + " MB");
+                    Progress(42 + (int)(copied * 40 / Math.Max(1, size)), "Copying your installed game: " + (copied / 1048576) + " MB");
                 }
                 Progress(84, "Installing verified loader and required plugins...");
                 ExtractRuntime(archive, stage);
@@ -287,7 +340,7 @@ namespace Marmo.SteamInstaller
                     File.Copy(SafePath(PackageRoot, Manifest.Launcher.Path), launcher, false);
                     CheckPin(launcher, Manifest.Launcher);
                 }
-                File.WriteAllText(Path.Combine(stage, "steam_appid.txt"), "945360\n", Encoding.ASCII);
+                if (Manifest.Platform != "Epic") File.WriteAllText(Path.Combine(stage, "steam_appid.txt"), "945360\n", Encoding.ASCII);
                 File.WriteAllText(Path.Combine(stage, "Play MTOU.cmd"), "@echo off\r\ncd /d \"%~dp0\"\r\nstart \"\" \"%~dp0Among Us.exe\"\r\n", Encoding.ASCII);
                 string notices = Path.Combine(PackageRoot, "Notices");
                 if (Directory.Exists(notices))
@@ -299,7 +352,7 @@ namespace Marmo.SteamInstaller
                     }
                 File.WriteAllText(Path.Combine(stage, "MTOU-INSTALLATION.txt"),
                     "Marmo Town of Us " + Manifest.Version + ", revision " + Manifest.AssemblyRevision + "\r\n"
-                    + "Game files were copied locally from your installed Steam game. Keep Steam running.\r\n"
+                    + "Game files were copied locally from your installed " + (Manifest.Platform == "Epic" ? "Epic Games" : "Steam") + " game. Keep the storefront client running.\r\n"
                     + "Source: https://github.com/marmoladka2137/Marmo-Town-of-Us/tree/" + Manifest.SourceCommit + "\r\n"
                     + "Required dependencies were downloaded directly from the official upstream release.\r\n"
                     + "Do not redistribute this installed folder: it now contains the Among Us base game.\r\n"
@@ -307,7 +360,7 @@ namespace Marmo.SteamInstaller
                 if (File.Exists(Path.Combine(stage, "BepInEx", "plugins", "TownOfUsMira.dll"))) throw new IOException("Conflicting plugin detected.");
                 // Publish the completed folder once; Directory.Move refuses an existing destination.
                 Directory.Move(stage, destination);
-                Progress(100, "Ready. Keep Steam running and use Play MTOU.cmd.");
+                Progress(100, "Ready. Keep your storefront client running and use the MTOU launcher.");
                 Log("Installed MTOU " + Manifest.AssemblyRevision + "; SHA256 " + Manifest.Payload.Sha256);
                 return destination;
             }

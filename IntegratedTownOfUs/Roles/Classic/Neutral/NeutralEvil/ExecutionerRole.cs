@@ -67,7 +67,6 @@ public sealed class ExecutionerRole(IntPtr cppPtr) : NeutralRole(cppPtr), ITownO
     public bool TargetVotedAsEvil { get; set; }
     public bool AboutToWin { get; set; }
 
-    [HideFromIl2Cpp] public List<byte> Voters { get; set; } = [];
 
     public int Priority { get; set; } = 2;
 

@@ -126,25 +126,26 @@ public static class DleksMapOptionPickerPatches
         __instance.mapTooltips[3] = DleksTooltip;
     }
 
-    // __instance method is patched to fix issues on Epic Games
+    private static FreeplayPopover _lastInstance;
+
     [HarmonyPatch(typeof(FreeplayPopover), nameof(FreeplayPopover.OnMapButtonPressed))]
     [HarmonyPrefix]
-    public static bool ButtonPressPatch(FreeplayPopover __instance, FreeplayPopoverButton button)
+    public static bool PreparePractice(FreeplayPopover __instance, FreeplayPopoverButton button)
     {
-        __instance.background.GetComponent<PassiveButton>().OnClick
-            .RemoveListener((UnityAction)(() => __instance.Close()));
-        FreeplayPopoverButton[] array = __instance.buttons;
-        for (int i = 0; i < array.Length; i++)
-        {
-            array[i].Button.enabled = false;
-        }
-
-        AmongUsClient.Instance.TutorialMapId = (int)button.Map;
-        __instance.hostGameButton.OnClick();
+        __instance.hostGameButton.NetworkMode = NetworkModes.FreePlay;
+        AmongUsClient.Instance.NetworkMode = NetworkModes.FreePlay;
+        CurrentModRegistration.ModRegistrationGuidString = string.Empty;
+        __instance.PlayMap(button.Map);
         return false;
     }
 
-    private static FreeplayPopover _lastInstance;
+    [HarmonyPatch(typeof(FreeplayPopover), nameof(FreeplayPopover.Show))]
+    [HarmonyPostfix]
+    public static void RestorePracticeButtons(FreeplayPopover __instance)
+    {
+        foreach (var button in __instance.buttons)
+            if (button && button.Button) button.Button.enabled = true;
+    }
 
     [HarmonyPatch(typeof(FreeplayPopover), nameof(FreeplayPopover.Show))]
     [HarmonyPriority(Priority.First)]

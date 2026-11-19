@@ -30,178 +30,178 @@ public static class TouAudio
     public static LoadableAsset<AudioClip> ViperIntroSound =>
         CustomRoleUtils.GetIntroSound(RoleTypes.Viper)!;
     public static LoadableAsset<AudioClip> HexBombDetonateSound { get; } =
-        new TouMarmo.Modules.OriginalMotion.OriginalAudioAsset("HexBomb");
+        new LoadableBundleAsset<AudioClip>("HexBomb", TouAssets.MainBundle);
     public static LoadableAsset<AudioClip> HexBombAlarmSound { get; } =
-        new TouMarmo.Modules.OriginalMotion.OriginalAudioAsset("HexBombAlarm");
+        new LoadableBundleAsset<AudioClip>("HexBombAlarm", TouAssets.MainBundle);
     public static LoadableAsset<AudioClip> NoisemakerDeathSound { get; } =
-        new TouMarmo.Modules.OriginalMotion.OriginalAudioAsset("NoisemakerDeath");
+        new LoadableBundleAsset<AudioClip>("NoisemakerDeath", TouAssets.MainBundle);
 
     public static LoadableAsset<AudioClip> TrackerActivateSound { get; } =
-        new TouMarmo.Modules.OriginalMotion.OriginalAudioAsset("TrackerActivate");
+        new LoadableBundleAsset<AudioClip>("TrackerActivate", TouAssets.MainBundle);
 
     public static LoadableAsset<AudioClip> TrackerDeactivateSound { get; } =
-        new TouMarmo.Modules.OriginalMotion.OriginalAudioAsset("TrackerDeactivate");
+        new LoadableBundleAsset<AudioClip>("TrackerDeactivate", TouAssets.MainBundle);
 
     public static LoadableAsset<AudioClip> TrapperPlaceSound { get; } =
-        new TouMarmo.Modules.OriginalMotion.OriginalAudioAsset("TrapperPlace");
+        new LoadableBundleAsset<AudioClip>("TrapperPlace", TouAssets.MainBundle);
 
     public static LoadableAsset<AudioClip> QuestionSound { get; } =
-        new TouMarmo.Modules.OriginalMotion.OriginalAudioAsset("QuestionSound");
+        new LoadableBundleAsset<AudioClip>("QuestionSound", TouAssets.MainBundle);
 
     public static LoadableAsset<AudioClip> ToppatIntroSound { get; } =
-        new TouMarmo.Modules.OriginalMotion.OriginalAudioAsset("ToppatIntro");
+        new LoadableBundleAsset<AudioClip>("ToppatIntro", TouAssets.MainBundle);
 
     public static LoadableAsset<AudioClip> DeputyIntroSound { get; } =
-        new TouMarmo.Modules.OriginalMotion.OriginalAudioAsset("DeputyIntroNew");
+        new LoadableBundleAsset<AudioClip>("DeputyIntroNew", TouAssets.MainBundle);
 
     public static LoadableAsset<AudioClip> DeputyIntroSoundOld { get; } =
-        new TouMarmo.Modules.OriginalMotion.OriginalAudioAsset("DeputyIntro");
+        new LoadableBundleAsset<AudioClip>("DeputyIntro", TouAssets.MainBundle);
 
     public static LoadableAsset<AudioClip> VampIntroSound { get; } =
-        new TouMarmo.Modules.OriginalMotion.OriginalAudioAsset("VampireIntro");
+        new LoadableBundleAsset<AudioClip>("VampireIntro", TouAssets.MainBundle);
 
     public static LoadableAsset<AudioClip> ProsIntroSound { get; } =
-        new TouMarmo.Modules.OriginalMotion.OriginalAudioAsset("ProsIntro");
+        new LoadableBundleAsset<AudioClip>("ProsIntro", TouAssets.MainBundle);
 
     public static LoadableAsset<AudioClip> ProsecuteSound { get; } =
-        new TouMarmo.Modules.OriginalMotion.OriginalAudioAsset("ProsecuteAudio");
+        new LoadableBundleAsset<AudioClip>("ProsecuteAudio", TouAssets.MainBundle);
 
     public static LoadableAsset<AudioClip> SpyIntroSound { get; } =
-        new TouMarmo.Modules.OriginalMotion.OriginalAudioAsset("SpyIntro");
+        new LoadableBundleAsset<AudioClip>("SpyIntro", TouAssets.MainBundle);
 
     public static LoadableAsset<AudioClip> OtherIntroSound { get; } =
-        new TouMarmo.Modules.OriginalMotion.OriginalAudioAsset("OtherIntro");
+        new LoadableBundleAsset<AudioClip>("OtherIntro", TouAssets.MainBundle);
 
     public static LoadableAsset<AudioClip> SheriffIntroSound { get; } =
-        new TouMarmo.Modules.OriginalMotion.OriginalAudioAsset("SheriffIntro");
+        new LoadableBundleAsset<AudioClip>("SheriffIntro", TouAssets.MainBundle);
 
     public static LoadableAsset<AudioClip> VigiIntroSound { get; } =
-        new TouMarmo.Modules.OriginalMotion.OriginalAudioAsset("VigilanteIntro");
+        new LoadableBundleAsset<AudioClip>("VigilanteIntro", TouAssets.MainBundle);
 
     public static LoadableAsset<AudioClip> AltruistReviveSound { get; } =
-        new TouMarmo.Modules.OriginalMotion.OriginalAudioAsset("AltruistIntro");
+        new LoadableBundleAsset<AudioClip>("AltruistIntro", TouAssets.MainBundle);
 
     public static LoadableAsset<AudioClip> JailSound { get; } =
-        new TouMarmo.Modules.OriginalMotion.OriginalAudioAsset("JailSound");
+        new LoadableBundleAsset<AudioClip>("JailSound", TouAssets.MainBundle);
 
     public static LoadableAsset<AudioClip> MayorRevealSound { get; set; } =
-        new TouMarmo.Modules.OriginalMotion.OriginalAudioAsset("MayorRevealSound");
+        new LoadableBundleAsset<AudioClip>("MayorRevealSound", TouAssets.MainBundle);
 
     public static LoadableAsset<AudioClip> PoliticianIntroSound { get; set; } =
-        new TouMarmo.Modules.OriginalMotion.OriginalAudioAsset("MayorRevealSound");
+        new LoadableBundleAsset<AudioClip>("MayorRevealSound", TouAssets.MainBundle);
 
     public static LoadableAsset<AudioClip> MediumIntroSound { get; } =
-        new TouMarmo.Modules.OriginalMotion.OriginalAudioAsset("MediumIntro");
+        new LoadableBundleAsset<AudioClip>("MediumIntro", TouAssets.MainBundle);
 
     public static LoadableAsset<AudioClip> TimeLordIntroSound { get; } =
-        new TouMarmo.Modules.OriginalMotion.OriginalAudioAsset("TimeLordIntro");
+        new LoadableBundleAsset<AudioClip>("TimeLordIntro", TouAssets.MainBundle);
 
     public static LoadableAsset<AudioClip> EngiFix1 { get; } =
-        new TouMarmo.Modules.OriginalMotion.OriginalAudioAsset("Fix1");
+        new LoadableBundleAsset<AudioClip>("Fix1", TouAssets.MainBundle);
 
     public static LoadableAsset<AudioClip> EngiFix2 { get; } =
-        new TouMarmo.Modules.OriginalMotion.OriginalAudioAsset("Fix2");
+        new LoadableBundleAsset<AudioClip>("Fix2", TouAssets.MainBundle);
 
     public static LoadableAsset<AudioClip> EngiFix3 { get; } =
-        new TouMarmo.Modules.OriginalMotion.OriginalAudioAsset("Fix3");
+        new LoadableBundleAsset<AudioClip>("Fix3", TouAssets.MainBundle);
 
     public static LoadableAsset<AudioClip> GuardianAngelSound { get; } =
-        new TouMarmo.Modules.OriginalMotion.OriginalAudioAsset("GuardianAngelProtect");
+        new LoadableBundleAsset<AudioClip>("GuardianAngelProtect", TouAssets.MainBundle);
 
     public static LoadableAsset<AudioClip> DiscoveredSound { get; } =
-        new TouMarmo.Modules.OriginalMotion.OriginalAudioAsset("Discovered");
+        new LoadableBundleAsset<AudioClip>("Discovered", TouAssets.MainBundle);
 
     public static LoadableAsset<AudioClip> ChefSound { get; } =
-        new TouMarmo.Modules.OriginalMotion.OriginalAudioAsset("ChefRing");
+        new LoadableBundleAsset<AudioClip>("ChefRing", TouAssets.MainBundle);
 
     public static LoadableAsset<AudioClip> GlitchSound { get; } =
-        new TouMarmo.Modules.OriginalMotion.OriginalAudioAsset("GlitchIntro");
+        new LoadableBundleAsset<AudioClip>("GlitchIntro", TouAssets.MainBundle);
 
     public static LoadableAsset<AudioClip> HackedSound { get; } =
-        new TouMarmo.Modules.OriginalMotion.OriginalAudioAsset("HackedSound");
+        new LoadableBundleAsset<AudioClip>("HackedSound", TouAssets.MainBundle);
 
     public static LoadableAsset<AudioClip> UnhackedSound { get; } =
-        new TouMarmo.Modules.OriginalMotion.OriginalAudioAsset("UnhackedSound");
+        new LoadableBundleAsset<AudioClip>("UnhackedSound", TouAssets.MainBundle);
 
     public static LoadableAsset<AudioClip> MimicSound { get; } =
-        new TouMarmo.Modules.OriginalMotion.OriginalAudioAsset("MimicSound");
+        new LoadableBundleAsset<AudioClip>("MimicSound", TouAssets.MainBundle);
 
     public static LoadableAsset<AudioClip> UnmimicSound { get; } =
-        new TouMarmo.Modules.OriginalMotion.OriginalAudioAsset("UnmimicSound");
+        new LoadableBundleAsset<AudioClip>("UnmimicSound", TouAssets.MainBundle);
 
     public static LoadableAsset<AudioClip> ArsoIgniteSound { get; } =
-        new TouMarmo.Modules.OriginalMotion.OriginalAudioAsset("ArsonistIgnite");
+        new LoadableBundleAsset<AudioClip>("ArsonistIgnite", TouAssets.MainBundle);
 
     public static LoadableAsset<AudioClip> WerewolfRampageSound { get; } =
-        new TouMarmo.Modules.OriginalMotion.OriginalAudioAsset("WerewolfRampage");
+        new LoadableBundleAsset<AudioClip>("WerewolfRampage", TouAssets.MainBundle);
 
     public static LoadableAsset<AudioClip> GrenadeSound { get; } =
-        new TouMarmo.Modules.OriginalMotion.OriginalAudioAsset("GrenadeThrow");
+        new LoadableBundleAsset<AudioClip>("GrenadeThrow", TouAssets.MainBundle);
 
     public static LoadableAsset<AudioClip> WarlockIntroSound { get; } =
-        new TouMarmo.Modules.OriginalMotion.OriginalAudioAsset("WarlockIntro");
+        new LoadableBundleAsset<AudioClip>("WarlockIntro", TouAssets.MainBundle);
 
     public static LoadableAsset<AudioClip> SwooperActivateSound { get; } =
-        new TouMarmo.Modules.OriginalMotion.OriginalAudioAsset("SwooperActivate");
+        new LoadableBundleAsset<AudioClip>("SwooperActivate", TouAssets.MainBundle);
 
     public static LoadableAsset<AudioClip> SwooperDeactivateSound { get; } =
-        new TouMarmo.Modules.OriginalMotion.OriginalAudioAsset("SwooperDeactivate");
+        new LoadableBundleAsset<AudioClip>("SwooperDeactivate", TouAssets.MainBundle);
 
     public static LoadableAsset<AudioClip> MineSound { get; } =
-        new TouMarmo.Modules.OriginalMotion.OriginalAudioAsset("MineSound");
+        new LoadableBundleAsset<AudioClip>("MineSound", TouAssets.MainBundle);
 
     public static LoadableAsset<AudioClip> EscapistMarkSound { get; } =
-        new TouMarmo.Modules.OriginalMotion.OriginalAudioAsset("EscapistMark");
+        new LoadableBundleAsset<AudioClip>("EscapistMark", TouAssets.MainBundle);
 
     public static LoadableAsset<AudioClip> EscapistRecallSound { get; } =
-        new TouMarmo.Modules.OriginalMotion.OriginalAudioAsset("EscapistRecall");
+        new LoadableBundleAsset<AudioClip>("EscapistRecall", TouAssets.MainBundle);
 
     public static LoadableAsset<AudioClip> JanitorCleanSound { get; } =
-        new TouMarmo.Modules.OriginalMotion.OriginalAudioAsset("JanitorClean");
+        new LoadableBundleAsset<AudioClip>("JanitorClean", TouAssets.MainBundle);
 
     public static LoadableAsset<AudioClip> TribunalSound { get; } =
-        new TouMarmo.Modules.OriginalMotion.OriginalAudioAsset("MarshalTribunal");
+        new LoadableBundleAsset<AudioClip>("MarshalTribunal", TouAssets.MainBundle);
 
     public static LoadableAsset<AudioClip> LaserKillSound { get; } =
-        new TouMarmo.Modules.OriginalMotion.OriginalAudioAsset("ShootLaserMeeting");
+        new LoadableBundleAsset<AudioClip>("ShootLaserMeeting", TouAssets.MainBundle);
     public static LoadableAsset<AudioClip> SentryPlaceSound { get; } =
-        new TouMarmo.Modules.OriginalMotion.OriginalAudioAsset("SentryPlace");
+        new LoadableBundleAsset<AudioClip>("SentryPlace", TouAssets.MainBundle);
 
     public static LoadableAsset<AudioClip> DenySound { get; } =
-        new TouMarmo.Modules.OriginalMotion.OriginalAudioAsset("Deny");
+        new LoadableBundleAsset<AudioClip>("Deny", TouAssets.MainBundle);
 
     public static LoadableAsset<AudioClip> SentryIntro { get; } =
-        new TouMarmo.Modules.OriginalMotion.OriginalAudioAsset("SentryIntro");
+        new LoadableBundleAsset<AudioClip>("SentryIntro", TouAssets.MainBundle);
 
     public static LoadableAsset<AudioClip> SinisterIntro { get; } =
-        new TouMarmo.Modules.OriginalMotion.OriginalAudioAsset("SinisterIntro");
+        new LoadableBundleAsset<AudioClip>("SinisterIntro", TouAssets.MainBundle);
 
     public static LoadableAsset<AudioClip> PotionIntro { get; } =
-        new TouMarmo.Modules.OriginalMotion.OriginalAudioAsset("PotionIntro");
+        new LoadableBundleAsset<AudioClip>("PotionIntro", TouAssets.MainBundle);
 
     public static LoadableAsset<AudioClip> ScreamIntro { get; } =
-        new TouMarmo.Modules.OriginalMotion.OriginalAudioAsset("ScreamIntro");
+        new LoadableBundleAsset<AudioClip>("ScreamIntro", TouAssets.MainBundle);
 
     public static LoadableAsset<AudioClip> ExplodeIntro { get; } =
-        new TouMarmo.Modules.OriginalMotion.OriginalAudioAsset("ExplodeIntro");
+        new LoadableBundleAsset<AudioClip>("ExplodeIntro", TouAssets.MainBundle);
 
     public static LoadableAsset<AudioClip> SuspenseIntro { get; } =
-        new TouMarmo.Modules.OriginalMotion.OriginalAudioAsset("SuspenseIntro");
+        new LoadableBundleAsset<AudioClip>("SuspenseIntro", TouAssets.MainBundle);
 
     public static LoadableAsset<AudioClip> SneakyIntro { get; } =
-        new TouMarmo.Modules.OriginalMotion.OriginalAudioAsset("SneakyIntro");
+        new LoadableBundleAsset<AudioClip>("SneakyIntro", TouAssets.MainBundle);
 
     public static LoadableAsset<AudioClip> MirrorcasterIntro { get; } =
-        new TouMarmo.Modules.OriginalMotion.OriginalAudioAsset("MirrorcasterIntro");
+        new LoadableBundleAsset<AudioClip>("MirrorcasterIntro", TouAssets.MainBundle);
 
     public static LoadableAsset<AudioClip> MirrorcasterShatter { get; } =
-        new TouMarmo.Modules.OriginalMotion.OriginalAudioAsset("MirrorcasterShatter");
+        new LoadableBundleAsset<AudioClip>("MirrorcasterShatter", TouAssets.MainBundle);
 
     public static LoadableAsset<AudioClip> BombExplode { get; } =
-        new TouMarmo.Modules.OriginalMotion.OriginalAudioAsset("BombExplode");
+        new LoadableBundleAsset<AudioClip>("BombExplode", TouAssets.MainBundle);
 
     public static LoadableAsset<AudioClip> DeputyReveal { get; } =
-        new TouMarmo.Modules.OriginalMotion.OriginalAudioAsset("DeputyReveal");
+        new LoadableBundleAsset<AudioClip>("DeputyReveal", TouAssets.MainBundle);
 
     public static void PlaySound(LoadableAsset<AudioClip> clip, float vol = 1f)
     {

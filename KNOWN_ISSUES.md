@@ -1,3 +1,7 @@
+## Launcher revision 1.1.0.18
+
+Epic detection/copy support is experimental: real Epic account authentication and gameplay were not tested. Live updates require a published GitHub release with both exact update assets; older releases without the manifest are skipped. The launcher updates mods, not its own executable. Retired procedural animation code/frames are absent from this source tree; native upstream resource rights are not certified. Full host/client and every-role regression remain unverified.
+
 # Known issues and unverified cases — 1.1.0-beta
 
 - Full gameplay for every role/inter-role interaction, actual host/client RPC transport, attack/meeting/exile synchronization and several consecutive matches have not been verified by the local fixtures.

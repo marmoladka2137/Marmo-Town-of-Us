@@ -127,7 +127,7 @@ public static class TouAssets
     private const string LocalTabsPath = "TownOfUs.Resources.LocalTabs";
     private static string BetaIdentifier => TownOfUsPlugin.IsDevBuild ? "Beta" : string.Empty;
 
-    public static AssetBundle MainBundle => _mainBundle ??= TouMarmo.Modules.OriginalMotion.OriginalMotionCatalog.RegisterBundle(LoadTouBundle());
+    public static AssetBundle MainBundle => _mainBundle ??= LoadTouBundle();
     public static LoadableBundleSubAssetHolder MeetingAbilityHolder => _meetingAbilityHolder ??= new ("MeetingAbilitySprites", MainBundle);
     public static LoadableBundleSubAssetHolder AbilityHolder => _abilityHolder ??= new ("AbilitySprites", MainBundle);
     public static LoadableBundleSubAssetHolder RoleBannerHolder => _roleBannerHolder ??= new ("RoleBannerSprites", MainBundle);

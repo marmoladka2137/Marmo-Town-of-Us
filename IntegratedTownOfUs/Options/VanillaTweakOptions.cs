@@ -63,9 +63,15 @@ public sealed class VanillaTweakOptions : AbstractOptionGroup
                 is not PetVisiblity.WhenAlive
         };
 
-    public bool CanPauseCooldown => !TickCooldownsInMinigame.Value &&
-                                   (Minigame.Instance &&
-                                    Minigame.Instance is not IngameWikiMinigame);
+    public bool CanPauseCooldown
+    {
+        get
+        {
+            var minigame = Minigame.Instance;
+            return !TickCooldownsInMinigame.Value && minigame &&
+                   minigame.gameObject.activeInHierarchy && minigame is not IngameWikiMinigame;
+        }
+    }
 
     public PetHidden PetVisibilityUponDeath =>
         ((PetVisiblity)ShowPetsMode.Value is PetVisiblity.WhenAlive)

@@ -14,6 +14,12 @@ namespace TownOfUs.Events;
 
 public static class DeathEventHandlers
 {
+    private static PlayerStats? EnsureStats(PlayerControl player)
+    {
+        if (!player || !player.Data || !player.Data.Role) return null;
+        if (!GameHistory.PlayerStats.ContainsKey(player.PlayerId)) GameHistory.RegisterRole(player, player.Data.Role);
+        return GameHistory.PlayerStats.GetValueOrDefault(player.PlayerId);
+    }
     [RegisterEvent(-1)]
     public static void RoundStartHandler(RoundStartEvent @event)
     {
@@ -37,7 +43,8 @@ public static class DeathEventHandlers
     public static void PlayerDeathEventHandler(PlayerDeathEvent @event)
     {
         var victim = @event.Player;
-        var stats = GameHistory.PlayerStats[victim.PlayerId];
+        var stats = EnsureStats(victim);
+        if (stats == null) return;
         if (stats.PlayerState is StoredPlayerState.Alive or StoredPlayerState.Revived)
         {
             var cod = "Disconnected";
@@ -75,7 +82,8 @@ public static class DeathEventHandlers
     [RegisterEvent(500)]
     public static void PlayerReviveEventHandler(PlayerReviveEvent reviveEvent)
     {
-        var stats = GameHistory.PlayerStats[reviveEvent.Player.PlayerId];
+        var stats = EnsureStats(reviveEvent.Player);
+        if (stats == null) return;
 
         stats.PlayerState = StoredPlayerState.Revived;
         stats.DeathString = MiraLocaleManager.Get("Revived");
@@ -97,7 +105,8 @@ public static class DeathEventHandlers
     {
         var source = murderEvent.Source;
         var target = murderEvent.Target;
-        var stats = GameHistory.PlayerStats[target.PlayerId];
+        var stats = EnsureStats(target);
+        if (stats == null) return;
 
             if (stats.LockDeathInfo)
             {

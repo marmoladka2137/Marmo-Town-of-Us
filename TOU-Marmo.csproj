@@ -10,8 +10,8 @@
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Version>1.1.0-beta</Version>
-    <AssemblyVersion>1.1.0.13</AssemblyVersion>
-    <FileVersion>1.1.0.13</FileVersion>
+    <AssemblyVersion>1.1.0.18</AssemblyVersion>
+    <FileVersion>1.1.0.18</FileVersion>
     <InformationalVersion>1.1.0 Beta</InformationalVersion>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     <EnableSourceLink>false</EnableSourceLink>
@@ -35,8 +35,6 @@
   <ItemGroup>
     <!-- MTOU resources -->
     <EmbeddedResource Include="Resources\**\*.*" />
-    <!-- Replaced by original runtime synthesis; retain old files only as private audit evidence. -->
-    <EmbeddedResource Remove="Resources\Audio\DoctorDrop.wav;Resources\Audio\DoctorReveal.wav" />
   </ItemGroup>
 
   <!-- Integrated Town of Us Mira sources and resources (compiled as part of this mod) -->
@@ -75,6 +73,12 @@
     <Error Condition="!Exists('$(GameRoot)/BepInEx/plugins/MiraAPI.dll') Or !Exists('$(GameRoot)/BepInEx/plugins/Reactor.dll') Or !Exists('$(GameRoot)/BepInEx/plugins/CorsacCosmetics.dll')" Text="The development installation needs MiraAPI, Reactor and CorsacCosmetics. See DEPENDENCIES.md." />
   </Target>
 
+  <ItemGroup>
+    <!-- Restore original clips/renderers. Keep only the independent rejoin clock code. -->
+    <Compile Remove="Modules/OriginalMotion/Original*.cs" />
+    <Compile Remove="IntegratedTownOfUs/Buttons/Classic/Neutral/NeutralEvil/ExeTormentButton.cs" />
+    <EmbeddedResource Remove="Resources/OriginalMotion/**/*.*" />
+  </ItemGroup>
 </Project>
 
 

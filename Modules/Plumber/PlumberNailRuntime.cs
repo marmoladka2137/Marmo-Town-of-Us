@@ -17,14 +17,38 @@ public static class PlumberNailRuntime
     public static readonly VentSpikeState State = new();
     private static readonly Dictionary<byte, float> ReadyAt = new();
     private static readonly Dictionary<byte, int> Placed = new();
+    private static readonly Dictionary<byte, int> OccupiedVents = new();
     public static int MaxTrappedVents => (int)OptionGroupSingleton<PlumberOptions>.Instance.MaxTrappedVents;
     public static int HitsToKill => (int)OptionGroupSingleton<PlumberOptions>.Instance.HitsRequiredToKill;
     public static float TrapCooldown => OptionGroupSingleton<PlumberOptions>.Instance.TrapCooldown;
     public static bool IsTrapped(int id) => State.Traps.ContainsKey(id);
     public static int GetHits(byte id) => State.Hits.GetValueOrDefault(id);
-    public static void Clear() { State.Clear(); ReadyAt.Clear(); Placed.Clear(); }
-    public static void ClearEntries() => State.ClearEntries();
+    public static void Clear() { State.Clear(); ReadyAt.Clear(); Placed.Clear(); OccupiedVents.Clear(); }
+    public static void ClearEntries() { State.ClearEntries(); OccupiedVents.Clear(); }
     public static void OnVentExit(PlayerControl player, int id) => State.Exit(player.PlayerId, id);
+
+    public static void ObserveVent(PlayerControl player)
+    {
+        if (!MarmoSession.IsHost || !MarmoSession.InRound || !player || !player.Data) return;
+        if (!player.inVent || !MarmoSession.Alive(player))
+        {
+            if (OccupiedVents.Remove(player.PlayerId, out var exited)) State.Exit(player.PlayerId, exited);
+            return;
+        }
+        if (!ShipStatus.Instance) return;
+        var position = player.GetTruePosition();
+        var destination = ShipStatus.Instance.AllVents.Where(v => v &&
+            Vector2.Distance(position, v.transform.position) <= .65f)
+            .OrderBy(v => Vector2.Distance(position, v.transform.position)).FirstOrDefault();
+        if (!destination) return;
+        if (OccupiedVents.TryGetValue(player.PlayerId, out var previous))
+        {
+            if (previous == destination!.Id) return;
+            State.Exit(player.PlayerId, previous);
+        }
+        OccupiedVents[player.PlayerId] = destination!.Id;
+        if (IsTrapped(destination.Id)) RpcVentEntry(player, destination.Id);
+    }
 
     public static bool InRange(PlayerControl player, Vent vent) => player && vent &&
         Vector2.Distance(player.GetTruePosition(), vent.transform.position) <= vent.UsableDistance + .1f &&

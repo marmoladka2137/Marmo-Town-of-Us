@@ -1,19 +1,21 @@
-# Third-party notices — runtime-motion candidate
+> Current revision 1.1.0.18 (2026-11-18): native Mira presentation resources are restored; procedural replacements described in older sections below are retired and excluded from this source tree. Their former clearance does not apply to restored upstream animations/audio. No new permission or blanket legal clearance is claimed. The original MTOU artwork attribution (Marmo, CC BY 4.0) is unchanged. See LAUNCHER_RELEASE_TESTS.md and tools/Launcher/README.md for the current package and tests.
+
+# Third-party notices â€” runtime-motion candidate
 
 Combined TOU Mira/MTOU C# is GPLv3. Preserve copyright, modification notices and corresponding source. Original MTOU graphics are separately CC BY 4.0, Marmo attribution. The retained Liberation Sans font is OFL-1.1. Full texts are in LICENSES.
 
 Static TOU Mira sprites keep AU-Avengers/AtonyGit/other original credits under the official credited-sprite permission. No inherited animation, controller graph, recording or compiled shader is conveyed in the rebuilt main bundles. See ASSET_CREDITS.md and LICENSE_AUDIT.md for exact replacement scope. Names, layouts and duration contracts are functional interfaces, not a claim that upstream art became Marmo's.
 
-## External dependencies — no DLL payload included
+## External dependencies â€” no DLL payload included
 
 The [35-file runtime table](docs/audit/recheck-2026-11-17/COMPONENTS.md) lists current hashes, version-specific primary license evidence, package matches and limitations for each inspected core/direct runtime binary. **None of those DLLs is embedded in MTOU or redistributed in the thin plugin ZIP.**
 
 - **MiraAPI 0.5.0-dev:** available source pin 7a4e891 is LGPL 2.1; installed binary's exact modified source remains unproven. All Of Us, XtraCube, Angxl and contributors are retained as upstream credits. Exact-source uncertainty is not represented as a proven license conflict.
 - **Steam installer:** downloads pinned loader/runtime/plugins directly from the official TOU Mira 1.7.9-beta1 distribution. Its MiraAPI 0.6.0 DLL is a separate public baseline, not a claimed source match for the historical local 0.5.0-dev DLL. No external dependency implementations are redistributed in the installer ZIP. Their existing authors, independent terms and upstream source locations remain applicable; see DEPENDENCIES.md and tools/SteamInstaller/installer-manifest.json.
 - **Reactor 2.5.1:** LGPLv3 source text verified at the exact version. **BepInEx be.753 / 0d275a4:** LGPL 2.1 text verified at the source commit. Preserve required notices/source access if later redistributing them.
-- **HarmonyX 2.10.2, CorsacCosmetics 4.0.0 / 9ddf483:** MIT. Corsac code copyright Filip Kiraa Opálený and contributors; preserve the exact MIT notice when conveying code. Its art has separate provenance.
+- **HarmonyX 2.10.2, CorsacCosmetics 4.0.0 / 9ddf483:** MIT. Corsac code copyright Filip Kiraa OpĂˇlenĂ˝ and contributors; preserve the exact MIT notice when conveying code. Its art has separate provenance.
 - **Il2CppInterop Runtime/Common 1.5.3:** official package expression LGPL-3.0-only. Installed metadata identifies 5d129493; official NuGet package identifies dbda1cb3 and does not byte-match. **Generator/HarmonySupport CI 620 / 763f427:** exact commit LICENSE is GPLv3, not the later LGPL text. The previous single-family classification was incomplete.
-- **AsmResolver 6.0.0-beta.2, AssetRipper.CIL 1.1.2, AssetRipper.Primitives 3.1.3, Cecil 0.11.4, MonoMod 22.7.31.1 / helpers, Iced 1.21.0, SemanticVersioning 2.0.2, Disarm and Cpp2IL-family files:** MIT evidence is recorded at the source pin or exact NuGet package. AssetRipper.Primitives includes a separate uTinyRipper MIT notice (© 2020 mafaca), now preserved. Capstone.NET exact source pin b90e380c is MIT (Ahmed Garhy); an additionally bundled native Capstone engine would need its own review.
+- **AsmResolver 6.0.0-beta.2, AssetRipper.CIL 1.1.2, AssetRipper.Primitives 3.1.3, Cecil 0.11.4, MonoMod 22.7.31.1 / helpers, Iced 1.21.0, SemanticVersioning 2.0.2, Disarm and Cpp2IL-family files:** MIT evidence is recorded at the source pin or exact NuGet package. AssetRipper.Primitives includes a separate uTinyRipper MIT notice (Â© 2020 mafaca), now preserved. Capstone.NET exact source pin b90e380c is MIT (Ahmed Garhy); an additionally bundled native Capstone engine would need its own review.
 - **Dobby:** upstream Apache-2.0 text collected as context. Installed native binary's exact source/version remains unknown; its current-upstream license is not certified as an exact binary match.
 - **PerfectComms.Api 4.1.7.1:** LGPL-2.1-only in the exact NuGet package, commit 59068ee4. Compile-only API integration; runtime implementation is not bundled. This is separate from the full voice-chat mod.
 
@@ -35,3 +37,7 @@ Existing GPL ancestry/attribution for Town of Us, Redux, Town-Of-Us-R, Launchpad
 Optional asset rebuilding uses UnityPy 1.25.2 (MIT) and Pillow (HPND/Pillow terms) as separately installed development tools. Their implementation files are not bundled in source/release ZIPs. requirements.txt pins tested versions; obtain tool licenses with their official distributions. The original frame generator is included GPL C# with no third-party drawing library. Unity Editor and authentication are not required by this resource pipeline.
 
 Remaining binary/source uncertainty concerns the external loader/dependency environment, not embedded dependency copies. No full-loader redistribution is cleared by this plugin-only preparation.
+
+## Additional launcher plugin payload (2026-11-18)
+
+The launcher supplement includes AleLuduMod v1.2.2 (townofus-pl, MIT), AUnlocker v1.3.2 (AstralKitsune, GPLv3) and Mini.RegionInstall v1.2.0 (miniduikboot, GPLv3). Exact tagged source archives and license texts accompany these binaries in MTOU Notices/CorrespondingSource and LICENSES. Independent authorship and licenses are retained; these are not MTOU originals. The initial pinned official dependency download supplies BepInEx, Reactor, MiraAPI and CorsacCosmetics; this supplement does not redistribute that loader archive. Existing audited dependency notices remain applicable.

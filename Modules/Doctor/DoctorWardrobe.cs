@@ -4,26 +4,24 @@ using UnityEngine;
 
 namespace TouMarmo.Modules.Doctor;
 
-/// <summary>Match-local reveal uniform. Never changes the saved lobby profile or inventory.</summary>
+/// <summary>Match-local surgical mask, preserving the player's chosen cosmetics.</summary>
 public static class DoctorWardrobe
 {
-    public const string Skin = "skin_Science";
-    public const string Hat = "hat_stethescope";
     public const string Visor = "visor_pk01_PaperMaskVisor";
-    private static readonly Dictionary<byte, NetworkedPlayerInfo.PlayerOutfit> Originals = new();
+    private static readonly Dictionary<byte, string> Originals = new();
 
     public static bool HasUniform(PlayerControl p) => p && Originals.ContainsKey(p.PlayerId);
     public static void Apply(PlayerControl p)
     {
         if (!p || p.Data == null) return;
-        if (!Originals.ContainsKey(p.PlayerId)) Originals[p.PlayerId] = Copy(p.Data.DefaultOutfit);
+        Originals.TryAdd(p.PlayerId, p.Data.DefaultOutfit.VisorId);
         Dress(p.Data.DefaultOutfit);
         if (p.GetAppearanceType() == TownOfUsAppearances.Default)
-            p.RawSetAppearance(p.GetDefaultModifiedAppearance());
+            p.RawSetVisor(Visor, p.Data.DefaultOutfit.ColorId);
     }
     public static void Dress(NetworkedPlayerInfo.PlayerOutfit outfit)
     {
-        outfit.SkinId = Skin; outfit.HatId = Hat; outfit.VisorId = Visor;
+        outfit.VisorId = Visor;
     }
     public static void Clear()
     {
@@ -34,16 +32,11 @@ public static class DoctorWardrobe
             var p = MarmoSession.Player(pair.Key);
             if (!p || p!.Data == null) continue;
             var outfit = p.Data.DefaultOutfit;
-            outfit.SkinId = pair.Value.SkinId; outfit.HatId = pair.Value.HatId; outfit.VisorId = pair.Value.VisorId;
+            outfit.VisorId = pair.Value;
             if (p.GetAppearanceType() == TownOfUsAppearances.Default)
-                p.RawSetAppearance(p.GetDefaultModifiedAppearance());
+                p.RawSetVisor(outfit.VisorId, outfit.ColorId);
         }
     }
-    private static NetworkedPlayerInfo.PlayerOutfit Copy(NetworkedPlayerInfo.PlayerOutfit o) => new()
-    {
-        SkinId=o.SkinId, HatId=o.HatId, VisorId=o.VisorId, ColorId=o.ColorId,
-        PlayerName=o.PlayerName, PetId=o.PetId, NamePlateId=o.NamePlateId
-    };
 }
 
 [HarmonyPatch(typeof(AppearanceExtensions), nameof(AppearanceExtensions.GetDefaultAppearance))]

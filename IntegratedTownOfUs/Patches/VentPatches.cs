@@ -11,6 +11,10 @@ namespace TownOfUs.Patches;
 [HarmonyPatch]
 public static class VentPatches
 {
+    [HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.FixedUpdate))]
+    [HarmonyPostfix]
+    public static void ObserveTunnelMovement(PlayerControl __instance) => PlumberNailRuntime.ObserveVent(__instance);
+
     public static bool InVision(PlayerControl player)
     {
         return InVision(player, PlayerControl.LocalPlayer);
@@ -30,6 +34,17 @@ public static class VentPatches
         }
 
         return false;
+    }
+
+    // Native tunnel navigation does not call EnterVent. Notify the authority at
+    // the successful switch; host position observation also covers remote moves.
+    [HarmonyPatch(typeof(Vent), nameof(Vent.TryMoveToVent))]
+    [HarmonyPostfix]
+    public static void MoveBetweenVentsPatch(Vent __0, bool __result)
+    {
+        var player = PlayerControl.LocalPlayer;
+        if (__result && player && __0 && PlumberNailRuntime.IsTrapped(__0.Id))
+            PlumberNailRuntime.RpcVentEntry(player, __0.Id);
     }
 
     [HarmonyPatch(typeof(Vent), nameof(Vent.EnterVent))]

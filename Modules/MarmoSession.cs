@@ -30,7 +30,7 @@ public static class MarmoSession
         inLobby=false;
         // Practice dummies can spawn after TOU initializes its death history.
         // Its confirmed kill and revive handlers both index PlayerStats by player ID.
-        if (TutorialManager.InstanceExists)
+        if (TutorialManager.InstanceExists || TownOfUs.Modules.MultiplayerFreeplayMode.Enabled)
         {
             foreach (var player in PlayerControl.AllPlayerControls)
                 if (player && player.Data && player.Data.Role && !TownOfUs.Modules.GameHistory.PlayerStats.ContainsKey(player.PlayerId))

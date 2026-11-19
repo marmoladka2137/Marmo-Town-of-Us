@@ -140,6 +140,9 @@ public sealed class DeputyRole(IntPtr cppPtr) : CrewmateRole(cppPtr), ITouCrewRo
 
         if (Player.AmOwner)
         {
+            CustomButtonSingleton<CampButton>.Instance.Usable = true;
+            Killer = null;
+            ShotThisMeeting = false;
             meetingMenu = new MeetingMenu(
                 this,
                 ClickGuess,

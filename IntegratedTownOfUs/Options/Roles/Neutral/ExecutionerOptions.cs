@@ -15,8 +15,14 @@ public sealed class ExecutionerOptions : AbstractRoleOptionGroup<ExecutionerRole
     [ModdedToggleOption("TouOptionExecutionerCanButton")]
     public bool CanButton { get; set; } = true;
 
-    [ModdedEnumOption("TouOptionExecutionerWin", typeof(ExeWinOptions), ["TouOptionExecutionerWinEnumEndsGame", "TouOptionExecutionerWinEnumTorments", "TouOptionExecutionerWinEnumNothing"])]
-    public ExeWinOptions ExeWin { get; set; } = ExeWinOptions.Torments;
+    private ExeWinOptions winMode = ExeWinOptions.Nothing;
+    [ModdedEnumOption("TouOptionExecutionerWin", typeof(ExeWinOptions), ["TouOptionExecutionerWinEnumEndsGame", "TouOptionExecutionerWinEnumNothing", "TouOptionExecutionerWinEnumNothing"])]
+    public ExeWinOptions ExeWin
+    {
+        // Preserve old saved enum values without re-enabling the removed revenge ability.
+        get => winMode == ExeWinOptions.Torments ? ExeWinOptions.Nothing : winMode;
+        set => winMode = value == ExeWinOptions.Torments ? ExeWinOptions.Nothing : value;
+    }
 
     public ModdedToggleOption ExeAnonymizeWin { get; set; } =
         new("TouOptionNeutAnonymousVictoryWin", false)

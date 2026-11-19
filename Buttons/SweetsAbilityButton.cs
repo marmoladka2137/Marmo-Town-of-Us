@@ -12,8 +12,25 @@ namespace TouMarmo.Buttons;
 public sealed class SweetsAbilityButton : TownOfUsRoleButton<SweetsRole, PlayerControl>
 {
     private bool _showingPollinate;
+    private float requestedAt = -10f;
 
-    public override string Name => MiraLocaleManager.Get("TouMarmo.Ability.Flower", "Flower");
+    public override void ClickHandler()
+    {
+        if (!CanClick() || Time.unscaledTime - requestedAt < .2f) return;
+        requestedAt = Time.unscaledTime;
+        // A rejected request does not spend a cooldown or flower.
+        OnClick();
+    }
+
+    public override void FixedUpdateHandler(PlayerControl playerControl)
+    {
+        SetTimer(SweetsRuntime.CooldownRemaining);
+        base.FixedUpdateHandler(playerControl);
+        if (Button) Button.SetCooldownFormat(SweetsRuntime.CooldownRemaining, Mathf.Max(.01f, Cooldown), CooldownTimerFormatString);
+    }
+
+    public override string Name => MiraLocaleManager.Get(SweetsRuntime.PollinateMode ? "TouMarmo.Ability.Pollinate" : "TouMarmo.Ability.Flower",
+        SweetsRuntime.PollinateMode ? "Pollinate" : "Flower");
     public override BaseKeybind Keybind => Keybinds.SecondaryAction;
     public override Color TextOutlineColor => TownOfUsColors.Impostor;
     public override float Cooldown => SweetsRuntime.Options.FlowerCooldown.Value;
@@ -61,13 +78,11 @@ public sealed class SweetsAbilityButton : TownOfUsRoleButton<SweetsRole, PlayerC
         if (pollinate != _showingPollinate)
         {
             _showingPollinate = pollinate;
-            OverrideName(MiraLocaleManager.Get(
-                pollinate ? "TouMarmo.Ability.Pollinate" : "TouMarmo.Ability.Flower",
-                pollinate ? "Pollinate" : "Flower"));
             OverrideSprite((pollinate ? TouMarmo.Assets.MarmoAssets.SweetsPollinate : TouMarmo.Assets.MarmoAssets.SweetsFlower).LoadAsset());
         }
 
         if (Button == null) return;
+        Button.buttonLabelText.text = Name;
 
         // Show progress of distributed flowers as given/required (e.g. 1/3) while giving flowers.
         if (!pollinate)

@@ -14,25 +14,14 @@ public static class MenuCommunityLink
     public static void Ensure(MainMenuManager menu)
     {
         var parent = menu.transform.Find("MainUI/AspectScaler") ?? menu.transform;
-        var visible=!LobbyBehaviour.Instance && menu.playButton && menu.playButton.gameObject.activeInHierarchy;
+        var visible=menu.isActiveAndEnabled && !LobbyBehaviour.Instance && !ShipStatus.Instance &&
+            menu.playButton && menu.playButton.gameObject.activeInHierarchy;
         var existing=parent.Find(ObjectName);
         if(existing){existing.gameObject.SetActive(visible);return;}
         if(!visible) return;
         var fallback=menu.newsButton ? menu.newsButton.GetComponentsInChildren<TextMeshPro>(true).FirstOrDefault()?.font : null;
         Create(parent,fallback);
         Position(menu);
-    }
-
-    public static void EnsureLobby(HudManager hud)
-    {
-        var existing=hud.transform.Find(ObjectName);
-        var visible=LobbyBehaviour.Instance && !hud.Chat.IsOpenOrOpening &&
-            !(GameSettingMenu.Instance && GameSettingMenu.Instance.gameObject.activeInHierarchy) &&
-            !(PlayerCustomizationMenu.Instance && PlayerCustomizationMenu.Instance.gameObject.activeInHierarchy);
-        if(existing) existing.gameObject.SetActive(visible);
-        if(!visible) return;
-        if(!existing) existing=Create(hud.transform,null).transform;
-        PositionRoot(existing,.27f);
     }
 
     private static GameObject Create(Transform parent,TMP_FontAsset? fallback)
@@ -50,10 +39,10 @@ public static class MenuCommunityLink
             text.font = font;
             text.fontSharedMaterial = font!.material;
         }
-        text.text = Label;
+        text.text = "<color=#7289FF>Discord</color>  ·  "+Label;
         text.fontSize = text.fontSizeMin = text.fontSizeMax = 3f;
         text.enableAutoSizing = false;
-        text.fontStyle = FontStyles.Underline;
+        text.fontStyle = FontStyles.Bold;
         text.alignment = TextAlignmentOptions.Center;
         text.enableWordWrapping = false;
         text.overflowMode = TextOverflowModes.Ellipsis;
@@ -127,9 +116,4 @@ public static class MenuCommunityLink
     }
 }
 
-[HarmonyLib.HarmonyPatch(typeof(HudManager),nameof(HudManager.Update))]
-public static class LobbyCommunityLink
-{
-    [HarmonyLib.HarmonyPostfix]
-    public static void Postfix(HudManager __instance)=>MenuCommunityLink.EnsureLobby(__instance);
-}
+

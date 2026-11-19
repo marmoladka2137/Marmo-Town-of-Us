@@ -225,7 +225,13 @@ public static class GameHistory
         DeathHandlerOverride lockInfo = DeathHandlerOverride.Ignore, StoredPlayerState playerState = (StoredPlayerState)4)
     {
         HudManagerHelper.Instance.DeathTimer = Math.Max(HudManagerHelper.Instance.DeathTimer + additionalDelayTime, 0);
-        var stats = PlayerStats[playerId];
+        if (!PlayerStats.TryGetValue(playerId, out var stats))
+        {
+            var player = TouMarmo.Modules.MarmoSession.Player(playerId);
+            if (!player || !player!.Data || !player.Data.Role) return;
+            RegisterRole(player, player.Data.Role);
+            if (!PlayerStats.TryGetValue(playerId, out stats)) return;
+        }
         if (causeOfDeath != "null")
         {
             stats.DeathString = causeOfDeath;

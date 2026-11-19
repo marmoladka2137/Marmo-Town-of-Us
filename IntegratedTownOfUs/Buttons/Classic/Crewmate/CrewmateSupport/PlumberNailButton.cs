@@ -33,7 +33,14 @@ public sealed class PlumberNailButton : TownOfUsVentRoleButton<PlumberRole>, ILe
         : null;
 
     public override bool CanUse() => !PlayerControl.LocalPlayer.inVent && PlayerControl.LocalPlayer.CanMove &&
-        TownOfUs.Events.TownOfUsEventHandlers.AreVentsAllowed && base.CanUse();
+        base.CanUse();
+
+    public override void FixedUpdateHandler(PlayerControl player)
+    {
+        base.FixedUpdateHandler(player);
+        // Placing a nail is an interaction with the vent, not entering it.
+        if (DisableSprite) DisableSprite.SetActive(false);
+    }
 
     public override bool IsTargetValid(Vent? target)
     {
