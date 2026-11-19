@@ -1,3 +1,10 @@
+## Launcher 2.1.0 — setup usability
+
+- Auto-detected Steam/Epic source selection, separate remembered destinations and one-step default installation.
+- Executable picker for Among Us.exe and modern Windows folder picker with address/search controls.
+- Disable Play for invalid folders; keep source and destination visibly separate.
+- Current-user execution manifest and optional trusted signing support. The distributed file remains unsigned where no signing certificate is available.
+- Gameplay DLL, mod manifest and dependencies unchanged from assembly revision 1.1.0.19.
 ## 1.1.0 Beta — assembly 1.1.0.19
 
 - Upgrade the bundled AleLuduMod to official 1.2.3 for compatibility with the public MiraAPI 0.6 baseline. The seven-plugin set is preserved.
@@ -122,3 +129,4 @@ Record Marmo attribution and owner-selected CC BY 4.0 for 38 pinned original PNG
 - Connect the Source Code menu button to the public MTOU repository.
 - Update publication documentation and metadata; role mechanics unchanged.
 - Preserve predecessor test scope; no full gameplay or multiplayer certification.
+

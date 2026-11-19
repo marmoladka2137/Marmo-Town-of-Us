@@ -14,7 +14,12 @@ namespace Marmo.Launcher
 {
     public sealed class LauncherForm : Form
     {
-        readonly string root, saved;
+        readonly string root, saved, preferences, localData;
+        readonly Func<bool,string[]> discover;
+        readonly ComboBox sourceGame = new ComboBox();
+        readonly Button detect = new Button(), chooseSource = new Button();
+        readonly LinkLabel useDefault = new LinkLabel();
+        readonly ToolTip tips = new ToolTip();
         readonly ComboBox platform = new ComboBox();
         readonly TextBox gamePath = new TextBox();
         readonly Label status = new Label(), installed = new Label();
@@ -23,17 +28,20 @@ namespace Marmo.Launcher
         bool busy;
         PublicRelease latest;
         ReleaseManifest release;
-        public LauncherForm(string appRoot)
+        public LauncherForm(string appRoot, bool checkForUpdates = true, string profileDirectory = null, Func<bool,string[]> installations = null)
         {
             root = appRoot;
-            saved = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "MTOU", "Launcher", "game-path.txt");
+            localData = profileDirectory ?? Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            preferences = profileDirectory ?? Path.Combine(localData,"MTOU","Launcher");
+            saved = Path.Combine(preferences,"game-path.txt");
+            discover = installations ?? (epic => epic ? InstallerCore.FindEpicGames(InstallerCore.EpicManifestRoot) : InstallerCore.FindSteamGames());
             Text = "Marmo Town of Us"; ClientSize = new Size(1040, 710); MinimumSize = new Size(940, 700);
             FormBorderStyle = FormBorderStyle.FixedSingle; MaximizeBox = false;
             AutoScaleMode = AutoScaleMode.Dpi; StartPosition = FormStartPosition.CenterScreen;
             Font = new Font("Segoe UI", 10); BackColor = Color.FromArgb(17, 20, 29); ForeColor = Color.WhiteSmoke;
             Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
             var hero = new PictureBox { SizeMode = PictureBoxSizeMode.Zoom, Image = Asset("Marmo.Banner.png"),
-                BackColor = BackColor, Bounds = new Rectangle(24, 22, 670, 377), Anchor = AnchorStyles.Left | AnchorStyles.Top };
+                BackColor = BackColor, Bounds = new Rectangle(24, 16, 640, 360), Anchor = AnchorStyles.Left | AnchorStyles.Top };
             Controls.Add(hero);
             var mark = new PictureBox { Image = Asset("Marmo.DiscordLogo.png"), SizeMode = PictureBoxSizeMode.Zoom,
                 Bounds = new Rectangle(750, 46, 188, 140) }; Controls.Add(mark);
@@ -41,29 +49,43 @@ namespace Marmo.Launcher
             AddLabel("TOWN OF US", 727, 252, 280, 32, 17, true);
             AddLabel("1.1.0 Beta", 729, 295, 260, 28, 12, false).ForeColor = Color.FromArgb(242, 96, 110);
             AddLabel("Steam  ·  Epic Games", 729, 338, 280, 27, 11, false);
-            var line = new Panel { Bounds = new Rectangle(28, 414, 984, 1), BackColor = Color.FromArgb(53, 58, 75) };
+            var line = new Panel { Bounds = new Rectangle(28, 390, 984, 1), BackColor = Color.FromArgb(53, 58, 75) };
             line.Anchor = AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Top; Controls.Add(line);
-            AddLabel("YOUR INSTALLATION", 30, 437, 230, 26, 10, true).ForeColor = Color.FromArgb(153, 164, 188);
-            platform.Items.AddRange(new object[] { "Steam", "Epic Games" }); platform.DropDownStyle = ComboBoxStyle.DropDownList;
-            platform.SetBounds(815, 437, 194, 29); Controls.Add(platform); platform.SelectedIndex = 0;
-            gamePath.SetBounds(30, 479, 800, 31); gamePath.BackColor = Color.FromArgb(29, 34, 47);
-            gamePath.ForeColor = ForeColor; gamePath.BorderStyle = BorderStyle.FixedSingle; Controls.Add(gamePath);
-            Configure(browse, "Browse", 847, 476, 163); browse.Click += Browse;
-            installed.SetBounds(30, 519, 760, 26); installed.ForeColor = Color.FromArgb(156, 171, 197); Controls.Add(installed);
+            AddLabel("ORIGINAL AMONG US", 30, 405, 270, 25, 10, true).ForeColor = Color.FromArgb(153,164,188);
+            platform.Items.AddRange(new object[] { "Steam", "Epic Games" }); platform.DropDownStyle=ComboBoxStyle.DropDownList;
+            platform.SetBounds(648,402,182,30); Controls.Add(platform); platform.SelectedIndex=0;
+            Configure(detect,"Auto-detect",847,399,163); detect.Height=36;
+            detect.Click += delegate { LoadPlatform(false); };
+            sourceGame.DropDownStyle=ComboBoxStyle.DropDownList; sourceGame.SetBounds(30,444,800,31);
+            sourceGame.DropDownWidth=960; Controls.Add(sourceGame);
+            sourceGame.SelectedIndexChanged += delegate { string source=SelectedSource();tips.SetToolTip(sourceGame,source ?? "Choose Among Us.exe from your installed game.");if(source!=null)WritePreference(StoreFile("source"),source);ShowRevision(); };
+            Configure(chooseSource,"Choose .exe…",847,441,163); chooseSource.Height=36; chooseSource.Click += ChooseSource;
+            AddLabel("MTOU COPY — original game stays unchanged",30,480,600,24,10,true).ForeColor=Color.FromArgb(153,164,188);
+            useDefault.Text="Use default"; useDefault.LinkColor=Color.FromArgb(147,165,255); useDefault.SetBounds(715,479,115,24);
+            useDefault.LinkClicked += delegate { SetTarget(LauncherCore.DefaultDestination(localData,IsEpic)); }; Controls.Add(useDefault);
+            gamePath.SetBounds(30,509,800,31);gamePath.BackColor=Color.FromArgb(29,34,47);gamePath.ForeColor=ForeColor;
+            gamePath.ReadOnly=true;gamePath.BorderStyle=BorderStyle.FixedSingle;gamePath.Enter += delegate { gamePath.SelectAll(); };Controls.Add(gamePath);
+            Configure(browse,"Choose folder…",847,506,163);browse.Height=36;browse.Click+=Browse;
+            installed.SetBounds(30,548,980,23);installed.ForeColor=Color.FromArgb(156,171,197);Controls.Add(installed);
             autoUpdate.Text = "Check and install public MTOU updates automatically"; autoUpdate.Checked = true;
-            autoUpdate.SetBounds(30, 554, 740, 28); Controls.Add(autoUpdate);
-            Configure(play, "PLAY MTOU", 30, 602, 280); play.BackColor = Color.FromArgb(183, 31, 60);
-            Configure(install, "Install a new copy", 326, 602, 236);
-            Configure(updates, "Check updates", 579, 602, 220);
+            autoUpdate.SetBounds(30, 575, 740, 28); Controls.Add(autoUpdate);
+            Configure(play, "PLAY MTOU", 30, 613, 280); play.BackColor = Color.FromArgb(183, 31, 60);
+            Configure(install, "INSTALL MTOU", 326, 613, 236);
+            Configure(updates, "Check updates", 579, 613, 220);
             play.Click += Play; install.Click += Install; updates.Click += async delegate { await CheckUpdates(true); };
             var discord = new LinkLabel { Text = "dc.gg/mtou  ↗", LinkColor = Color.FromArgb(147, 165, 255),
                 ActiveLinkColor = Color.White, VisitedLinkColor = Color.FromArgb(147, 165, 255),
-                Bounds = new Rectangle(831, 659, 180, 27), TextAlign = ContentAlignment.MiddleRight };
+                Bounds = new Rectangle(831, 673, 180, 27), TextAlign = ContentAlignment.MiddleRight };
             discord.LinkClicked += delegate { Open("https://dc.gg/mtou"); }; Controls.Add(discord);
-            status.SetBounds(30, 659, 780, 28); status.AutoEllipsis = true; Controls.Add(status);
-            gamePath.Text = LauncherCore.FindGame(root, Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), saved) ?? "";
+            status.SetBounds(30, 673, 780, 28); status.AutoEllipsis = true; Controls.Add(status);
             gamePath.TextChanged += delegate { ShowRevision(); };
-            Shown += async delegate { ShowRevision(); await CheckUpdates(false); };
+            string preferred=ReadPreference("platform.txt");
+            if(LauncherCore.IsModdedGame(root))preferred=LauncherCore.MatchesStore(root,true)?"Epic":"Steam";
+            if(preferred=="Epic" || (preferred==null && SafeDiscover(false).Length==0 && SafeDiscover(true).Length>0)) platform.SelectedIndex=1;
+            LoadPlatform(true);
+            platform.SelectedIndexChanged += delegate { LoadPlatform(true); WritePreference("platform.txt",IsEpic?"Epic":"Steam"); };
+            Shown += async delegate { ShowRevision(); if(checkForUpdates) await CheckUpdates(false); };
+            FormClosed += delegate { tips.Dispose(); };
             FormClosing += delegate(object sender, FormClosingEventArgs e) { if (busy) e.Cancel = true; };
         }
         static Image Asset(string name)
@@ -93,20 +115,110 @@ namespace Marmo.Launcher
             catch (IOException) { return ""; } catch (BadImageFormatException) { return ""; } catch (ArgumentException) { return ""; }
             catch (UnauthorizedAccessException) { return ""; }
         }
+        bool IsEpic { get { return platform.SelectedIndex==1; } }
+        string StoreFile(string name) { return name+"-"+(IsEpic?"epic":"steam")+".txt"; }
+        string ReadPreference(string name)
+        {
+            try { string file=Path.Combine(preferences,name);return File.Exists(file)?File.ReadAllText(file).Trim():null; }
+            catch(IOException){return null;}catch(UnauthorizedAccessException){return null;}
+        }
+        void WritePreference(string name,string value)
+        {
+            try { Directory.CreateDirectory(preferences);File.WriteAllText(Path.Combine(preferences,name),value); }
+            catch(IOException){}catch(UnauthorizedAccessException){}
+        }
+        string[] SafeDiscover(bool epic)
+        {
+            try { return discover(epic).Where(LauncherCore.IsOriginalGame).Distinct(StringComparer.OrdinalIgnoreCase).ToArray(); }
+            catch(IOException){return new string[0];}catch(UnauthorizedAccessException){return new string[0];}
+            catch(ArgumentException){return new string[0];}catch(System.Security.SecurityException){return new string[0];}
+        }
+        string SelectedSource(){return LauncherCore.FolderFromSelection(sourceGame.SelectedItem as string);}
+        void LoadPlatform(bool changeTarget)
+        {
+            string previous=SelectedSource();var choices=SafeDiscover(IsEpic);
+            string remembered=LauncherCore.FolderFromSelection(ReadPreference(StoreFile("source")));
+            if(remembered!=null&&!choices.Contains(remembered,StringComparer.OrdinalIgnoreCase))choices=choices.Concat(new[]{remembered}).ToArray();
+            sourceGame.Items.Clear();sourceGame.Items.AddRange(choices.Cast<object>().ToArray());
+            if(choices.Length==0)sourceGame.Items.Add("Not detected — click Choose .exe…");
+            sourceGame.SelectedIndex=0;
+            string selected=changeTarget?remembered:previous;
+            if(selected!=null&&choices.Contains(selected,StringComparer.OrdinalIgnoreCase))sourceGame.SelectedItem=choices.First(x=>x.Equals(selected,StringComparison.OrdinalIgnoreCase));
+            if(changeTarget)
+            {
+                string target=ReadPreference(StoreFile("destination"));
+                if(String.IsNullOrEmpty(target))target=LauncherCore.DefaultDestination(localData,IsEpic);
+                if(LauncherCore.MatchesStore(root,IsEpic))target=root;
+                else if(!IsEpic && String.IsNullOrEmpty(ReadPreference(StoreFile("destination"))))
+                {
+                    string existing=LauncherCore.FindGame(root,Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),saved);
+                    if(existing!=null&&LauncherCore.MatchesStore(existing,false)&&profileDirectoryIsDefault())target=existing;
+                }
+                SetTarget(target);
+            }
+            status.Text=LauncherCore.IsModdedGame(gamePath.Text)?"MTOU selected. Ready to play."
+                :SelectedSource()==null?"Among Us was not found. Choose its Among Us.exe once.":"Original game detected. Install MTOU into the separate folder below.";
+            ShowRevision();
+        }
+        bool profileDirectoryIsDefault(){return preferences==Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"MTOU","Launcher");}
+        void SetTarget(string target)
+        {
+            try
+            {
+                if(Directory.Exists(target)&&!LauncherCore.IsModdedGame(target))target=LauncherCore.DestinationFromSelection(target,IsEpic);
+                gamePath.Text=Path.GetFullPath(target);tips.SetToolTip(gamePath,gamePath.Text);
+                WritePreference(StoreFile("destination"),gamePath.Text);
+                status.Text=LauncherCore.IsModdedGame(gamePath.Text)?"MTOU selected. Ready to play.":"New MTOU copy: "+gamePath.Text;
+            }
+            catch(Exception error){MessageBox.Show(this,error.Message,"Choose an MTOU folder");}
+            ShowRevision();
+        }
         void ShowRevision()
         {
-            string revision = Revision();
-            installed.Text = String.IsNullOrEmpty(revision) ? "Choose an MTOU installation, or install a new copy." : "Installed revision  " + revision;
+            bool ready=LauncherCore.IsModdedGame(gamePath.Text);
+            installed.Text=ready?"MTOU ready  ·  revision "+Revision():"Not installed yet  ·  Choose INSTALL MTOU to create your separate copy.";
+            play.Enabled=!busy&&ready;
+            install.Enabled=!busy&&!ready&&SelectedSource()!=null;
         }
         void Busy(bool value)
         {
-            busy = value;
-            foreach (Control control in new Control[] { play, install, updates, browse, platform, gamePath, autoUpdate }) control.Enabled = !value;
+            busy=value;
+            foreach(Control control in new Control[]{play,install,updates,browse,platform,gamePath,autoUpdate,sourceGame,detect,chooseSource,useDefault})control.Enabled=!value;
+            ShowRevision();
         }
-        void Browse(object sender, EventArgs e)
+        void ChooseSource(object sender,EventArgs e)
         {
-            using (var dialog = new FolderBrowserDialog { Description = "Choose your installed MTOU folder", ShowNewFolderButton = false })
-                if (dialog.ShowDialog(this) == DialogResult.OK) { gamePath.Text = dialog.SelectedPath; ShowRevision(); }
+            using(var dialog=new OpenFileDialog { Title="Select the original Among Us.exe ("+(IsEpic?"Epic Games":"Steam")+")",Filter="Among Us executable|Among Us.exe",CheckFileExists=true,Multiselect=false,RestoreDirectory=true,FileName="Among Us.exe" })
+            {
+                string current=SelectedSource();
+                if(current!=null)dialog.InitialDirectory=current;
+                else
+                {
+                    string location=IsEpic?Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),"Epic Games")
+                        :Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),"Steam","steamapps","common");
+                    if(Directory.Exists(location))dialog.InitialDirectory=location;
+                }
+                if(dialog.ShowDialog(this)!=DialogResult.OK)return;
+                string folder=LauncherCore.FolderFromSelection(dialog.FileName);
+                if(folder==null){MessageBox.Show(this,"Choose Among Us.exe inside the installed game's folder.","Among Us not found");return;}
+                if(LauncherCore.IsModdedGame(folder)){SetTarget(folder);status.Text="Existing MTOU found. Ready to play.";return;}
+                if(!sourceGame.Items.Contains(folder))sourceGame.Items.Add(folder);
+                sourceGame.SelectedItem=folder;WritePreference(StoreFile("source"),folder);
+                status.Text="Original game selected. Your MTOU copy uses the folder below.";ShowRevision();
+            }
+        }
+        void Browse(object sender,EventArgs e)
+        {
+            string selected=FolderPicker.Choose(this,"Choose an existing MTOU folder or a parent folder for a new copy",gamePath.Text);
+            if(selected==null)return;
+            try { SetTarget(LauncherCore.DestinationFromSelection(selected,IsEpic)); }
+            catch(IOException error){MessageBox.Show(this,error.Message,"Choose a separate MTOU folder");}
+        }
+        void RememberGame()
+        {
+            LauncherCore.Remember(gamePath.Text,saved);
+            WritePreference(StoreFile("destination"),gamePath.Text);
+            string source=SelectedSource();if(source!=null)WritePreference(StoreFile("source"),source);
         }
         async Task CheckUpdates(bool explicitClick)
         {
@@ -141,7 +253,7 @@ namespace Marmo.Launcher
                 if (!LauncherCore.IsModdedGame(gamePath.Text)) throw new IOException("Select a completed MTOU installation first.");
                 if (!LauncherCore.IsRunning(gamePath.Text))
                 {
-                    LauncherCore.Remember(gamePath.Text, saved);
+                    RememberGame();
                     Process.Start(LauncherCore.StartInfo(gamePath.Text));
                 }
                 status.Text = "MTOU is running.";
@@ -152,15 +264,9 @@ namespace Marmo.Launcher
         {
             string manifestPath = Path.Combine(root, "installer-manifest.json");
             if (!File.Exists(manifestPath)) { status.Text = "Use the complete launcher package from GitHub Releases."; return; }
-            string source = null;
-            bool epic = platform.SelectedIndex == 1;
-            var candidates = epic ? InstallerCore.FindEpicGames(InstallerCore.EpicManifestRoot) : InstallerCore.FindSteamGames();
-            using (var dialog = new FolderBrowserDialog { Description = "Choose your installed " + (epic ? "Epic Games" : "Steam") + " Among Us",
-                SelectedPath = candidates.FirstOrDefault() ?? "", ShowNewFolderButton = false })
-            { if (dialog.ShowDialog(this) != DialogResult.OK) return; source = dialog.SelectedPath; }
-            string destination;
-            using (var dialog = new FolderBrowserDialog { Description = "Choose a parent folder for a NEW MTOU game copy" })
-            { if (dialog.ShowDialog(this) != DialogResult.OK) return; destination = Path.Combine(dialog.SelectedPath, epic ? "Marmo Town of Us Epic" : "Marmo Town of Us"); }
+            string source=SelectedSource();
+            if(source==null){ChooseSource(sender,e);source=SelectedSource();if(source==null)return;}
+            bool epic=IsEpic;string destination=gamePath.Text;
             Busy(true);
             try
             {
@@ -198,7 +304,7 @@ namespace Marmo.Launcher
                 core.ModArchivePath = cachedArchive;
                 string game = await Task.Run(() => core.Install(source, destination, null));
                 await Task.Run(() => ReleaseUpdate.Apply(game, updateManifest, modArchive));
-                gamePath.Text = game; LauncherCore.Remember(game, saved); ShowRevision(); status.Text = "Installed. Ready to play.";
+                gamePath.Text = game; RememberGame(); ShowRevision(); status.Text = "Installed. Ready to play.";
             }
             catch (Exception error) { MessageBox.Show(this, error.Message, "Installation failed"); status.Text = error.Message; }
             finally { Busy(false); }

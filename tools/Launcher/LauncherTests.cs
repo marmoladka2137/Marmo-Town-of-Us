@@ -17,6 +17,28 @@ public static class LauncherTests
             foreach(string file in new[]{"winhttp.dll","BepInEx/plugins/MiraAPI.dll","BepInEx/plugins/Reactor.dll","BepInEx/plugins/CorsacCosmetics.dll"})Put(Path.Combine(game,file),"fixture");
             File.Copy(args[0],Path.Combine(game,"BepInEx/plugins/TOU-Marmo.dll"));
             File.Copy(args[2],Path.Combine(game,"Among Us.exe"));
+            Directory.CreateDirectory(Path.Combine(game,"Among Us_Data"));
+            Check(LauncherCore.FolderFromSelection(Path.Combine(game,"Among Us.exe"))==Path.GetFullPath(game),"Executable selection resolves the game folder");
+            Check(LauncherCore.FolderFromSelection(game)==Path.GetFullPath(game),"Folder selection resolves the game folder");
+            Check(LauncherCore.FolderFromSelection(root)==null,"Reject Downloads or another folder without the game");
+            Put(Path.Combine(game,"unrelated.exe"),"fixture");
+            Check(LauncherCore.FolderFromSelection(Path.Combine(game,"unrelated.exe"))==null,"Reject an unrelated executable");
+            string profile=Path.Combine(root,"local data");
+            Check(LauncherCore.DefaultDestination(profile,false)!=LauncherCore.DefaultDestination(profile,true),"Steam and Epic use separate default copies");
+            Check(LauncherCore.DefaultDestination(profile,true).StartsWith(profile),"Default copies stay inside user-writable local data");
+            Check(LauncherCore.DestinationFromSelection(game,false)==game,"Selecting an existing MTOU folder uses that copy");
+            string empty=Path.Combine(root,"empty parent");Directory.CreateDirectory(empty);
+            Check(LauncherCore.DestinationFromSelection(empty,false)==Path.Combine(empty,"Marmo Town of Us"),"An existing parent gets a new child destination");
+            Directory.CreateDirectory(Path.Combine(empty,"Marmo Town of Us"));
+            Check(LauncherCore.DestinationFromSelection(empty,false)==Path.Combine(empty,"Marmo Town of Us (2)"),"Destination selection avoids an occupied folder");
+            string vanilla=Path.Combine(root,"original");Directory.CreateDirectory(Path.Combine(vanilla,"Among Us_Data"));
+            Put(Path.Combine(vanilla,"Among Us.exe"),"fixture");Put(Path.Combine(vanilla,"GameAssembly.dll"),"fixture");
+            bool protectedOriginal=false;try{LauncherCore.DestinationFromSelection(vanilla,false);}catch(IOException){protectedOriginal=true;}
+            Check(protectedOriginal,"An original installation cannot become the mod-copy destination");
+            Put(Path.Combine(game,"EOSSDK-Win64-Shipping.dll"),"fixture");
+            Check(LauncherCore.MatchesStore(game,true)&&!LauncherCore.MatchesStore(game,false),"An Epic copy is not reused as the Steam destination");
+            Put(Path.Combine(game,"steam_appid.txt"),"945360");
+            Check(LauncherCore.MatchesStore(game,false)&&!LauncherCore.MatchesStore(game,true),"A Steam copy is not reused as the Epic destination");
             Check(LauncherCore.IsModdedGame(game),"Recognize an installed MTOU folder");
             Check(!LauncherCore.IsModdedGame(root),"Do not launch a vanilla or incomplete folder");
             Check(!LauncherCore.IsModdedGame(null),"Handle a missing saved path");
