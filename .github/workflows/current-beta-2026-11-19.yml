@@ -30,7 +30,7 @@ jobs:
           from pathlib import Path
           REPO='marmoladka2137/Marmo-Town-of-Us'
           SOURCE='4fdab8f0fc7897e52c34123ab7a27927e4784e80'
-          DOWNLOADS='180ac3f8b90404aa689eda770149b542c54d36d7'
+          DOWNLOADS='489e279297c529648141af470bce10cc902a2b17'
           NAME='MTOU-1.1.0-beta-Launcher-Windows.zip'
           TAG='v1.1.0-beta'
           EXPECTED='df366d7c0a88790edea595039ea3fabbd418d00ab5a6dc6b8a7e36fbeb19e87e'
