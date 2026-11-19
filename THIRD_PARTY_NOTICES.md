@@ -1,4 +1,4 @@
-> Current revision 1.1.0.18 (2026-11-18): native Mira presentation resources are restored; procedural replacements described in older sections below are retired and excluded from this source tree. Their former clearance does not apply to restored upstream animations/audio. No new permission or blanket legal clearance is claimed. The original MTOU artwork attribution (Marmo, CC BY 4.0) is unchanged. See LAUNCHER_RELEASE_TESTS.md and tools/Launcher/README.md for the current package and tests.
+> Current revision 1.1.0.19 (2026-11-18): native Mira presentation resources are restored; procedural replacements described in older sections below are retired and excluded from this source tree. Their former clearance does not apply to restored upstream animations/audio. No new permission or blanket legal clearance is claimed. The original MTOU artwork attribution (Marmo, CC BY 4.0) is unchanged. See LAUNCHER_RELEASE_TESTS.md and tools/Launcher/README.md for the current package and tests.
 
 # Third-party notices â€” runtime-motion candidate
 
@@ -40,4 +40,4 @@ Remaining binary/source uncertainty concerns the external loader/dependency envi
 
 ## Additional launcher plugin payload (2026-11-18)
 
-The launcher supplement includes AleLuduMod v1.2.2 (townofus-pl, MIT), AUnlocker v1.3.2 (AstralKitsune, GPLv3) and Mini.RegionInstall v1.2.0 (miniduikboot, GPLv3). Exact tagged source archives and license texts accompany these binaries in MTOU Notices/CorrespondingSource and LICENSES. Independent authorship and licenses are retained; these are not MTOU originals. The initial pinned official dependency download supplies BepInEx, Reactor, MiraAPI and CorsacCosmetics; this supplement does not redistribute that loader archive. Existing audited dependency notices remain applicable.
+The launcher supplement includes AleLuduMod v1.2.3 (townofus-pl, MIT), AUnlocker v1.3.2 (AstralKitsune, GPLv3) and Mini.RegionInstall v1.2.0 (miniduikboot, GPLv3). Exact tagged source archives and license texts accompany these binaries in MTOU Notices/CorrespondingSource and LICENSES. Independent authorship and licenses are retained; these are not MTOU originals. The initial pinned official dependency download supplies BepInEx, Reactor, MiraAPI and CorsacCosmetics; this supplement does not redistribute that loader archive. Existing audited dependency notices remain applicable.

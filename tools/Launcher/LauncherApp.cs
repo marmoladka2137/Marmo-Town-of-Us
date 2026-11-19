@@ -7,8 +7,8 @@ using System.Windows.Forms;
 
 [assembly: AssemblyTitle("Marmo Town of Us")]
 [assembly: AssemblyProduct("Marmo Town of Us Launcher")]
-[assembly: AssemblyVersion("2.0.0.0")]
-[assembly: AssemblyFileVersion("2.0.0.0")]
+[assembly: AssemblyVersion("2.0.1.0")]
+[assembly: AssemblyFileVersion("2.0.1.0")]
 
 namespace Marmo.Launcher
 {
@@ -65,3 +65,4 @@ namespace Marmo.Launcher
         }
     }
 }
+

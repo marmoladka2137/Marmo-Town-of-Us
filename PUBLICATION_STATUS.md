@@ -1,4 +1,4 @@
-# Publication status â€” 1.1.0 Beta / assembly 1.1.0.18
+# Publication status â€” 1.1.0 Beta / assembly 1.1.0.19
 
 Repository: https://github.com/marmoladka2137/Marmo-Town-of-Us
 

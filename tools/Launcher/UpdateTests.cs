@@ -58,6 +58,11 @@ public static class UpdateTests
         string archiveHash = manifest.ArchiveSha256; manifest.ArchiveSha256 = new string('0',64);
         Reject(() => ReleaseUpdate.DownloadArchive(manifest, ReleaseUpdate.Channel().ArchiveUrl, address => address.EndsWith("part01") ? left : right), "Reject a mismatched assembled archive hash");
         manifest.ArchiveSha256 = archiveHash; manifest.ArchiveParts = null;
+        manifest.SourceCommit = new string('a',40);
+        var initialInstaller = new InstallerManifest { AssemblyRevision = "1.1.0.17", Payload = new FilePin { Path = "Payload/TOU-Marmo.dll", Sha256 = "old" } };
+        ReleaseUpdate.AlignInstaller(initialInstaller, manifest);
+        Check(initialInstaller.AssemblyRevision == manifest.Revision && initialInstaller.Payload.Sha256 == manifest.Files[0].Sha256 && initialInstaller.SourceCommit == manifest.SourceCommit,
+            "A stale bootstrap aligns installation pins with the newer public release");
         ReleaseUpdate.Apply(root, manifest, archive);
         Check(File.ReadAllText(InstallerCore.SafePath(root, path)) == "new plugin contents", "Install a verified package");
         File.WriteAllText(InstallerCore.SafePath(root, path), "keep me");

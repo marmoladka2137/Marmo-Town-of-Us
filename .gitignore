@@ -32,3 +32,4 @@ tools/AnimationTests/
 ORIGINAL_MOTION_MANIFEST.csv
 tools/OriginalMotionGenerator/
 tools/OriginalResources/
+.github/workflows/publish-matching-source.yml

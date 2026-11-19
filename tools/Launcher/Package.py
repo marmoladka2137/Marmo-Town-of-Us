@@ -46,7 +46,7 @@ def main():
     payload=package/'Payload';payload.mkdir();shutil.copy2(source/'bin/Release/net6.0/TOU-Marmo.dll',payload/'TOU-Marmo.dll')
     shutil.copy2(o.launcher,package/'Marmo Town of Us.exe')
     archive(files,package/'MTOU-Mods-Windows.zip')
-    manifest=dict(Schema=1,Version='1.1.0 Beta',Revision='1.1.0.18',SourceCommit=o.commit,ArchiveSha256=sha(package/'MTOU-Mods-Windows.zip'),Files=[])
+    manifest=dict(Schema=1,Version='1.1.0 Beta',Revision='1.1.0.19',SourceCommit=o.commit,ArchiveSha256=sha(package/'MTOU-Mods-Windows.zip'),Files=[])
     channel=o.output/'public-channel';channel.mkdir()
     manifest['ArchiveParts']=[]
     with (package/'MTOU-Mods-Windows.zip').open('rb') as archive_file:
@@ -63,7 +63,7 @@ def main():
     (package/'mtou-release.json').write_text(json.dumps(manifest,indent=2),encoding='utf-8')
     shutil.copy2(package/'mtou-release.json',channel/'mtou-release.json')
     installer=json.loads((source/'tools/SteamInstaller/installer-manifest.json').read_text(encoding='utf-8-sig'))
-    installer.update(Version='1.1.0 Beta',AssemblyRevision='1.1.0.18',SourceCommit=o.commit,
+    installer.update(Version='1.1.0 Beta',AssemblyRevision='1.1.0.19',SourceCommit=o.commit,
                      Payload=pin(payload/'TOU-Marmo.dll','Payload/TOU-Marmo.dll'),
                      Launcher=pin(package/'Marmo Town of Us.exe','Marmo Town of Us.exe'))
     (package/'installer-manifest.json').write_text(json.dumps(installer,indent=2),encoding='utf-8')
@@ -73,7 +73,7 @@ def main():
     archive(package,channel/'MTOU-1.1.0-beta-Launcher-Windows.zip',exclude={'Payload/TOU-Marmo.dll','MTOU-Mods-Windows.zip'})
     # Export the index, not the workspace: ignored retired frames/cache are absent.
     tree=subprocess.check_output(['git','write-tree'],cwd=source).decode().strip()
-    subprocess.run(['git','archive','--format=zip','--prefix=Marmo-Town-of-Us/',
+    subprocess.run(['git','-c','core.autocrlf=false','archive','--format=zip','--prefix=Marmo-Town-of-Us/',
                     '--output='+str((o.output/'MTOU-1.1.0-beta-source.zip').resolve()),tree],cwd=source,check=True)
     sums=[]
     for p in [*sorted(o.output.glob('*.zip')),package/'mtou-release.json',package/'MTOU-Mods-Windows.zip',payload/'TOU-Marmo.dll',package/'Marmo Town of Us.exe']:
@@ -84,3 +84,5 @@ def main():
     print('\n'.join(sums))
 
 if __name__=='__main__': main()
+
+

@@ -23,6 +23,7 @@ namespace Marmo.Launcher
         public int Schema { get; set; }
         public string Revision { get; set; }
         public string Version { get; set; }
+        public string SourceCommit { get; set; }
         public string ArchiveSha256 { get; set; }
         public ReleaseFile[] Files { get; set; }
         public ReleaseFile[] ArchiveParts { get; set; }
@@ -119,6 +120,16 @@ namespace Marmo.Launcher
         {
             Version next, current;
             return Version.TryParse(candidate, out next) && (!Version.TryParse(installed, out current) || next > current);
+        }
+        public static void AlignInstaller(InstallerManifest installer, ReleaseManifest release)
+        {
+            Validate(release);
+            if (!Newer(release.Revision, installer.AssemblyRevision)) return;
+            var plugin = release.Files.SingleOrDefault(f => f.Path == "BepInEx/plugins/TOU-Marmo.dll");
+            if (plugin == null || release.SourceCommit == null || !System.Text.RegularExpressions.Regex.IsMatch(release.SourceCommit, "^[a-fA-F0-9]{40}$"))
+                throw new IOException("The newer public release has no matching plugin/source pin.");
+            installer.Payload = new FilePin { Path = "Payload/TOU-Marmo.dll", Bytes = plugin.Bytes, Sha256 = plugin.Sha256 };
+            installer.Version = release.Version; installer.AssemblyRevision = release.Revision; installer.SourceCommit = release.SourceCommit;
         }
         public static void Validate(ReleaseManifest manifest)
         {

@@ -169,11 +169,13 @@ namespace Marmo.Launcher
                 core.Progress = delegate(int percent, string message) { BeginInvoke((Action)(() => status.Text = percent + "%  " + message)); };
                 core.ValidateSource(source); InstallerCore.ValidateDestination(source, destination, root);
                 var updateManifest = new JavaScriptSerializer().Deserialize<ReleaseManifest>(File.ReadAllText(Path.Combine(root, "mtou-release.json")));
+                if (release != null && ReleaseUpdate.Newer(release.Revision, updateManifest.Revision)) updateManifest = release;
                 ReleaseUpdate.Validate(updateManifest);
+                ReleaseUpdate.AlignInstaller(manifest, updateManifest);
                 status.Text = "Preparing verified mod files…";
                 string localArchive = Path.Combine(root, "MTOU-Mods-Windows.zip");
-                byte[] modArchive = await Task.Run(() => File.Exists(localArchive) ? File.ReadAllBytes(localArchive)
-                    : ReleaseUpdate.DownloadArchive(updateManifest, ReleaseUpdate.Channel().ArchiveUrl));
+                byte[] modArchive = await Task.Run(() => File.Exists(localArchive) && String.Equals(InstallerCore.Hash(localArchive), updateManifest.ArchiveSha256, StringComparison.OrdinalIgnoreCase)
+                    ? File.ReadAllBytes(localArchive) : ReleaseUpdate.DownloadArchive(updateManifest, updateManifest == release && latest != null ? latest.ArchiveUrl : ReleaseUpdate.Channel().ArchiveUrl));
                 if (!String.Equals(ReleaseUpdate.Hash(modArchive), updateManifest.ArchiveSha256, StringComparison.OrdinalIgnoreCase))
                     throw new IOException("Mod package failed SHA-256 verification.");
                 string cache = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "MTOU", "InstallerCache");
