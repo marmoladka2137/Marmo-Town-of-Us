@@ -49,14 +49,14 @@ public static class UpdateTests
         manifest.ArchiveParts = new[] {
             new ReleaseFile { Path = "MTOU-Mods-Windows.zip.part01", Bytes = left.Length, Sha256 = ReleaseUpdate.Hash(left) },
             new ReleaseFile { Path = "MTOU-Mods-Windows.zip.part02", Bytes = right.Length, Sha256 = ReleaseUpdate.Hash(right) } };
-        var assembled = ReleaseUpdate.DownloadArchive(manifest, ReleaseUpdate.Channel().ArchiveUrl, address => address.EndsWith("part01") ? left : right);
+        var assembled = ReleaseUpdate.DownloadArchive(manifest, ReleaseUpdate.Channel().ArchiveUrl, address => address.Contains(".part01") ? left : right);
         Check(ReleaseUpdate.Hash(assembled) == ReleaseUpdate.Hash(archive), "Reassemble verified public update parts");
         Reject(() => ReleaseUpdate.DownloadArchive(manifest, ReleaseUpdate.Channel().ArchiveUrl, address => new byte[] { 0 }), "Reject a corrupt or missing update part");
         manifest.ArchiveParts[0].Path = "../outside";
         Reject(() => ReleaseUpdate.Validate(manifest), "Reject traversal in update part names");
         manifest.ArchiveParts[0].Path = "MTOU-Mods-Windows.zip.part01";
         string archiveHash = manifest.ArchiveSha256; manifest.ArchiveSha256 = new string('0',64);
-        Reject(() => ReleaseUpdate.DownloadArchive(manifest, ReleaseUpdate.Channel().ArchiveUrl, address => address.EndsWith("part01") ? left : right), "Reject a mismatched assembled archive hash");
+        Reject(() => ReleaseUpdate.DownloadArchive(manifest, ReleaseUpdate.Channel().ArchiveUrl, address => address.Contains(".part01") ? left : right), "Reject a mismatched assembled archive hash");
         manifest.ArchiveSha256 = archiveHash; manifest.ArchiveParts = null;
         manifest.SourceCommit = new string('a',40);
         var initialInstaller = new InstallerManifest { AssemblyRevision = "1.1.0.17", Payload = new FilePin { Path = "Payload/TOU-Marmo.dll", Sha256 = "old" } };

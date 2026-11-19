@@ -105,7 +105,7 @@ namespace Marmo.Launcher
             {
                 foreach (var part in manifest.ArchiveParts)
                 {
-                    var bytes = fetch(PublicChannelRoot + part.Path);
+                    var bytes = fetch(PublicChannelRoot + part.Path + "?source=" + Uri.EscapeDataString(manifest.SourceCommit ?? manifest.Revision));
                     if (bytes.LongLength != part.Bytes || !String.Equals(Hash(bytes), part.Sha256, StringComparison.OrdinalIgnoreCase))
                         throw new IOException("Update part failed verification: " + part.Path);
                     result.Write(bytes, 0, bytes.Length);
