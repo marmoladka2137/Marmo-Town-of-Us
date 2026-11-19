@@ -6,6 +6,5 @@
 - Mod updates are checked automatically; replacing the launcher itself requires downloading the current launcher ZIP.
 - Double Shot/Triple Shot remain registered; their requested retirement is unresolved. Hugger's current interaction is preserved.
 - Native Mira asset-specific permissions and some exact binary/source matches remain unverified; see LICENSE_AUDIT.md.
-- SUS Modder acceptance and installer integration are not confirmed.
 
 Report exact settings, reproduction steps and logs without credentials. Compilation and fixture passes are not a guarantee that every role works.

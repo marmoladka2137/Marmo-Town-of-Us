@@ -11,4 +11,3 @@ This decision does not clear asset rights, dependency provenance or multiplayer 
 ## 2026-11-18 — artwork and publication review
 
 The owner confirms rights to original MTOU graphics and explicitly selects CC BY 4.0. This grant applies to 38 pinned PNGs; code remains GPLv3 and all inherited author and license notices are preserved. Historical no-publication wording in the earlier decision does not replace later owner instructions. The earlier snapshot preceded publication. Current resource replacement and repository status are documented in LICENSE_AUDIT.md and PUBLICATION_STATUS.md. No gameplay change was made for this update.
-

@@ -27,7 +27,7 @@ pwsh -NoProfile -File Tests/Check-Spikes.ps1
 pwsh -NoProfile -File Tests/Check-Source.ps1
 ```
 
-Run each script in a separate PowerShell process because Add-Type caches generated classes. These test deterministic rule code and compilation, not complete meetings, input handling, animation or network synchronization. See TEST_RESULTS.md.
+Run each script in a separate PowerShell process because Add-Type caches generated classes. These test deterministic rule code and compilation, not complete meetings, input handling, animation or network synchronization. See LAUNCHER_RELEASE_TESTS.md.
 
 ## Reproducibility limits
 
@@ -39,7 +39,7 @@ The source archive was extracted into a different directory and rebuilt with the
 dotnet run --project tools/ProfileStoreTests/StoreTests.csproj -c Release
 ```
 
-This pure managed test runner uses .NET 10 and links the same cosmetic-store source that the mod compiles for .NET 6. It uses synthetic temporary data and does not launch Among Us or touch its profile. The two-launch native fixture results and limits are documented in PROFILE_DISPLAY_FIX.md.
+This pure managed test runner uses .NET 10 and links the same cosmetic-store source that the mod compiles for .NET 6. It uses synthetic temporary data and does not launch Among Us or touch its profile. The two-launch native fixture results and limits are documented in KNOWN_ISSUES.md.
 
 ## Corresponding source scope
 

@@ -12,7 +12,7 @@ Executed locally on Windows, 2026-11-19:
 - Launcher UI displayed using the supplied banner and existing Discord application icon. Public feed without an eligible update shows a status message, not a crash dialog.
 - AleLuduMod 1.2.3, AUnlocker 1.3.2 and Mini.RegionInstall 1.2.0 DLL hashes match their official tagged release assets. Exact tagged source ZIPs/licenses accompany those binaries.
 
-Unverified: actual Epic game authentication/startup, all host/client synchronization, complete role interactions, SUS Modder integration and live installation of a newer public update from a published release. HTTP/ZIP/update logic was tested with fixtures; that is not an end-to-end public release test.
+Unverified: actual Epic game authentication/startup, all host/client synchronization, complete role interactions and live installation of a newer public update from a published release. HTTP/ZIP/update logic was tested with fixtures; that is not an end-to-end public release test.
 
 The initial native Practice attempt was blocked by another Among Us process occupying UDP 22023. Only the private QA process was stopped. The user's TEST MODY DLL and running client were not overwritten or closed.
 

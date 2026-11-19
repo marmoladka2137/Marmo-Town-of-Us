@@ -8,4 +8,4 @@ The current resource bundles use native TOU Mira presentation assets. The offici
 
 The launcher distributes mod material and notices, and obtains pinned official dependencies. It copies the user's legally installed game locally. No base game files are in the public package. Among Us and Unity materials keep their own rights.
 
-Full host/client gameplay, Epic gameplay and SUS Modder acceptance remain unverified. Publication does not imply legal clearance or acceptance.
+Full host/client gameplay, Epic gameplay remain unverified. Publication does not imply legal clearance or acceptance.

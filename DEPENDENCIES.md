@@ -8,7 +8,7 @@ The installer uses the pinned MTOU 1.1.0 Beta DLL and downloads selected files d
 
 The MiraAPI DLL from that TOU release has SHA-256 `337CB6D8C2B75105578A05EC48A2364BF006E9EEE9BBF0D753E59B2105F92E9D`; it differs from the earlier local 0.5.0-dev build and from the separately published MiraAPI 0.6.0 asset. The complete archive and all 233 selected files are pinned in [installer-manifest.json](tools/SteamInstaller/installer-manifest.json). Never substitute an arbitrary latest library.
 
-A real Steam copy was installed from these public files, generated fresh wrappers and reached the native main menu with MTOU and the public MiraAPI 0.6.0 loaded. Current MTOU source also compiles against this API. This resolves the earlier lack of a publicly obtainable startup baseline for this installer; it does not establish full role, match or host/client compatibility. See [installer tests](STEAM_INSTALLER_TESTS.md). The table below remains the historical development baseline.
+A real Steam copy was installed from these public files, generated fresh wrappers and reached the native main menu with MTOU and the public MiraAPI 0.6.0 loaded. Current MTOU source also compiles against this API. This resolves the earlier lack of a publicly obtainable startup baseline for this installer; it does not establish full role, match or host/client compatibility. See [installer tests](LAUNCHER_RELEASE_TESTS.md). The table below remains the historical development baseline.
 
 ## Observed startup baseline
 

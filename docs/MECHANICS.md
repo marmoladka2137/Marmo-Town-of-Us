@@ -63,5 +63,3 @@ Pollinate runs the percentage independently for each living holder, issues prote
 ## Other review scope
 
 Furas control/attack, Bandit's deferred role loan, Gambler's next-round mark activation, Hugger's immediate meeting murder, Big Brain's meeting-only report and Time Lord risk are implemented in the supplied code and cataloged. No full match was run for them in this release preparation. The source-wide inventory, compilation and rule/RPC checks are not a line-by-line correctness proof for all 1,128 source files.
-
-

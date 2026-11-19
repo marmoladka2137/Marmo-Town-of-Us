@@ -44,7 +44,6 @@ These describe implemented code. Full gameplay and host/client regression remain
 | Neutral Evil | Gambler |
 | Neutral Killing | Barszcz |
 
-[Complete role catalog](ROLES.md) · [Concise catalog for SUS Modder](SUSMODDER_ROLES.md).
 
 ## Modifiers
 
@@ -78,11 +77,9 @@ A legally owned compatible Among Us PC installation, BepInEx IL2CPP, Reactor, Mi
 
 ## Known Issues
 
-This is a **beta**, not a stable or fully multiplayer-tested release. Local compilation, deterministic state tests and native Unity fixtures passed. Full role interactions, host/client gameplay, public-dependency clean installation and SUS Modder installation remain unverified. Retired procedural animation replacements are excluded from the current source tree; native Mira presentations are used. [Full limitations](KNOWN_ISSUES.md) · [Executed tests](LAUNCHER_RELEASE_TESTS.md).
 
 ## Releases
 
-[Downloads](https://github.com/marmoladka2137/Marmo-Town-of-Us/releases) · [Current beta](https://github.com/marmoladka2137/Marmo-Town-of-Us/releases/tag/v1.1.0-beta). Publish/use the matching source archive and SHA-256 list with the DLL. Release availability does not imply SUS Modder acceptance.
 
 ## Credits
 
@@ -99,4 +96,3 @@ This mod is not affiliated with Among Us or Innersloth LLC, and the content cont
 ## Support and Bug Reports
 
 Community: [dc.gg/mtou](https://dc.gg/mtou). [Report an issue](https://github.com/marmoladka2137/Marmo-Town-of-Us/issues). Include mod/game/store versions, role/settings, host/client perspective, reproduction steps and a redacted log. Never upload credentials, player profiles or the base game. Upstream maintainers are not responsible for MTOU-specific issues.
-

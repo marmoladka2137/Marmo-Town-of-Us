@@ -6,7 +6,6 @@
 - TOU Unity project/terms: https://github.com/AU-Avengers/TownOfUs-Mira-Unity/tree/0224bd7a0a98e3aebb70ebfe1f7c388ae6b5d3ec — current README permits other sprites with credit and requests explicit animation permission; some copyrighted source material is omitted. Earlier October-baseline README differs; no retrospective revocation conclusion is made.
 - Innersloth policy: https://www.innersloth.com/among-us-mod-policy/ — re-fetched 2026-11-18; displayed modification date July 30, 2026. Stamp, disclaimer and functional-mod registration requirements retained.
 - All-client technical helper: https://github.com/Innersloth-LLC/AmongUsModdingInformation — current documentation describes self-assigned UUID and CurrentModRegistration; actual official-server behavior not retested.
-- SUS Modder: https://github.com/boratsc/SUSModder — current main remains 68ba478ac02c14efb091b21d502f8d695d3255e9, same inspected client revision. https://susmodder.app/ provided no readable intake specification in the fetch. Moderator-supplied requirements remain distinguished from inferred client fields.
 - Proposed MTOU repository lookup: GitHub connector returned HTTP 404 / NOT_FOUND to its connected account for marmoladka2137/Marmo-Town-of-Us. No verified public URL or publication is claimed.
 
 Private raw evidence and tool logs are retained outside the publication tree. A failed or inaccessible lookup is not presented as proof that no private repository or license grant exists.
