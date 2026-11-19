@@ -6,7 +6,7 @@ The upstream mod metadata names **Atony, AlchlcSystm, angxlwtf, MyDragonBreath, 
 
 ## Original MTOU artwork
 
-**Original MTOU artwork — created by Marmo**. The owner confirmed rights and selected **CC BY 4.0** for the 40 pinned paths / 38 unique PNGs in MTOU_ARTWORK_MANIFEST.csv, including original role/modifier/ability graphics and Marmo branding. See MTOU_ARTWORK_LICENSE.md and LICENSES/CC-BY-4.0.txt for attribution and modification rules. 
+**Original MTOU artwork — created by Marmo**. The owner confirmed rights and selected **CC BY 4.0** for the 40 pinned paths / 38 unique PNGs in MTOU_ARTWORK_MANIFEST.csv, including original role/modifier/ability graphics and Marmo branding. See MTOU_ARTWORK_LICENSE.md and LICENSES/CC-BY-4.0.txt for attribution and modification rules.
 
 No TOU Mira, Among Us or other project's artwork, animations, audio, fonts, shaders or cosmetic bundles are attributed to Marmo by this statement. The two ambiguous integrated copies were replaced with verified MTOU originals.
 

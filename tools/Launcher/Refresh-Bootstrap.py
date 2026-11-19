@@ -31,6 +31,10 @@ def main():
                      'Sha256':sha(entries['Marmo Town of Us.exe'])}
     version=ET.parse(Path(__file__).resolve().parents[2]/'TOU-Marmo.csproj').findtext('.//InformationalVersion')
     old['LauncherVersion']=version
+    old['LauncherAssemblyVersion']=ET.parse(Path(__file__).resolve().parents[2]/'TOU-Marmo.csproj').findtext('.//AssemblyVersion')
+    source_root=Path(__file__).resolve().parents[2]
+    for name in ('ASSET_CREDITS.md','CREDITS.md','THIRD_PARTY_NOTICES.md','LICENSE_AUDIT.md','PUBLICATION_STATUS.md'):
+        entries['Notices/'+name]=(source_root/name).read_bytes()
     old['LauncherSourceCommit']=args.source_commit
     entries['installer-manifest.json']=json.dumps(old,indent=2).encode()
     url='https://github.com/marmoladka2137/Marmo-Town-of-Us/archive/'+args.source_commit+'.zip'
