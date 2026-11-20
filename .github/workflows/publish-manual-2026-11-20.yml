@@ -1,0 +1,82 @@
+name: Publish manual Steam package
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/publish-manual-2026-11-20.yml']
+permissions:
+  contents: write
+concurrency:
+  group: mtou-manual-2026-11-20
+  cancel-in-progress: false
+jobs:
+  publish:
+    if: github.repository == 'marmoladka2137/Marmo-Town-of-Us'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Build, verify and publish the mod-only manual package
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import hashlib,json,os,subprocess,sys,traceback,urllib.request
+          from pathlib import Path
+          def report(kind,error,tb):
+           print('::error::'+''.join(traceback.format_exception(kind,error,tb)).replace('%','%25').replace('\n','%0A').replace('\r','%0D'))
+          sys.excepthook=report
+          REPO='marmoladka2137/Marmo-Town-of-Us'
+          SOURCE='c278403e27e3eb81b9d3587492b2dd180a409acd'
+          TAG='v1.1.0-beta'
+          ROOT=Path(os.environ['RUNNER_TEMP'])/'mtou-manual'
+          ROOT.mkdir()
+          def api(route,method='GET',data=None):
+           args=['gh','api','--method',method,'repos/'+REPO+'/'+route]
+           if data is not None:args+=['--input','-']
+           result=subprocess.run(args,input=json.dumps(data) if data is not None else None,text=True,capture_output=True,check=True)
+           return json.loads(result.stdout) if result.stdout.strip() else None
+          release=api('releases/451656718')
+          assert release['tag_name']==TAG and not release['draft']
+          launcher=next(a for a in release['assets'] if a['name']=='MTOU-1.1.0-beta-Launcher-Windows.zip')
+          assert launcher['digest']=='sha256:cc51946a473a0b2ff55b45786f6c3b384485c1b05d79a3e8666db3ba30c12505'
+          for name in ['build-manual.py','manual-config.json']:
+           data=urllib.request.urlopen('https://raw.githubusercontent.com/'+REPO+'/'+SOURCE+'/tools/ReleasePackaging/'+name,timeout=60).read()
+           (ROOT/name).write_bytes(data)
+          subprocess.run([sys.executable,str(ROOT/'build-manual.py'),'--config',str(ROOT/'manual-config.json'),'--output',str(ROOT/'out')],check=True)
+          result=json.loads((ROOT/'out/manual-verification.json').read_text())
+          assert result['verifiedPins']==272 and not result['baseGameIncluded']
+          file=ROOT/'out'/result['file']
+          subprocess.run(['gh','release','upload',TAG,str(file),'--repo',REPO,'--clobber'],check=True)
+          fresh=api('releases/451656718')
+          manual=next(a for a in fresh['assets'] if a['name']==result['file'])
+          assert manual['digest']=='sha256:'+result['sha256'].lower() and manual['size']==result['bytes']
+          sums=ROOT/'out/SHA256SUMS.txt'
+          sums.write_text(launcher['digest'].split(':')[1].upper()+'  '+launcher['name']+'\n'+result['sha256']+'  '+result['file']+'\n')
+          subprocess.run(['gh','release','upload',TAG,str(sums),'--repo',REPO,'--clobber'],check=True)
+          body='''## MTOU 1.1.0 Beta — Downloads / Pobierz
+          
+          | Wersja / Package | Pobierz / Download | Uruchom / Start |
+          |---|---|---|
+          | **Bez launchera — Steam** | [Manual ZIP](https://github.com/marmoladka2137/Marmo-Town-of-Us/releases/download/v1.1.0-beta/MTOU-1.1.0-Beta-STEAM-Manual.zip) | Rozpakuj na kopię swojej gry i uruchom Among Us.exe. |
+          | **Launcher — Windows** | [Launcher ZIP](https://github.com/marmoladka2137/Marmo-Town-of-Us/releases/download/v1.1.0-beta/MTOU-1.1.0-beta-Launcher-Windows.zip) | Uruchom Marmo Town of Us.exe i wybierz instalację. |
+          
+          ### Bez launchera / Manual Steam install
+          Skopiuj własny folder Among Us. Rozpakuj Manual ZIP bezpośrednio do kopii, obok Among Us.exe. Pozostaw Steam uruchomiony i zalogowany, następnie uruchom Among Us.exe.
+          
+          Copy your own installed Among Us folder, extract the manual ZIP into that copy, and run Among Us.exe with Steam running and signed in. First start can take several minutes. This package contains mod/loader files and no base game. Do not redistribute the resulting folder containing your game.
+          
+          Reference: Among Us 2026.9.29, Windows x64. Every player needs compatible mod versions. The manual package is for Steam; Epic copies require an authentication starter.
+          
+          ### Launcher
+          Extract the launcher ZIP and run Marmo Town of Us.exe. It obtains mod files online and creates a separate copy from your installed game. Epic gameplay remains unverified.
+          
+          [Manual instructions](https://github.com/marmoladka2137/Marmo-Town-of-Us/blob/main/INSTALLATION_MANUAL.md) · [Launcher instructions](https://github.com/marmoladka2137/Marmo-Town-of-Us/blob/main/INSTALLATION.md) · [Roles](https://github.com/marmoladka2137/Marmo-Town-of-Us/blob/main/ROLES.md) · [Discord](https://dc.gg/mtou)
+          
+          Verified: pinned downloads and all 272 selected manual-package files. A local owned Steam copy reached the create-game menu after Steam sign-in. Full gameplay/multiplayer regression remains unverified. The unsigned launcher may trigger SmartScreen. Existing notices, source locations and unresolved asset permissions remain documented in LICENSE_AUDIT.md. Code GPLv3; Marmo artwork CC BY 4.0; dependencies retain their own terms.
+          
+          This mod is not affiliated with Among Us or Innersloth LLC, and the content contained therein is not endorsed or otherwise sponsored by Innersloth LLC. Portions of the materials contained herein are property of Innersloth LLC. © Innersloth LLC.
+          '''
+          api('releases/451656718','PATCH',{'name':'MTOU 1.1.0 Beta','body':body})
+          print('Published and verified manual package: '+json.dumps(result))
+          
+          PY
