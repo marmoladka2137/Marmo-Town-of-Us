@@ -1,0 +1,81 @@
+name: Simplify current downloads
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/simplify-downloads-2026-11-20.yml']
+permissions:
+  contents: write
+jobs:
+  simplify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Verify and simplify download names
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import hashlib,json,os,subprocess,sys,traceback,urllib.request,zipfile
+          from pathlib import Path
+          def failure(kind,error,tb):
+           print('::error::'+''.join(traceback.format_exception(kind,error,tb)).replace('%','%25').replace('\n','%0A'))
+          sys.excepthook=failure
+          REPO='marmoladka2137/Marmo-Town-of-Us'
+          TAG='v1.1.0-beta'
+          BODY="# MTOU 1.1.0 Beta\r\n\r\n| Wersja | Pobierz |\r\n|---|---|\r\n| **Steam — bez launchera** | [Pobierz](https://github.com/marmoladka2137/Marmo-Town-of-Us/releases/download/v1.1.0-beta/MTOU-Steam-1.1.0-Beta.zip) |\r\n| **Launcher** | [Pobierz](https://github.com/marmoladka2137/Marmo-Town-of-Us/releases/download/v1.1.0-beta/MTOU-Launcher-1.1.0-Beta.zip) |\r\n\r\n**Steam:** skopiuj folder swojej gry, rozpakuj paczkę do kopii obok `Among Us.exe` i uruchom go przy włączonym, zalogowanym Steamie.\r\n\r\n**Launcher:** rozpakuj ZIP, uruchom `Marmo Town of Us.exe`, wybierz sklep, zainstaluj i kliknij PLAY.\r\n\r\nWindows x64 · Wymagana własna gra · Punkt odniesienia: Among Us 2026.9.29. Pełna rozgrywka Epic i regresja multiplayer pozostają niezweryfikowane.\r\n\r\n[Role](https://github.com/marmoladka2137/Marmo-Town-of-Us/blob/main/ROLES.md) · [Discord](https://dc.gg/mtou) · [Pomoc](https://github.com/marmoladka2137/Marmo-Town-of-Us/issues)\r\n\r\n<details>\r\n<summary>Licencje i autorzy</summary>\r\n\r\nKod GPLv3; grafiki MTOU: Marmo, CC BY 4.0. Pozostałe materiały zachowują własne warunki. Nierozstrzygnięte prawa do animacji/dźwięków opisuje [audyt](https://github.com/marmoladka2137/Marmo-Town-of-Us/blob/main/LICENSE_AUDIT.md). Zachowaj dołączone licencje i informacje o autorach.\r\n\r\nThis mod is not affiliated with Among Us or Innersloth LLC, and the content contained therein is not endorsed or otherwise sponsored by Innersloth LLC. Portions of the materials contained herein are property of Innersloth LLC. © Innersloth LLC.\r\n\r\n</details>"
+          def api(route,method='GET',data=None):
+           args=['gh','api','--method',method,'repos/'+REPO+'/'+route]
+           if data is not None:args+=['--input','-']
+           result=subprocess.run(args,input=json.dumps(data) if data is not None else None,text=True,capture_output=True,check=True)
+           return json.loads(result.stdout) if result.stdout.strip() else None
+          release=api('releases/451656718')
+          assert release['tag_name']==TAG
+          work=Path(os.environ['RUNNER_TEMP'])/'mtou-names';work.mkdir()
+          mapping=[
+           ('MTOU-1.1.0-beta-Launcher-Windows.zip','MTOU-Launcher-1.1.0-Beta.zip','cc51946a473a0b2ff55b45786f6c3b384485c1b05d79a3e8666db3ba30c12505'),
+           ('MTOU-1.1.0-Beta-STEAM-Manual.zip','MTOU-Steam-1.1.0-Beta.zip','d1ca7496fd43b790c4caca18fb3d319a5ba60a18c6c70f4d96b16a2d6e8b0b46')]
+          results=[]
+          for old,new,expected in mapping:
+           asset=next(a for a in release['assets'] if a['name']==old)
+           assert asset['digest']=='sha256:'+expected
+           data=urllib.request.urlopen(asset['browser_download_url'],timeout=120).read()
+           assert hashlib.sha256(data).hexdigest()==expected
+           target=work/new
+           if new.startswith('MTOU-Steam'):
+            import io
+            with zipfile.ZipFile(io.BytesIO(data)) as source,zipfile.ZipFile(target,'w',zipfile.ZIP_DEFLATED,compresslevel=9) as output:
+             for info in source.infolist():
+              name=info.filename
+              value=source.read(info)
+              if name=='MTOU Notices/MANUAL-PACKAGE.txt':
+               name='MTOU Notices/PACKAGE.txt';value=value.replace(b'MTOU manual Steam package',b'MTOU Steam package')
+              if name=='MTOU-INSTALACJA.txt':
+               value=('MTOU 1.1.0 Beta - Steam\n\n1. Skopiuj folder swojej gry Among Us.\n2. Rozpakuj te paczke do kopii, obok Among Us.exe.\n3. Uruchom Among Us.exe przy wlaczonym i zalogowanym Steamie.\n\nCopy your game folder, extract MTOU beside Among Us.exe and start it with Steam signed in. Windows x64; reference game version 2026.9.29. First start may need a few minutes and internet. The game is not included. Keep the license notices. Epic requires its authentication starter.\n').encode()
+              output.writestr(name,value)
+            with zipfile.ZipFile(io.BytesIO(data)) as source,zipfile.ZipFile(target) as output:
+             assert output.testzip() is None
+             for name in source.namelist():
+              if name in ('MTOU Notices/MANUAL-PACKAGE.txt','MTOU-INSTALACJA.txt'):continue
+              assert source.read(name)==output.read(name),name
+             assert not any(name.lower().endswith(('.cs','.csproj','.sln')) for name in output.namelist())
+             assert 'Among Us.exe' not in output.namelist()
+           else:target.write_bytes(data)
+           digest=hashlib.sha256(target.read_bytes()).hexdigest()
+           subprocess.run(['gh','release','upload',TAG,str(target),'--repo',REPO,'--clobber'],check=True)
+           fresh=api('releases/451656718')
+           published=next(a for a in fresh['assets'] if a['name']==new)
+           assert published['digest']=='sha256:'+digest
+           results.append({'name':new,'sha256':digest,'bytes':published['size']})
+          sums=work/'SHA256SUMS.txt'
+          sums.write_text(''.join(item['sha256'].upper()+'  '+item['name']+'\n' for item in results))
+          subprocess.run(['gh','release','upload',TAG,str(sums),'--repo',REPO,'--clobber'],check=True)
+          api('releases/451656718','PATCH',{'name':'MTOU 1.1.0 Beta','body':BODY})
+          for old,new,expected in mapping:
+           asset=next(a for a in release['assets'] if a['name']==old)
+           api('releases/assets/'+str(asset['id']),'DELETE')
+          fresh=api('releases/451656718')
+          assert {a['name'] for a in fresh['assets']}=={'MTOU-Steam-1.1.0-Beta.zip','MTOU-Launcher-1.1.0-Beta.zip','SHA256SUMS.txt'}
+          print('Verified simplified release: '+json.dumps(results))
+          
+          PY
