@@ -1,14 +1,12 @@
-# MTOU 1.1.0 Beta — downloads
+# Marmo Town of Us — 1.1.0 Beta
 
-| Installation | Download |
+| Wersja | Pobierz |
 |---|---|
-| **Without launcher — Steam** | [Manual ZIP](https://github.com/marmoladka2137/Marmo-Town-of-Us/releases/download/v1.1.0-beta/MTOU-1.1.0-Beta-STEAM-Manual.zip) |
-| **Launcher — Windows** | [Launcher ZIP](https://github.com/marmoladka2137/Marmo-Town-of-Us/releases/download/v1.1.0-beta/MTOU-1.1.0-beta-Launcher-Windows.zip) |
+| **Steam — bez launchera** | [Pobierz](https://github.com/marmoladka2137/Marmo-Town-of-Us/releases/download/v1.1.0-beta/MTOU-Steam-1.1.0-Beta.zip) |
+| **Launcher** | [Pobierz](https://github.com/marmoladka2137/Marmo-Town-of-Us/releases/download/v1.1.0-beta/MTOU-Launcher-1.1.0-Beta.zip) |
 
-Manual Steam install: copy your installed Among Us folder, extract the manual ZIP beside Among Us.exe, then start it with Steam running and signed in. No base game files are supplied.
+**Steam:** skopiuj folder swojej gry, rozpakuj MTOU do kopii obok Among Us.exe i uruchom go przy włączonym, zalogowanym Steamie.
 
-Launcher: extract the launcher ZIP and run Marmo Town of Us.exe. Internet is required. Epic gameplay remains unverified; manual Steam installation is a separate option.
+**Launcher:** rozpakuj ZIP i uruchom Marmo Town of Us.exe.
 
-[Instructions](https://github.com/marmoladka2137/Marmo-Town-of-Us/blob/main/INSTALLATION_MANUAL.md) · [Release and checksums](https://github.com/marmoladka2137/Marmo-Town-of-Us/releases/tag/v1.1.0-beta)
-
-The .part files and mtou-release.json on this branch are updater data. The launcher downloads and verifies them automatically; do not assemble them manually.
+Wymagana własna zgodna gra. [Instrukcja](https://github.com/marmoladka2137/Marmo-Town-of-Us/blob/main/README.md). Pozostałe pliki tej gałęzi obsługują aktualizacje — launcher pobiera je automatycznie.
