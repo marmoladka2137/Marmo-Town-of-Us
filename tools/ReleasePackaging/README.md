@@ -1,3 +1,3 @@
-# Manual package builder
+# Steam package builder
 
-Run `python build-manual.py --config manual-config.json --output artifacts` with Python 3. Downloads are pinned by hash; all selected entries are verified. The package excludes game files and private data. Seven plugins and original notices are retained. `manual-verification.json` records the resulting artifact hash. No role code is changed by this packaging.
+Run `python build-steam.py --config steam-package.json --output artifacts`. Pinned downloads and selected files are verified. Game files and private data are excluded. Original credits and license notices are retained.

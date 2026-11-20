@@ -1,4 +1,4 @@
-"""Build a mod-only manual Steam installation from pinned public upstream files."""
+"""Build a mod-only Steam installation from pinned public upstream files."""
 from pathlib import Path
 import argparse
 import hashlib
@@ -58,12 +58,12 @@ Pierwszy start moze potrwac kilka minut i wymagac internetu.
 Reference game build: Among Us 2026.9.29, Windows x64. Every player needs the same compatible mod version.
 The base game is NOT included. Do not redistribute the resulting folder containing your game files.
 Do not combine with a separate TownOfUsMira.dll or other MTOU versions.
-This manual package is for Steam. Epic copies require their authentication starter.
+This package is for Steam. Epic copies require their authentication starter.
 Keep MTOU Notices and its licenses. Corresponding source locations are recorded there and in the public source repository.
 '''.encode()
-    entries['MTOU Notices/MANUAL-PACKAGE.txt'] = ('MTOU manual Steam package. Unchanged selected runtime files: ' + config['ArchiveUrl'] + '\nArchive SHA256: ' + config['ArchiveSha256'] + '\nUnchanged plugin source: https://github.com/marmoladka2137/Marmo-Town-of-Us/tree/' + release['SourceCommit'] + '\nOriginal third-party licenses and credits remain applicable. No game files, accounts, private profiles or source archives are included. Source locations and unresolved asset/source matching limitations remain in existing notices; this packaging is not new legal clearance.\n').encode()
+    entries['MTOU Notices/PACKAGE.txt'] = ('MTOU Steam package. Unchanged selected runtime files: ' + config['ArchiveUrl'] + '\nArchive SHA256: ' + config['ArchiveSha256'] + '\nUnchanged plugin source: https://github.com/marmoladka2137/Marmo-Town-of-Us/tree/' + release['SourceCommit'] + '\nOriginal third-party licenses and credits remain applicable. No game files, accounts, private profiles or source archives are included. Source locations and unresolved asset/source matching limitations remain in existing notices; this packaging is not new legal clearance.\n').encode()
     output.mkdir(parents=True, exist_ok=True)
-    filename = output / 'MTOU-1.1.0-Beta-STEAM-Manual.zip'
+    filename = output / 'MTOU-Steam-1.1.0-Beta.zip'
     with zipfile.ZipFile(filename, 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as archive:
         for name, data in sorted(entries.items()):
             item = zipfile.ZipInfo(name, (2026, 11, 20, 0, 0, 0))
@@ -82,7 +82,7 @@ Keep MTOU Notices and its licenses. Corresponding source locations are recorded 
             assert len(data) == pin['Bytes'] and digest(data) == pin['Sha256'].upper()
         assert len([n for n in archive.namelist() if n.startswith('BepInEx/plugins/') and n.endswith('.dll')]) == 7
     result = {'file': filename.name, 'bytes': filename.stat().st_size, 'sha256': digest(filename.read_bytes()), 'verifiedPins': len(pinned), 'baseGameIncluded': False}
-    (output / 'manual-verification.json').write_text(json.dumps(result, indent=2), encoding='utf-8')
+    (output / 'steam-verification.json').write_text(json.dumps(result, indent=2), encoding='utf-8')
     print(json.dumps(result))
     return result
 
