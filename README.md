@@ -2,13 +2,18 @@
 
 ## Download / Pobierz
 
-### [⬇ Pobierz MTOU dla Windows / Download for Windows](https://github.com/marmoladka2137/Marmo-Town-of-Us/releases/download/v1.1.0-beta/MTOU-1.1.0-beta-Launcher-Windows.zip)
+**MTOU 1.1.0 Beta — wybierz sposób instalacji / choose your installation**
 
-**MTOU 1.1.0 Beta · Launcher 1.1.0 Beta**
+| Wersja / Package | Pobieranie / Download | Uruchamianie / Start |
+|---|---|---|
+| **Bez launchera — Steam** | [Pobierz paczkę ręczną / Manual ZIP](https://github.com/marmoladka2137/Marmo-Town-of-Us/releases/download/v1.1.0-beta/MTOU-1.1.0-Beta-STEAM-Manual.zip) | Rozpakuj na kopię swojej gry i uruchom `Among Us.exe`. |
+| **Launcher — Windows** | [Pobierz launcher / Launcher ZIP](https://github.com/marmoladka2137/Marmo-Town-of-Us/releases/download/v1.1.0-beta/MTOU-1.1.0-beta-Launcher-Windows.zip) | Rozpakuj i uruchom `Marmo Town of Us.exe`. |
 
-Rozpakuj ZIP → uruchom **Marmo Town of Us.exe** → wybierz Steam/Epic i **INSTALL MTOU**.
+**Steam manual:** copy your installed Among Us folder, extract the manual ZIP directly beside `Among Us.exe`, then start it with Steam running and signed in. The ZIP supplies the loader and mod files; it does not contain the game.
 
-Extract the ZIP, run **Marmo Town of Us.exe**, select your store and choose **INSTALL MTOU**. Requires your own installed Among Us. [Release page](https://github.com/marmoladka2137/Marmo-Town-of-Us/releases) · [Installation guide](INSTALLATION.md).
+**Launcher:** downloads the mod files and creates a separate copy from your installed game. Epic authentication/gameplay remains unverified; the manual Steam package is not an Epic package.
+
+[Manual instructions](INSTALLATION_MANUAL.md) · [Launcher instructions](INSTALLATION.md) · [All downloads](https://github.com/marmoladka2137/Marmo-Town-of-Us/releases/tag/v1.1.0-beta)
 
 <img src="Resources/Branding/MarmoLogo.png" width="360" alt="Marmo Town of Us">
 
