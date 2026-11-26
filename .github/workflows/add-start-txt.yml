@@ -1,0 +1,60 @@
+name: Add short Steam package tutorial
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/add-start-txt.yml']
+permissions:
+  contents: write
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Add START.txt and update checksums
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TUTORIAL: "Marmo Town of Us 1.1.1 \u2014 Steam\n\n1. W Steam otw\u00f3rz: Among Us \u2192 W\u0142a\u015bciwo\u015bci \u2192 Zainstalowane pliki \u2192 Przegl\u0105daj.\n2. Skopiuj ca\u0142y folder gry do nowego folderu.\n3. Wypakuj zawarto\u015b\u0107 tego ZIP-a do kopii gry, obok Among Us.exe.\n4. Zostaw Steam uruchomiony i zalogowany. Uruchom Among Us.exe z kopii.\n\nPierwsze uruchomienie mo\u017ce potrwa\u0107 kilka minut.\nWszyscy gracze w lobby musz\u0105 mie\u0107 t\u0119 sam\u0105 wersj\u0119 MTOU.\nNie dodawaj osobnego TownOfUsMira.dll.\n"
+        shell: python
+        run: |
+          import urllib.request,urllib.parse,json,hashlib,zipfile,io,os,subprocess
+          repo=os.environ['GITHUB_REPOSITORY'];token=os.environ['GH_TOKEN']
+          assert repo=='marmoladka2137/Marmo-Town-of-Us'
+          def api(path):
+           req=urllib.request.Request('https://api.github.com/repos/'+repo+path,headers={'Authorization':'Bearer '+token,'User-Agent':'MTOU-packaging'})
+           with urllib.request.urlopen(req,timeout=180) as r:return json.load(r)
+          def get(url):
+           with urllib.request.urlopen(urllib.request.Request(url,headers={'User-Agent':'MTOU-packaging'}),timeout=300) as r:return r.read()
+          release=api('/releases/tags/v1.1.1');assets={a['name']:a for a in release['assets']}
+          old=get(assets['MTOU-Steam-1.1.1.zip']['browser_download_url'])
+          sums=get(assets['SHA256SUMS.txt']['browser_download_url']).decode()
+          expected=dict((n,h) for h,n in (line.split('  ',1) for line in sums.splitlines()))
+          assert hashlib.sha256(old).hexdigest().upper()==expected['MTOU-Steam-1.1.1.zip'].upper()
+          with zipfile.ZipFile(io.BytesIO(old)) as z:
+           assert z.testzip() is None
+           entries={n:z.read(n) for n in z.namelist()}
+          entries['START.txt']=os.environ['TUTORIAL'].encode('utf-8-sig')
+          out=io.BytesIO()
+          with zipfile.ZipFile(out,'w',zipfile.ZIP_DEFLATED,compresslevel=9) as z:
+           for n,data in entries.items():z.writestr(n,data)
+          new=out.getvalue()
+          with zipfile.ZipFile(io.BytesIO(new)) as z:
+           assert z.testzip() is None
+           for n,v in entries.items():assert z.read(n)==v
+           assert not any(n in z.namelist() for n in ['Among Us.exe','GameAssembly.dll'])
+          expected['MTOU-Steam-1.1.1.zip']=hashlib.sha256(new).hexdigest().upper()
+          def replace(name,data):
+           req=urllib.request.Request('https://api.github.com/repos/'+repo+'/releases/assets/'+str(assets[name]['id']),method='DELETE',headers={'Authorization':'Bearer '+token,'User-Agent':'MTOU-packaging'})
+           with urllib.request.urlopen(req):pass
+           req=urllib.request.Request(release['upload_url'].split('{')[0]+'?name='+urllib.parse.quote(name),data=data,method='POST',headers={'Authorization':'Bearer '+token,'Content-Type':'application/octet-stream','User-Agent':'MTOU-packaging'})
+           with urllib.request.urlopen(req,timeout=300) as r:result=json.load(r)
+           assert result['size']==len(data)
+          replace('MTOU-Steam-1.1.1.zip',new)
+          replace('SHA256SUMS.txt',''.join(h+'  '+n+'\n' for n,h in expected.items()).encode())
+          subprocess.run(['git','config','user.name','Marmo release'],check=True)
+          subprocess.run(['git','config','user.email','249504836+marmoladka2137@users.noreply.github.com'],check=True)
+          subprocess.run(['git','rm','.github/workflows/add-start-txt.yml'],check=True)
+          subprocess.run(['git','commit','-m','Complete Steam package quick-start text'],check=True)
+          subprocess.run(['git','push','origin','HEAD:main'],check=True)
+          print('START.txt added; all other ZIP contents preserved; checksums updated.')
+
