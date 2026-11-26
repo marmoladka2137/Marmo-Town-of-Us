@@ -1,0 +1,90 @@
+name: Publish prepared MTOU 1.1.1
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/publish-1.1.1.yml']
+permissions:
+  contents: write
+concurrency:
+  group: mtou-release-1.1.1
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Verify prepared files and publish 1.1.1
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PAYLOAD_URL: https://plates-complicated-grocery-encyclopedia.trycloudflare.com
+          PAYLOAD_PINS: >-
+            {"MTOU-Launcher-1.1.1.zip": "ebf07471b74241936cd5e8a0e803d2a5bd686ff2b2414ffd3f40f9f8e48ddc2b", "MTOU-Mods-Windows.zip": "283a9aed7deaff256babfdd52325d2572f56f52317340240400e19d9f3469159", "mtou-release.json": "e56b9513373f5b437ed64bb12cf85e9c63334deba005f239a82f966de6b7203a", "MTOU-Steam-1.1.1.zip": "90cd683db538492c4cd40b31e4fa24474131a8ec6f516a1c03a84c73dfab9c95", "source-input.zip": "cea08035eea4300aa612863c099ad3ca038f73b6135cfe58dc81c8f8630a42d3"}
+        shell: python
+        run: |
+          import os,json,urllib.request,hashlib,zipfile,shutil,subprocess,time
+          from pathlib import Path
+          repo=os.environ['GITHUB_REPOSITORY'];token=os.environ['GH_TOKEN'];root=Path.cwd()
+          def api(path,data=None,method=None):
+           req=urllib.request.Request('https://api.github.com/repos/'+repo+path,data=None if data is None else json.dumps(data).encode(),method=method,headers={'Authorization':'Bearer '+token,'Accept':'application/vnd.github+json','User-Agent':'MTOU-1.1.1-publication'})
+           with urllib.request.urlopen(req,timeout=180) as response:return json.load(response)
+          assert repo=='marmoladka2137/Marmo-Town-of-Us'
+          assert not any(r['tag_name']=='v1.1.1' for r in api('/releases')),'Version already exists; do not overwrite it'
+          base=os.environ['PAYLOAD_URL'];pins=json.loads(os.environ['PAYLOAD_PINS'])
+          payload=root.parent/'mtou-release-payload';payload.mkdir(exist_ok=True)
+          for name,digest in pins.items():
+           req=urllib.request.Request(base+'/'+name,headers={'User-Agent':'MTOU-GitHub-publication'})
+           with urllib.request.urlopen(req,timeout=180) as r, (payload/name).open('wb') as f:shutil.copyfileobj(r,f)
+           assert hashlib.sha256((payload/name).read_bytes()).hexdigest()==digest,name
+           print('Verified',name,flush=True)
+          with zipfile.ZipFile(payload/'source-input.zip') as z:
+           assert z.testzip() is None
+           for name in z.namelist():
+            assert not name.startswith(('/','.git/')) and '..' not in Path(name).parts
+          stage=root.parent/'mtou-source';stage.mkdir(exist_ok=True)
+          with zipfile.ZipFile(payload/'source-input.zip') as z:z.extractall(stage)
+          for p in root.iterdir():
+           if p.name=='.git':continue
+           if p.is_dir():shutil.rmtree(p)
+           else:p.unlink()
+          for p in stage.iterdir():
+           if p.is_dir():shutil.copytree(p,root/p.name)
+           else:shutil.copy2(p,root/p.name)
+          subprocess.run(['git','config','user.name','Marmo release'],check=True)
+          subprocess.run(['git','config','user.email','249504836+marmoladka2137@users.noreply.github.com'],check=True)
+          subprocess.run(['git','add','-A'],check=True)
+          subprocess.run(['git','commit','-m','Release Marmo Town of Us 1.1.1'],check=True)
+          source_commit=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()
+          subprocess.run(['git','push','origin','HEAD:main'],check=True)
+          feed=json.loads((payload/'mtou-release.json').read_bytes());feed['SourceCommit']=source_commit
+          (payload/'mtou-release.json').write_text(json.dumps(feed,indent=2))
+          launcher=payload/'MTOU-Launcher-1.1.1.zip'
+          with zipfile.ZipFile(launcher) as z:entries={n:z.read(n) for n in z.namelist()}
+          manifest=json.loads(entries['installer-manifest.json']);manifest['SourceCommit']=source_commit
+          entries['installer-manifest.json']=json.dumps(manifest,indent=2).encode();entries['mtou-release.json']=json.dumps(feed,indent=2).encode()
+          with zipfile.ZipFile(launcher,'w',zipfile.ZIP_DEFLATED,compresslevel=9) as z:
+           for name,data in sorted(entries.items()):z.writestr(name,data)
+          assets=['MTOU-Launcher-1.1.1.zip','MTOU-Steam-1.1.1.zip','MTOU-Mods-Windows.zip','mtou-release.json']
+          (payload/'SHA256SUMS.txt').write_text(''.join(hashlib.sha256((payload/n).read_bytes()).hexdigest().upper()+'  '+n+'\n' for n in assets))
+          assets.append('SHA256SUMS.txt')
+          body='''**Marmo Town of Us 1.1.1**
+          
+          - **MTOU-Launcher-1.1.1.zip** — Steam / Epic launcher with public update checks.
+          - **MTOU-Steam-1.1.1.zip** — Steam mod package without the launcher. Requires your own Among Us installation; the base game is not included.
+          
+          Adds the latest roles and modifiers, updates role mechanics and body presentation, standardizes ability icons, enlarges cooldown digits, and fixes Amnesiac inheriting Practice diagnostic abilities.
+          
+          All players need the same version. Previous releases remain available. Source code and third-party credits are in the repository. Build and automated launcher/updater checks passed; live gameplay and multiplayer were not rerun for this release.
+          
+          MTOU-Mods-Windows.zip and mtou-release.json are the launcher update payload.
+          '''
+          release=api('/releases',dict(tag_name='v1.1.1',target_commitish=source_commit,name='Marmo Town of Us 1.1.1',body=body,draft=True,prerelease=False))
+          for name in assets:
+           data=(payload/name).read_bytes()
+           url=release['upload_url'].split('{')[0]+'?name='+urllib.parse.quote(name)
+           req=urllib.request.Request(url,data=data,method='POST',headers={'Authorization':'Bearer '+token,'Content-Type':'application/octet-stream','User-Agent':'MTOU-1.1.1-publication'})
+           with urllib.request.urlopen(req,timeout=300) as r:result=json.load(r)
+           assert result['size']==len(data);print('Uploaded',name,flush=True)
+          api('/releases/'+str(release['id']),dict(draft=False,make_latest='true'),'PATCH')
+          print('PUBLISHED https://github.com/'+repo+'/releases/tag/v1.1.1 source='+source_commit,flush=True)
+
