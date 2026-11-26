@@ -1,4 +1,4 @@
-﻿using MiraAPI.Events;
+using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Usables;
 using MiraAPI.GameOptions;
 using TownOfUs.Options.Roles.Crewmate;
@@ -18,6 +18,7 @@ public sealed class EngineerVentButton : TownOfUsVentRoleButton<EngineerTouRole>
 
     public override float EffectDuration => OptionGroupSingleton<EngineerOptions>.Instance.VentDuration;
     public override int MaxUses => (int)OptionGroupSingleton<EngineerOptions>.Instance.MaxVents;
+    public override bool ZeroIsInfinite { get; set; } = true;
     public override LoadableAsset<Sprite> Sprite => LegacyAssets.IsLegacy ? LegacyVanillaAssets.VentSprite : TouCrewAssets.EngiVentSprite;
     public override bool ShouldPauseInVent => false;
     public int ExtraUses { get; set; }

@@ -1,4 +1,4 @@
-﻿using AmongUs.GameOptions;
+using AmongUs.GameOptions;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.GameOptions;
@@ -24,9 +24,9 @@ public static class TraitorEvents
     {
         var source = @event.Source;
         var victim = @event.Target;
-        var canSendLocally = source.IsHost() ? victim.AmOwner : source.AmOwner;
+        var canSendLocally = AmongUsClient.Instance && AmongUsClient.Instance.AmHost;
 
-        if (source == victim || !canSendLocally || !source.HasModifier<CrewpostorModifier>() || !source.IsCrewmate() || Helpers.GetAlivePlayers().Any(x => x.IsImpostor()))
+        if (source == victim || !canSendLocally || !source.HasModifier<CrewpostorModifier>() || !source.IsCrewmate() || TouMarmo.Modules.Bandit.BanditRuntime.IsBorrower(source) || Helpers.GetAlivePlayers().Any(x => x.IsImpostor()))
         {
             return;
         }

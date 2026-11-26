@@ -17,7 +17,7 @@ public sealed class ButtonBarryOptions : AbstractTouModifierOptionGroup<ButtonBa
     [ModdedNumberOption("TouOptionButtonBarryButtonCooldown", 2.5f, 60f, 2.5f, MiraNumberSuffixes.Seconds)]
     public float Cooldown { get; set; } = 30f;
 
-    [ModdedNumberOption("TouOptionButtonBarryMaxUses", 1f, 3f, 1f, MiraNumberSuffixes.None, "0")]
+    [ModdedNumberOption("TouOptionButtonBarryMaxUses", 0f, 3f, 1f, MiraNumberSuffixes.None, "0", zeroInfinity: true)]
     public float MaxNumButtons { get; set; } = 1f;
 
     [ModdedToggleOption("TouOptionButtonBarryIgnoreSabotage")]

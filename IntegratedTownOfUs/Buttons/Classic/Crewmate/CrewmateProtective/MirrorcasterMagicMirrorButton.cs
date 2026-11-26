@@ -1,4 +1,4 @@
-﻿using MiraAPI.GameOptions;
+using MiraAPI.GameOptions;
 using MiraAPI.Hud;
 using MiraAPI.Utilities;
 using Reactor.Utilities.Extensions;
@@ -20,6 +20,7 @@ public sealed class MirrorcasterMagicMirrorButton : TownOfUsRoleButton<Mirrorcas
 
     public override float EffectDuration => OptionGroupSingleton<MirrorcasterOptions>.Instance.MirrorDuration.Value;
     public override int MaxUses => (int)OptionGroupSingleton<MirrorcasterOptions>.Instance.MaxMirrors;
+    public override bool ZeroIsInfinite { get; set; } = true;
     public override LoadableAsset<Sprite> Sprite => TouCrewAssets.MagicMirrorSprite;
     public override ButtonLocation Location => ButtonLocation.BottomRight;
     public override bool ShouldPauseInVent => false;

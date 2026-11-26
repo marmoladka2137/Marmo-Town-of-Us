@@ -61,7 +61,19 @@ public static class MarmoPanelScreenBounds
     {
         var panel = TownOfUs.Events.TownOfUsEventHandlers.RolePanel;
         var camera = HudManager.Instance ? HudManager.Instance.UICamera : null;
-        if (!panel || panel != __instance || !panel.open || camera == null || !panel.taskText) return;
+        if (!panel || panel != __instance || camera == null || !panel.taskText) return;
+        // A role tab is a flat HUD element. Cancel the cloned task panel's tilt.
+        panel.transform.rotation = camera.transform.rotation;
+        panel.background.transform.localRotation = Quaternion.identity;
+        panel.tab.transform.localRotation = Quaternion.identity;
+        panel.taskText.transform.localRotation = Quaternion.identity;
+        // Mira interpolates both axes, but the role drawer must only slide sideways.
+        // Apply this in both states, not just while open, so toggling never changes Y.
+        var anchorY = Mathf.Min(panel.closedPosition.y, panel.openPosition.y);
+        panel.closedPosition = new Vector3(panel.closedPosition.x,anchorY,panel.closedPosition.z);
+        panel.openPosition = new Vector3(panel.openPosition.x,anchorY,panel.openPosition.z);
+        panel.transform.localPosition = AspectPosition.ComputePosition(AspectPosition.EdgeAlignments.LeftTop,
+            new Vector3(Mathf.SmoothStep(panel.closedPosition.x,panel.openPosition.x,panel.timer),anchorY,panel.openPosition.z));
         MarmoRolePanelLayout.AlignText(panel);
         panel.taskText.ForceMeshUpdate();
         var renderer=panel.taskText.GetComponent<MeshRenderer>();
@@ -69,16 +81,24 @@ public static class MarmoPanelScreenBounds
         var bounds=renderer!.bounds;
         foreach(var background in panel.GetComponentsInChildren<SpriteRenderer>())
             if(background && background.enabled) bounds.Encapsulate(background.bounds);
-        var bottom = camera.ScreenToWorldPoint(new Vector3(0,0, camera.nearClipPlane));
-        var top = camera.ScreenToWorldPoint(new Vector3(Screen.width,Screen.height,camera.nearClipPlane));
-        float x = 0, y = 0;
+        var depth=Mathf.Max(camera.nearClipPlane,Vector3.Dot(panel.transform.position-camera.transform.position,camera.transform.forward));
+        var bottom = camera.ScreenToWorldPoint(new Vector3(0,0,depth));
+        var top = camera.ScreenToWorldPoint(new Vector3(Screen.width,Screen.height,depth));
+        if (!panel.open) return;
+        float x = 0;
         if (bounds.min.x < bottom.x + 0.2f) x = bottom.x + 0.2f - bounds.min.x;
         if (bounds.max.x + x > top.x - 0.45f) x += top.x - 0.45f - (bounds.max.x + x);
-        if (bounds.min.y < bottom.y + 0.25f) y = bottom.y + 0.25f - bounds.min.y;
-        if (bounds.max.y + y > top.y - 0.25f) y += top.y - 0.25f - (bounds.max.y + y);
-        var correction=new Vector3(x,y,0);
-        panel.transform.position += correction;
-        var parent=panel.transform.parent;
-        panel.openPosition += parent ? parent.InverseTransformVector(correction) : correction;
+        // Never push the entire drawer upward to fit its contents. Size the text
+        // area instead, keeping the tab anchored alongside the task panel.
+        var text=panel.taskText;
+        var available=Mathf.Max(.6f,(panel.transform.position.y-bottom.y-.25f)/Mathf.Max(.01f,Mathf.Abs(panel.transform.lossyScale.y)));
+        text.enableAutoSizing=true;
+        text.fontSizeMax=1.7f;
+        text.fontSizeMin=.8f;
+        text.enableWordWrapping=true;
+        text.overflowMode=TextOverflowModes.Ellipsis;
+        text.rectTransform.sizeDelta=new Vector2(4.8f,available);
+        var correction=new Vector3(x,0,0);
+        if(panel.timer >= .999f) panel.transform.position += correction;
     }
 }

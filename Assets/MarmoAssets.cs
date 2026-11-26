@@ -17,8 +17,8 @@ public static class MarmoAssets
     public static LoadableAsset<Sprite> NewTarget { get; } = new LoadableResourceAsset("TouMarmo.Resources.Icons.NewTarget.png", 205f);
     public static LoadableAsset<Sprite> Renounce { get; } = new LoadableResourceAsset("TouMarmo.Resources.Icons.Renounce.png", 205f);
     public static LoadableAsset<Sprite> Sweets { get; } = new LoadableResourceAsset("TouMarmo.Resources.Icons.Sweets.png", 205f);
-    public static LoadableAsset<Sprite> SweetsFlower { get; } = new LoadableResourceAsset("TouMarmo.Resources.Icons.SweetsFlower.png", 205f);
-    public static LoadableAsset<Sprite> SweetsPollinate { get; } = new LoadableResourceAsset("TouMarmo.Resources.Icons.SweetsPollinate.png", 205f);
+    public static LoadableAsset<Sprite> SweetsFlower { get; } = new LoadableResourceAsset("TouMarmo.Resources.Icons.SweetsFlower.png", 1000f);
+    public static LoadableAsset<Sprite> SweetsPollinate { get; } = new LoadableResourceAsset("TouMarmo.Resources.Icons.SweetsPollinate.png", 1000f);
 
     public static LoadableAsset<Sprite> OneMoreChance { get; } = new LoadableResourceAsset("TouMarmo.Resources.Icons.OneMoreChance.png", 1046f);
 

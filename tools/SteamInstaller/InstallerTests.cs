@@ -10,9 +10,24 @@ public static class InstallerTests
 {
     static int checks;
     static string root;
+    [System.Runtime.InteropServices.DllImport("kernel32.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode, SetLastError = true)]
+    static extern Microsoft.Win32.SafeHandles.SafeFileHandle CreateFile(string path, uint access, uint share, IntPtr security, uint creation, uint flags, IntPtr template);
     static void Check(bool value, string name) { if (!value) throw new Exception("FAIL: " + name); checks++; Console.WriteLine("PASS: " + name); }
     static void Reject(Action action, string name) { bool rejected = false; try { action(); } catch (IOException) { rejected = true; } Check(rejected, name); }
     static void Put(string path, string text) { Directory.CreateDirectory(Path.GetDirectoryName(path)); File.WriteAllText(path, text); }
+    static void VersionData(string path, params string[] versions)
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(path));
+        using (var stream = File.Create(path)) using (var writer = new BinaryWriter(stream))
+        {
+            writer.Write(new byte[64]);
+            foreach (string version in versions)
+            {
+                byte[] bytes = Encoding.UTF8.GetBytes(version); writer.Write(bytes.Length); writer.Write(bytes);
+                while (stream.Position % 4 != 0) writer.Write((byte)0);
+            }
+        }
+    }
     static FilePin Pin(string path, string relative) { return new FilePin { Path = relative, Bytes = new FileInfo(path).Length, Sha256 = InstallerCore.Hash(path) }; }
     static string Zip(string name, Dictionary<string, string> entries)
     {
@@ -26,6 +41,11 @@ public static class InstallerTests
     {
         try
         {
+            if (args.Length == 2 && args[0] == "--game-version")
+            {
+                Check(InstallerCore.ReadGameVersion(args[1]) == "2026.9.29", "Read the installed game's actual Unity version record");
+                return 0;
+            }
             if (args.Length > 0 && args[0] == "--integration")
             {
                 var core = new InstallerCore(InstallerManifest.Read(Path.Combine(args[1], "installer-manifest.json")), args[1]);
@@ -123,9 +143,75 @@ public static class InstallerTests
             string payloadHash = manifest.Payload.Sha256; manifest.Payload.Sha256 = new string('F',64);
             Reject(() => compactEngine.ResolvePayload(), "Reject an extracted plugin with the wrong SHA-256");
             manifest.Payload.Sha256 = payloadHash;
+            string epic = Path.Combine(root, "Epic Among Us"), epicManifests = Path.Combine(root, "Epic manifests");
+            Put(Path.Combine(epic, "Among Us.exe"), "fixture");
+            Put(Path.Combine(epic, "GameAssembly.dll"), "Epic assembly differs from Steam");
+            string versionFile = Path.Combine(epic, "Among Us_Data", "globalgamemanagers");
+            VersionData(versionFile, "2026.9.29");
+            var serializer = new System.Web.Script.Serialization.JavaScriptSerializer();
+            string epicManifest = Path.Combine(epicManifests, "among.item");
+            Put(epicManifest, serializer.Serialize(new { DisplayName = "Among Us", InstallLocation = epic, AppVersionString = "opaque-store-build-98765" }));
+            var epicEngine = new InstallerCore(new InstallerManifest { Platform = "Epic", GameAssemblySha256 = "steam-only-hash" }, package);
+            epicEngine.ValidateSource(epic, epicManifests);
+            Check(true, "Accept supported Epic game with opaque storefront version and its own assembly hash");
+            Check(InstallerCore.ReadGameVersion(versionFile) == "2026.9.29", "Read the complete length-prefixed game version");
+            VersionData(versionFile, "2026.09.29");
+            Check(InstallerCore.ReadGameVersion(versionFile) == "2026.9.29", "Normalize zero-padded calendar version");
+            VersionData(versionFile, "2026.10.27");
+            Put(epicManifest, serializer.Serialize(new { DisplayName = "Among Us", InstallLocation = epic, AppVersionString = "2026.9.29" }));
+            Reject(() => epicEngine.ValidateSource(epic, epicManifests), "Actual incompatible game version overrides a stale storefront label");
+            VersionData(versionFile, "2026.9.29", "2026.10.27");
+            Reject(() => InstallerCore.ReadGameVersion(versionFile), "Do not guess between conflicting date versions");
+            Reject(() => epicEngine.ValidateSource(epic, epicManifests), "A storefront label cannot override ambiguous game data");
+            Put(versionFile, "not a version record");
+            Put(epicManifest, serializer.Serialize(new { DisplayName = "Among Us", InstallLocation = epic, AppVersionString = "opaque-build" }));
+            Reject(() => epicEngine.ValidateSource(epic, epicManifests), "Unknown file and opaque store version remain blocked");
+            Check(InstallerCore.SupportedEpicVersion(null, new[] { "19.0.0" }), "Accept the documented storefront alias when no game date is available");
+            Check(!InstallerCore.SupportedEpicVersion(null, new[] { "19.0.01", "2026.9.290", "prefix2026.9.29" }), "Reject partial version matches");
+            Check(!InstallerCore.SupportedEpicVersion("2026.10.27", new[] { "19.0.0" }), "Store alias cannot override an unsupported installed game");
+            VersionData(versionFile, "2026.9.29");
+            Reject(() => epicEngine.ValidateSource(epic, Path.Combine(root, "missing manifests")), "An unregistered Epic folder remains blocked");
+            Put(Path.Combine(epicManifests, "broken.item"), "{invalid");
+            epicEngine.ValidateSource(epic, epicManifests);
+            Check(true, "A broken unrelated manifest does not block a valid Epic installation");
+            File.Delete(Path.Combine(epic, "GameAssembly.dll"));
+            Reject(() => epicEngine.ValidateSource(epic, epicManifests), "Reject an incomplete Epic installation");
+            string lockedStage = Path.Combine(root, "locked.installing"), published = Path.Combine(root, "completed");
+            Put(Path.Combine(lockedStage, "complete.txt"), "verified content");
+            using (var handle = CreateFile(Path.Combine(lockedStage, "complete.txt"), 0x80000000, 1, IntPtr.Zero, 3, 0, IntPtr.Zero))
+            {
+                Check(!handle.IsInvalid, "Acquire a real Windows file handle without delete sharing");
+                bool blocked = false;
+                try { Directory.Move(lockedStage, published); }
+                catch (UnauthorizedAccessException) { blocked = true; }
+                catch (IOException) { blocked = true; }
+                Check(blocked, "Reproduce the directory rename failure with a real Windows lock");
+                var releaseLock = new System.Threading.Thread(() => { System.Threading.Thread.Sleep(500); handle.Dispose(); });
+                releaseLock.Start();
+                try { InstallerCore.PublishInstallation(lockedStage, published); }
+                finally { releaseLock.Join(); }
+            }
+            Check(File.ReadAllText(Path.Combine(published, "complete.txt")) == "verified content", "Publish a completed installation after a temporary Windows lock releases");
+            Check(!Directory.Exists(lockedStage), "Successful publish leaves no staging directory");
+            string competing = Path.Combine(root, "competing.installing");
+            Put(Path.Combine(competing, "complete.txt"), "new content");
+            Reject(() => InstallerCore.PublishInstallation(competing, published), "Never overwrite a destination created by another process");
+            Check(File.ReadAllText(Path.Combine(published, "complete.txt")) == "verified content" && Directory.Exists(competing), "Destination conflict preserves both original and staging content");
+            string permanent = Path.Combine(root, "permanent.installing"), neverPublished = Path.Combine(root, "never-published");
+            Put(Path.Combine(permanent, "complete.txt"), "retained");
+            using (var handle = CreateFile(Path.Combine(permanent, "complete.txt"), 0x80000000, 1, IntPtr.Zero, 3, 0, IntPtr.Zero))
+            {
+                bool blocked = false;
+                try { InstallerCore.PublishInstallation(permanent, neverPublished); }
+                catch (IOException) { blocked = true; }
+                catch (UnauthorizedAccessException) { blocked = true; }
+                Check(blocked, "A permanent Windows lock stops after bounded retries");
+            }
+            Check(!Directory.Exists(neverPublished) && File.ReadAllText(Path.Combine(permanent, "complete.txt")) == "retained", "Failed publication preserves staging without claiming success");
             Console.WriteLine("PASS: " + checks + " installer checks. Fixtures retained at " + root);
             return 0;
         }
         catch (Exception error) { Console.Error.WriteLine(error); return 1; }
     }
 }
+

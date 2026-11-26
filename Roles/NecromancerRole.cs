@@ -6,6 +6,7 @@ using UnityEngine;
 namespace TouMarmo.Roles;
 public sealed class NecromancerRole(IntPtr cppPtr) : CrewmateRole(cppPtr), ITownOfUsRole
 {
+    public override bool IsAffectedByComms => false;
     public string IdPart => "Necromancer";
     public string RoleNameLocale => "TouMarmo.Role.Necromancer";
     public string RoleDescriptionLocale => "TouMarmo.Role.Necromancer.IntroBlurb";

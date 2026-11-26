@@ -1,4 +1,4 @@
-﻿using MiraAPI.GameOptions;
+using MiraAPI.GameOptions;
 using MiraAPI.GameOptions.Attributes;
 using MiraAPI.GameOptions.OptionTypes;
 using MiraAPI.Utilities;
@@ -9,7 +9,7 @@ namespace TownOfUs.Options.Roles.Crewmate;
 public sealed class EngineerOptions : AbstractRoleOptionGroup<EngineerTouRole>
 {
     public override string GroupName => MiraLocaleManager.Get("TownOfUsMira.Role.Engineer", "Engineer");
-    public ModdedNumberOption MaxVents { get; } = new("TouOptionEngineerMaxVents", -1f, -1f, 30f, 1f, "#", "∞", MiraNumberSuffixes.None, "0");
+    public ModdedNumberOption MaxVents { get; } = new("TouOptionEngineerMaxVents", -1f, 0f, 30f, 1f, "∞", "∞", MiraNumberSuffixes.None, "0");
 
     public ModdedNumberOption VentPerTasks { get; } = new("TouOptionEngineerVentPerTasks", 1f, 0f, 15f, 1f, "Off", "#", MiraNumberSuffixes.None, "0")
     {
@@ -22,7 +22,7 @@ public sealed class EngineerOptions : AbstractRoleOptionGroup<EngineerTouRole>
     [ModdedNumberOption("TouOptionEngineerVentDuration", 0f, 25f, 5f, MiraNumberSuffixes.Seconds, zeroInfinity: true)]
     public float VentDuration { get; set; } = 10f;
 
-    public ModdedNumberOption MaxFixes { get; } = new("TouOptionEngineerMaxFixes", 2f, -1f, 15f, 1f, "0", "∞", MiraNumberSuffixes.None, "0");
+    public ModdedNumberOption MaxFixes { get; } = new("TouOptionEngineerMaxFixes", 2f, 0f, 15f, 1f, "0", "∞", MiraNumberSuffixes.None, "0");
 
     public ModdedNumberOption FixPerTasks { get; } = new("TouOptionEngineerFixPerTasks", 3f, 0f, 15f, 1f, "Off", "#", MiraNumberSuffixes.None, "0")
     {

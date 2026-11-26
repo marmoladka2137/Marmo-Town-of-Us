@@ -17,6 +17,7 @@ public sealed class SeerRevealButton : TownOfUsRoleButton<SeerRole, PlayerContro
     public override Color TextOutlineColor => TownOfUsColors.Seer;
     public override float Cooldown => Math.Clamp(OptionGroupSingleton<SeerOptions>.Instance.SeerCooldown + MapCooldown, 5f, 120f);
     public override int MaxUses => (int)OptionGroupSingleton<SeerOptions>.Instance.MaxCompares;
+    public override bool ZeroIsInfinite { get; set; } = true;
     public override LoadableAsset<Sprite> Sprite => LegacyAssets.IsLegacy ? LegacyCrewAssets.SeerSprite : TouCrewAssets.SeerSprite;
 
     public override bool Enabled(RoleBehaviour? role)
@@ -79,7 +80,7 @@ public sealed class SeerRevealButton : TownOfUsRoleButton<SeerRole, PlayerContro
                 Color.white,
                 new Vector3(0f, 1f, -20f),
                 spr: TouRoleIcons.Seer.LoadAsset());
-                
+
             notif1.AdjustNotification();
 
             if (options.ShowCrewmateKillingAsRed.Value)

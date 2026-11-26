@@ -1,4 +1,4 @@
-﻿using MiraAPI.GameOptions;
+using MiraAPI.GameOptions;
 using MiraAPI.Modifiers;
 using MiraAPI.Utilities;
 using TownOfUs.Modifiers.HnsImpostor;
@@ -16,6 +16,7 @@ public sealed class CamouflagerCamoButton : TownOfUsRoleButton<HnsCamouflagerRol
     public override float Cooldown => Math.Clamp(OptionGroupSingleton<HnsCamouflagerOptions>.Instance.CamoCooldown + MapCooldown, 5f, 120f);
     public override float EffectDuration => OptionGroupSingleton<HnsCamouflagerOptions>.Instance.CamoDuration;
     public override int MaxUses => (int)OptionGroupSingleton<HnsCamouflagerOptions>.Instance.MaxCamoUses;
+    public override bool ZeroIsInfinite { get; set; } = true;
     public override LoadableAsset<Sprite> Sprite => TouImpAssets.HypnotiseButtonSprite;
 
     protected override void OnClick()

@@ -22,8 +22,8 @@ public sealed class OverclockerOptions : AbstractTouModifierOptionGroup<Overcloc
         new("TouOptionOverclockerRoundOne", false);
 
     public ModdedNumberOption OverclockUses { get; set; } =
-        new("TouOptionOverclockerUses", 2, 1, 5, 1,
-            MiraNumberSuffixes.None);
+        new("TouOptionOverclockerUses", 2, 0f, 5, 1,
+            MiraNumberSuffixes.None, zeroInfinity: true);
 
     public ModdedNumberOption OverclockMultiplier { get; set; } =
         new("TouOptionOverclockerMultiplier", 2f, 1.1f, 3f, 0.1f,

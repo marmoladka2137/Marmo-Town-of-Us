@@ -1,4 +1,4 @@
-﻿using MiraAPI.GameOptions;
+using MiraAPI.GameOptions;
 using MiraAPI.Hud;
 using MiraAPI.Modifiers;
 using MiraAPI.Utilities;
@@ -16,6 +16,7 @@ public sealed class OverclockButton : TownOfUsButton
     public override float Cooldown => Math.Clamp(OptionGroupSingleton<OverclockerOptions>.Instance.OverclockCooldown.Value + MapCooldown, 2.5f, 120f);
     public override float EffectDuration => OptionGroupSingleton<OverclockerOptions>.Instance.OverclockDuration.Value;
     public override int MaxUses => (int)OptionGroupSingleton<OverclockerOptions>.Instance.OverclockUses.Value;
+    public override bool ZeroIsInfinite { get; set; } = true;
     public override ButtonLocation Location => ButtonLocation.BottomLeft;
     public override LoadableAsset<Sprite> Sprite => TouAssets.OverclockSprite;
 

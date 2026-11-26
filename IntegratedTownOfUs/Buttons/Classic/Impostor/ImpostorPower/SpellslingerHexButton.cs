@@ -15,6 +15,7 @@ public sealed class SpellslingerHexButton : TownOfUsRoleButton<SpellslingerRole,
     public override Color TextOutlineColor => TownOfUsColors.Impostor;
     public override float Cooldown => Math.Clamp(OptionGroupSingleton<SpellslingerOptions>.Instance.HexCooldown + MapCooldown, 5f, 120f);
     public override int MaxUses => (int)OptionGroupSingleton<SpellslingerOptions>.Instance.MaxHexes;
+    public override bool ZeroIsInfinite { get; set; } = true;
     public override LoadableAsset<Sprite> Sprite => TouImpAssets.HexSprite;
 
     public override bool Enabled(RoleBehaviour? role)

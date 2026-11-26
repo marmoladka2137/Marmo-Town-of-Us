@@ -1,4 +1,4 @@
-﻿using MiraAPI.GameOptions;
+using MiraAPI.GameOptions;
 using MiraAPI.Modifiers;
 using TownOfUs.Modifiers.Neutral;
 using TownOfUs.Options.Roles.Neutral;
@@ -20,6 +20,7 @@ public sealed class SurvivorVestButton : TownOfUsRoleButton<SurvivorRole>, ILega
     public override float Cooldown => Math.Clamp(OptionGroupSingleton<SurvivorOptions>.Instance.VestCooldown + MapCooldown, 5f, 120f);
     public override float EffectDuration => OptionGroupSingleton<SurvivorOptions>.Instance.VestDuration;
     public override int MaxUses => (int)OptionGroupSingleton<SurvivorOptions>.Instance.MaxVests;
+    public override bool ZeroIsInfinite { get; set; } = true;
     public override LoadableAsset<Sprite> Sprite => LegacyAssets.IsLegacy ? LegacyNeutAssets.VestSprite : TouNeutAssets.VestSprite;
 
     protected override void OnClick()

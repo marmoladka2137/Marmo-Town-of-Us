@@ -1,4 +1,4 @@
-﻿using MiraAPI.GameOptions;
+using MiraAPI.GameOptions;
 using MiraAPI.Hud;
 using MiraAPI.Utilities;
 using TownOfUs.Options.Roles.Crewmate;
@@ -17,6 +17,7 @@ public sealed class TransporterTransportButton : TownOfUsRoleButton<TransporterR
         Math.Clamp(OptionGroupSingleton<TransporterOptions>.Instance.TransporterCooldown + MapCooldown, 5f, 120f);
 
     public override int MaxUses => (int)OptionGroupSingleton<TransporterOptions>.Instance.MaxNumTransports;
+    public override bool ZeroIsInfinite { get; set; } = true;
     public override LoadableAsset<Sprite> Sprite => LegacyAssets.IsLegacy ? LegacyCrewAssets.Transport : TouCrewAssets.Transport;
     public int ExtraUses { get; set; }
 

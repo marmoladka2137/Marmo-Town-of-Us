@@ -1,4 +1,4 @@
-﻿using MiraAPI.Events;
+using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Meeting;
 using MiraAPI.Events.Vanilla.Player;
 using MiraAPI.GameOptions;
@@ -40,6 +40,6 @@ public static class TrackerEvents
         }
 
         var button = CustomButtonSingleton<SonarTrackButton>.Instance;
-        button.SetUses((int)OptionGroupSingleton<SonarOptions>.Instance.MaxTracks);
+        button.SetUses((int)TouMarmo.Modules.AbilityLimits.Count(OptionGroupSingleton<SonarOptions>.Instance.MaxTracks));
     }
 }

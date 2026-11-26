@@ -255,9 +255,16 @@ namespace Marmo.Launcher
                 if (!LauncherCore.IsRunning(gamePath.Text))
                 {
                     RememberGame();
+                    if (LauncherCore.MatchesStore(gamePath.Text, true))
+                    {
+                        status.Text = "Preparing Epic sign-in starter…";
+                        string folder = gamePath.Text; Busy(true);
+                        try { await Task.Run(() => LauncherCore.EnsureEpicStarter(folder)); }
+                        finally { Busy(false); }
+                    }
                     Process.Start(LauncherCore.StartInfo(gamePath.Text));
                 }
-                status.Text = "MTOU is running.";
+                status.Text = LauncherCore.MatchesStore(gamePath.Text, true) ? "Epic starter opened. Complete its sign-in prompt if requested." : "MTOU is running.";
             }
             catch (Exception error) { MessageBox.Show(this, error.Message, "Cannot start MTOU"); }
         }

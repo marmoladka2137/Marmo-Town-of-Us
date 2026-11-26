@@ -14,7 +14,7 @@ public sealed class CrewpostorOptions : AbstractTouModifierOptionGroup<Crewposto
     public override Color GroupColor => Palette.ImpostorRoleHeaderRed;
 
     public ModdedToggleOption CrewpostorReplacesImpostor { get; set; } =
-        new("TouOptionCrewpostorReplacesImpostor", true);
+        new("TouOptionCrewpostorReplacesImpostor", false);
 
     public ModdedToggleOption CanAlwaysSabotage { get; set; } =
         new("TouOptionCrewpostorCanAlwaysSabotage", false);

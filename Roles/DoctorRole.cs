@@ -7,6 +7,7 @@ using UnityEngine;
 namespace TouMarmo.Roles;
 public sealed class DoctorRole(IntPtr cppPtr) : CrewmateRole(cppPtr), ITownOfUsRole, IVisibleRole
 {
+    public override bool IsAffectedByComms => false;
     public bool CanOtherRoleSee(RoleBehaviour role, out bool consideredTeammates)
     {
         consideredTeammates = false;

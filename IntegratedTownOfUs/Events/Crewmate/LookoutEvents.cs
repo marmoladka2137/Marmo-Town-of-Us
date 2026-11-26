@@ -1,4 +1,4 @@
-﻿using HarmonyLib;
+using HarmonyLib;
 using MiraAPI.Events;
 using MiraAPI.Events.Mira;
 using MiraAPI.Events.Vanilla.Gameplay;
@@ -72,7 +72,7 @@ public static class LookoutEvents
             .Do(x => x.RemoveModifier<LookoutWatchedModifier>());
 
         var button = CustomButtonSingleton<WatchButton>.Instance;
-        button.SetUses((int)OptionGroupSingleton<LookoutOptions>.Instance.MaxWatches);
+        button.SetUses((int)TouMarmo.Modules.AbilityLimits.Count(OptionGroupSingleton<LookoutOptions>.Instance.MaxWatches));
     }
 
     public static void CheckForLookoutWatched(PlayerControl source, PlayerControl target)

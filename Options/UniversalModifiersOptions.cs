@@ -27,7 +27,7 @@ public ModdedToggleOption KemadaGuessable { get; } = new("Kemada Can Be Guessed"
     public ModdedNumberOption BigBrainChance { get; } = new("Big Brain Chance", 0f, 0, 100, 5, "#", "#", MiraNumberSuffixes.Percent, null, halfIncrements: false);
 public ModdedNumberOption BigBrainAmount { get; } = new("Big Brain Maximum Players", 1, 0, 15, 1, "#", "#", MiraNumberSuffixes.None, null, halfIncrements: true);
 
-    public ModdedNumberOption BigBrainDetections { get; } = new("Big Brain Detections Per Round", 3, 1, 15, 1, "#", "#", MiraNumberSuffixes.None, null, halfIncrements: true);
+    public ModdedNumberOption BigBrainDetections { get; } = new("Big Brain Detections Per Round", 3, 0, 15, 1, "∞", "#", MiraNumberSuffixes.None, null, halfIncrements: true);
 
     public ModdedToggleOption BigBrainFailed { get; } = new("Big Brain Detects Failed Abilities", false);
 public ModdedToggleOption BigBrainCrew { get; } = new("Big Brain For Crewmates", true);
@@ -38,6 +38,10 @@ public ModdedToggleOption BigBrainCrew { get; } = new("Big Brain For Crewmates",
 
     public ModdedNumberOption OneMoreChanceChance { get; } = new("One More Chance Chance", 0f, 0f, 100f, 5f, "#", "#", MiraNumberSuffixes.Percent, null, halfIncrements: false);
 public ModdedNumberOption OneMoreChanceCount { get; } = new("One More Chance Count", 1, 0f, 15f, 1f, "#", "#", MiraNumberSuffixes.None, "0", halfIncrements: true);
+
+    public ModdedNumberOption HungerAmount { get; } = new("Hunger Maximum Players", 1f, 0f, 15f, 1f, "#", "#", MiraNumberSuffixes.None, null, halfIncrements: true);
+    public ModdedNumberOption HungerChance { get; } = new("Hunger Chance", 0f, 0f, 100f, 5f, "#", "#", MiraNumberSuffixes.Percent, null, halfIncrements: false);
+    public ModdedNumberOption HungerSpeedPerReport { get; } = new("Hunger Speed Added Per Body Report", .25f, 0f, 2f, .05f, "#", "#", MiraNumberSuffixes.None, "0.00", halfIncrements: false);
 
 }
 

@@ -1,4 +1,5 @@
 using HarmonyLib;
+using TouMarmo.Events;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.Modifiers;
@@ -16,7 +17,9 @@ public static class MarmoSession
     public static void Notify(string text) => Helpers.CreateAndShowNotification(text,Color.white,new Vector3(0,1,-20));
     public static void Clear()
     {
+        TouMarmo.Modules.Papetir.PapetirRuntime.Reset();
         FurasRuntime.Clear();
+        TouMarmo.Modules.Gravedigger.GravediggerRuntime.Clear();
         DoctorWardrobe.Clear();
         SoulguardRole.ClearChatKnowledge();
         ChanceMisfireRuntime.Clear(); OneMoreChanceModifier.ClearHistory(); ProtectionRuntime.Clear(); DirtekBondRuntime.Clear(); NecromancerRuntime.Clear(); BanditRuntime.Clear(); DoctorRuntime.States.Clear(); ExecutionerChoice.Reset(); SweetsRuntime.Clear(); ExorcistRuntime.Clear();
@@ -24,6 +27,7 @@ public static class MarmoSession
     [RegisterEvent] public static void End(GameEndEvent e) { FurasRuntime.Clear(); ChanceMisfireRuntime.Clear(); ProtectionRuntime.Clear(); DirtekBondRuntime.Clear(); NecromancerRuntime.Clear(); BanditRuntime.RestoreAll(); SweetsRuntime.Clear(); ExorcistRuntime.Clear(); }
     public static void Tick()
     {
+        TouMarmo.Modules.LobbyMimic.MimicRuntime.Tick();
         TouMarmo.Modules.Profile.CosmeticSelectionRuntime.Tick();
         var lobby=LobbyBehaviour.Instance || !ShipStatus.Instance;
         if(lobby){if(!inLobby) Clear(); inLobby=true; return;}
@@ -36,7 +40,15 @@ public static class MarmoSession
                 if (player && player.Data && player.Data.Role && !TownOfUs.Modules.GameHistory.PlayerStats.ContainsKey(player.PlayerId))
                     TownOfUs.Modules.GameHistory.RegisterRole(player, player.Data.Role);
         }
+        TouMarmo.Modules.Gravedigger.GravediggerRuntime.Tick();
         DirtekBondRuntime.Tick(); BanditRuntime.Tick(); NecromancerRuntime.Tick(); DoctorRuntime.Tick();
+        if (IsHost && InRound)
+        {
+            SimpEvents.AssignMissingTargets();
+            foreach (var player in PlayerControl.AllPlayerControls.ToArray())
+                if (player.Data?.Role != null && player.GetModifier<OneMoreChanceModifier>() is { } chance &&
+                    !chance.IsModifierValidOn(player.Data.Role)) player.RpcRemoveModifier<OneMoreChanceModifier>();
+        }
         // A shot modifier always retains the guessing ability, including mid-meeting grants.
         if (IsHost)
             foreach (var player in PlayerControl.AllPlayerControls.ToArray())

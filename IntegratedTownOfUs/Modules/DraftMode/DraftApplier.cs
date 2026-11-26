@@ -12,7 +12,7 @@ namespace TownOfUs.Modules.DraftMode
         public static void StorePendingDraftStates(IReadOnlyList<DraftSlotState> slotStates)
         {
             if (slotStates == null) return;
-            PendingDraftStates = slotStates.ToList();
+            PendingDraftStates = slotStates.Where(s => s.HasPicked).Select(s => new DraftSlotState { PlayerId=s.PlayerId, SlotNumber=s.SlotNumber, ChosenRoleId=s.ChosenRoleId, HasPicked=true, ForcedRoleName=s.ForcedRoleName }).ToList();
         }
 
         public static void ApplyDraftResults(IReadOnlyList<DraftSlotState> slotStates)
@@ -40,13 +40,6 @@ namespace TownOfUs.Modules.DraftMode
         {
             if (!AmongUsClient.Instance.AmHost)
                 return;
-
-            if (roleId == 0)
-            {
-                MiscUtils.LogInfo(Events.TownOfUsEventHandlers.LogLevel.Warning,
-                    $"DraftApplier: roleId is 0 for player {playerId} ({roleName ?? "unknown"}), cannot assign role");
-                return;
-            }
 
             var player = MiscUtils.PlayerById(playerId);
 

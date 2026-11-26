@@ -8,6 +8,7 @@ namespace TouMarmo.Roles;
 
 public sealed class ExorcistRole(IntPtr cppPtr) : CrewmateRole(cppPtr), ITownOfUsRole
 {
+    public override bool IsAffectedByComms => false;
     public string IdPart => "Exorcist";
     public string RoleNameLocale => "TouMarmo.Role.Exorcist";
     public string RoleDescriptionLocale => "TouMarmo.Role.Exorcist.IntroBlurb";

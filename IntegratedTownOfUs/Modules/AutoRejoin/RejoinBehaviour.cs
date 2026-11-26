@@ -17,6 +17,7 @@ public sealed class RejoinBehaviour(IntPtr ptr) : MonoBehaviour(ptr)
     public static CountdownGui? GuiObject;
     public static RejoinBehaviour? Instance;
     private readonly RejoinSchedule schedule = new();
+    private double retryUntil;
 
     public static void TriggerRejoin()
     {
@@ -31,8 +32,10 @@ public sealed class RejoinBehaviour(IntPtr ptr) : MonoBehaviour(ptr)
     }
     public void StartRejoin()
     {
-        schedule.Begin(Time.realtimeSinceStartupAsDouble,
-            LocalSettingsTabSingleton<TouLocalTabPreferences>.Instance.AutoRejoinDelay.Value);
+        var delaySetting = LocalSettingsTabSingleton<TouLocalTabPreferences>.Instance.AutoRejoinDelay;
+        if (delaySetting.Value == 4f) delaySetting.Value = 5f; // Migrate previous default.
+        schedule.Begin(Time.realtimeSinceStartupAsDouble, delaySetting.Value);
+        retryUntil = Time.realtimeSinceStartupAsDouble + Math.Max(0, delaySetting.Value) + 15;
         PendingRejoin = true;
     }
     public void Cancel() { schedule.Cancel(); ScreenText = ""; }
@@ -44,8 +47,8 @@ public sealed class RejoinBehaviour(IntPtr ptr) : MonoBehaviour(ptr)
     private void Update()
     {
         if (!PendingRejoin || !schedule.Active) return;
-        if (!CurrentEndGameManager) { CancelRejoin(); return; }
         double now = Time.realtimeSinceStartupAsDouble;
+        if (!CurrentEndGameManager) { if(now>=retryUntil) CancelRejoin(); return; }
         int seconds = schedule.Seconds(now);
         ScreenText = "[AutoRejoin] " + MiraLocaleManager.Get("TouAutoRejoinCountdown", "Rejoining in <seconds>")
             .Replace("<seconds>", seconds.ToString(TownOfUsPlugin.Culture)) + "s";
@@ -53,10 +56,15 @@ public sealed class RejoinBehaviour(IntPtr ptr) : MonoBehaviour(ptr)
         if (!schedule.Take(now)) return;
         ScreenText = "";
         // Resolve within the current result screen, not every button in every loaded scene.
-        var button = CurrentEndGameManager!.GetComponentsInChildren<PassiveButton>(true)
-            .FirstOrDefault(x => x && x.gameObject.activeInHierarchy && x.name == "PlayAgainButton");
-        if (!button) { Warning("[MTOU AutoRejoin] Result screen has no active Play Again button."); CancelRejoin(); return; }
-        try { button!.OnClick.Invoke(); }
+        // Navigation is a separate scene object, not a child of EndGameManager.
+        var navigation = UnityEngine.Object.FindObjectOfType<EndGameNavigation>();
+        if (!navigation || !navigation.PlayAgainButton || !navigation.PlayAgainButton.gameObject.activeInHierarchy)
+        {
+            if (now < retryUntil) { schedule.Begin(now, .25); return; }
+            Warning("[MTOU AutoRejoin] Result screen has no active Play Again button."); CancelRejoin(); return;
+        }
+        PendingRejoin = false;
+        try { navigation!.NextGame(); }
         catch (Exception ex) { Warning("[MTOU AutoRejoin] Could not invoke Play Again: " + ex.GetType().Name); CancelRejoin(); }
     }
     private void OnDestroy() { if (Instance == this) { CancelRejoin(); Instance = null; GuiObject = null; } }

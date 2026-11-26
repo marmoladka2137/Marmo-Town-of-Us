@@ -1,4 +1,4 @@
-﻿using MiraAPI.GameOptions;
+using MiraAPI.GameOptions;
 using MiraAPI.GameOptions.Attributes;
 using MiraAPI.GameOptions.OptionTypes;
 using MiraAPI.Utilities;
@@ -16,7 +16,7 @@ public sealed class SurvivorOptions : AbstractRoleOptionGroup<SurvivorRole>
     [ModdedNumberOption("TouOptionSurvivorVestDuration", 5f, 15f, 1f, MiraNumberSuffixes.Seconds)]
     public float VestDuration { get; set; } = 10f;
 
-    [ModdedNumberOption("TouOptionSurvivorMaxVests", 1f, 15f, 1f, MiraNumberSuffixes.None, "0")]
+    [ModdedNumberOption("TouOptionSurvivorMaxVests", 0f, 15f, 1f, MiraNumberSuffixes.None, "0", zeroInfinity: true)]
     public float MaxVests { get; set; } = 10f;
 
     [ModdedToggleOption("TouOptionSurvivorGetMoreUsesFromCompletingTasks")]

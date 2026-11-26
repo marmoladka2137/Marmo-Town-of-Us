@@ -41,7 +41,7 @@ public static class DoctorRuntime
     {
         if (!MarmoSession.Alive(p) || !MarmoSession.Alive(target) || p == target || p.Data.Role is not DoctorRole || !MarmoSession.InRound) return false;
         var s = For(p);
-        return !s.Locked && !s.Revealed && !s.Marks.Contains(target.PlayerId) && s.MarksThisRound < Options.MarksPerRound.Value && Time.time >= s.ReadyAt &&
+        return !s.Locked && !s.Revealed && !s.Marks.Contains(target.PlayerId) && s.MarksThisRound < TouMarmo.Modules.AbilityLimits.Count(Options.MarksPerRound.Value) && Time.time >= s.ReadyAt &&
             Vector2.Distance(p.GetTruePosition(), target.GetTruePosition()) <= 2.25f;
     }
     /// <summary>
@@ -52,24 +52,24 @@ public static class DoctorRuntime
     {
         if (!MarmoSession.Alive(p) || p.Data.Role is not DoctorRole || For(p).Revealed) return false;
         var living = PlayerControl.AllPlayerControls.ToArray().Where(x => MarmoSession.Alive(x)).ToArray();
-        
+
         // When only 2 players alive (Doctor + 1 other), allow reveal regardless of role and marks
         if (living.Length <= 2) return true;
-        
+
         // Calculate dynamically: only count living crewmates (excluding Doctor) as targets
         var crew = living.Where(x => x != p && x.IsCrewmate()).ToArray();
         if (crew.Length == 0) return true; // No crewmates to mark, but can still reveal
-        
+
         // Clean up dead players from Marks to keep counter accurate
         var livingIds = new HashSet<byte>(living.Select(x => x.PlayerId));
         var state = For(p);
         var deadMarks = state.Marks.Where(id => !livingIds.Contains(id)).ToList();
         foreach (var id in deadMarks) state.Marks.Remove(id);
-        
+
         var marked = crew.Count(x => state.Marks.Contains(x.PlayerId));
         return NewRoleRules.DoctorReady(crew.Length, marked, Options.Percent.Value);
     }
-    
+
     public static bool CanReveal(PlayerControl p)
     {
         if (For(p).Locked) return false;
@@ -198,7 +198,7 @@ public static class DoctorRuntime
         if (!ProtectionRuntime.MayDefend(e, e.Target)) return;
         if (Immortal(e.Target)) { ProtectionRuntime.Block(e, e.Source, e.Target, ProtectionKind.Doctor, e.Target); return; }
         if (e.IgnoreDefense || e.Source == e.Target || !e.Target.HasModifier<DoctorShieldModifier>()) return;
-        if (!ProtectionRuntime.Block(e, e.Source, e.Target, ProtectionKind.Doctor)) return;
+        if (!ProtectionRuntime.Block(e, e.Source, e.Target, ProtectionKind.Doctor, States.Where(pair => pair.Value.Shields.Contains(e.Target.PlayerId)).Select(pair => MarmoSession.Player(pair.Key)).FirstOrDefault(p => MarmoSession.Alive(p)))) return;
         if (MarmoSession.IsHost) RpcBreakShield(e.Target);
     }
     [RegisterEvent(2000)] public static void Vote(ProcessVotesEvent e) { if (e.ExiledPlayer?.Object is { } p && ExileProtected(p)) e.ExiledPlayer = null; }

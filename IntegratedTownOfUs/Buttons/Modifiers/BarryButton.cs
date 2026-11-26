@@ -1,4 +1,4 @@
-﻿using MiraAPI.GameOptions;
+using MiraAPI.GameOptions;
 using MiraAPI.Hud;
 using MiraAPI.Modifiers;
 using Reactor.Networking.Attributes;
@@ -15,6 +15,7 @@ public sealed class BarryButton : TownOfUsButton, ILegacyCapable
     public override Color TextOutlineColor => TownOfUsColors.ButtonBarry;
     public override float Cooldown => Math.Clamp(OptionGroupSingleton<ButtonBarryOptions>.Instance.Cooldown + MapCooldown, 2.5f, 120f);
     public override int MaxUses => (int)OptionGroupSingleton<ButtonBarryOptions>.Instance.MaxNumButtons;
+    public override bool ZeroIsInfinite { get; set; } = true;
     public override ButtonLocation Location => ButtonLocation.BottomLeft;
     public override LoadableAsset<Sprite> Sprite => LegacyAssets.IsLegacy ? LegacyAssets.BarryButtonSprite : TouAssets.BarryButtonSprite;
 

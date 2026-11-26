@@ -1,4 +1,4 @@
-﻿using MiraAPI.GameOptions;
+using MiraAPI.GameOptions;
 using MiraAPI.Modifiers;
 using MiraAPI.Utilities;
 using TownOfUs.Modifiers.Neutral;
@@ -15,6 +15,7 @@ public sealed class MercenaryGuardButton : TownOfUsRoleButton<MercenaryRole, Pla
     public override Color TextOutlineColor => TownOfUsColors.Mercenary;
     public override float Cooldown => Math.Clamp(OptionGroupSingleton<MercenaryOptions>.Instance.GuardCooldown + MapCooldown, 5f, 120f);
     public override int MaxUses => (int)OptionGroupSingleton<MercenaryOptions>.Instance.MaxUses;
+    public override bool ZeroIsInfinite { get; set; } = true;
     public override LoadableAsset<Sprite> Sprite => LegacyAssets.IsLegacy ? LegacyNeutAssets.GuardSprite : TouNeutAssets.GuardSprite;
 
     public override bool Enabled(RoleBehaviour? role)

@@ -52,6 +52,7 @@ namespace Marmo.Launcher
                     try { LauncherCore.Remember(game, saved); } catch (IOException) { } catch (UnauthorizedAccessException) { }
                 int logOption = Array.IndexOf(args, "--game-log");
                 string logFile = logOption >= 0 && logOption + 1 < args.Length ? args[logOption + 1] : null;
+                LauncherCore.EnsureEpicStarter(game);
                 using (var process = Process.Start(LauncherCore.StartInfo(game, logFile)))
                 {
                     if (process == null) throw new IOException("Windows could not start MTOU.");

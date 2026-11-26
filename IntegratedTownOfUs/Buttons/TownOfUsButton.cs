@@ -473,6 +473,8 @@ public abstract class TownOfUsTargetButton<T> : CustomActionButton<T> where T : 
 
     public override void ClickHandler()
     {
+        if(!TouMarmo.Modules.Manipulator.ManipulatorButtonGate.Prefix(this)) return;
+        TouMarmo.Modules.BigBrain.BigBrainButtonPatch.Prefix(this,out var bigBrainAttempt);
         if (CanClick())
         {
             if (LimitedUses)
@@ -501,6 +503,7 @@ public abstract class TownOfUsTargetButton<T> : CustomActionButton<T> where T : 
                 Timer = Cooldown;
             }
         }
+        TouMarmo.Modules.BigBrain.BigBrainButtonPatch.Postfix(this,bigBrainAttempt);
     }
 
     protected override void FixedUpdate(PlayerControl playerControl)

@@ -167,19 +167,57 @@ namespace Marmo.SteamInstaller
             get { return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
                 "Epic", "EpicGamesLauncher", "Data", "Manifests"); }
         }
+        // Epic's AppVersionString can be an opaque storefront build identifier.
+        // Unity serializes bundleVersion as an aligned length-prefixed UTF-8 string.
+        // Read complete calendar-version strings, not arbitrary substring matches.
+        public static string ReadGameVersion(string filename)
+        {
+            if (!File.Exists(filename)) return null;
+            NoLinks(filename);
+            long size = new FileInfo(filename).Length;
+            if (size < 20 || size > 8 * 1024 * 1024) return null;
+            byte[] data = File.ReadAllBytes(filename);
+            var versions = new HashSet<string>(StringComparer.Ordinal);
+            for (int offset = 0; offset <= data.Length - 12; offset += 4)
+            {
+                int length = BitConverter.ToInt32(data, offset);
+                if (length < 8 || length > 10 || offset + 4 + length > data.Length) continue;
+                string value = Encoding.ASCII.GetString(data, offset + 4, length);
+                if (!Regex.IsMatch(value, @"^20\d{2}\.\d{1,2}\.\d{1,2}$")) continue;
+                string[] parts = value.Split('.');
+                int year = Int32.Parse(parts[0]), month = Int32.Parse(parts[1]), day = Int32.Parse(parts[2]);
+                if (month < 1 || month > 12 || day < 1 || day > DateTime.DaysInMonth(year, month)) continue;
+                versions.Add(year + "." + month + "." + day);
+            }
+            // Do not guess when multiple different date versions occur in the file.
+            if (versions.Count > 1) throw new IOException("Game data contains conflicting version records. Verify Among Us in Epic Games Launcher.");
+            return versions.Count == 1 ? versions.Single() : null;
+        }
+        public static bool SupportedEpicVersion(string gameVersion, IEnumerable<string> storefrontVersions)
+        {
+            if (!String.IsNullOrEmpty(gameVersion)) return gameVersion == "2026.9.29";
+            return storefrontVersions.Any(value => value != null && Regex.IsMatch(value,
+                @"^(?:2026\.0?9\.29|19\.0\.0)(?:[-+_ ].*)?$", RegexOptions.CultureInvariant));
+        }
         public void ValidateSource(string source)
+        {
+            ValidateSource(source, EpicManifestRoot);
+        }
+        // Explicit manifest root permits isolated tests without changing ProgramData.
+        public void ValidateSource(string source, string epicManifestRoot)
         {
             NoLinks(source);
             if (!File.Exists(Path.Combine(source, "Among Us.exe")) || !Directory.Exists(Path.Combine(source, "Among Us_Data")))
                 throw new IOException("Select the Among Us game folder from Steam > Properties > Installed Files > Browse.");
             if (Manifest.Platform == "Epic")
             {
-                if (!FindEpicGames(EpicManifestRoot).Any(p => p.Equals(Full(source), StringComparison.OrdinalIgnoreCase)))
+                if (!File.Exists(Path.Combine(source, "GameAssembly.dll")))
+                    throw new IOException("Epic's Among Us installation is incomplete. Verify the game in Epic Games Launcher.");
+                if (!FindEpicGames(epicManifestRoot).Any(p => p.Equals(Full(source), StringComparison.OrdinalIgnoreCase)))
                     throw new IOException("Select Among Us installed through Epic Games Launcher.");
-                // Epic builds use their own GameAssembly. Verify the storefront manifest version,
-                // retaining the full original game's authentication and platform libraries.
-                bool supported = false;
-                foreach (string file in Directory.GetFiles(EpicManifestRoot, "*.item"))
+                string gameVersion = ReadGameVersion(Path.Combine(source, "Among Us_Data", "globalgamemanagers"));
+                var storefrontVersions = new List<string>();
+                foreach (string file in Directory.GetFiles(epicManifestRoot, "*.item"))
                 {
                     try
                     {
@@ -187,14 +225,19 @@ namespace Marmo.SteamInstaller
                     object location, version;
                     if (item.TryGetValue("InstallLocation", out location) && Full(Convert.ToString(location)).Equals(Full(source), StringComparison.OrdinalIgnoreCase)
                         && item.TryGetValue("AppVersionString", out version))
-                        supported |= Convert.ToString(version).Contains("2026.9.29") || Convert.ToString(version).StartsWith("19.0.0", StringComparison.Ordinal);
+                        storefrontVersions.Add(Convert.ToString(version));
                     }
                     catch (IOException) { }
                     catch (UnauthorizedAccessException) { }
                     catch (ArgumentException) { }
                     catch (InvalidOperationException) { }
                 }
-                if (!supported) throw new IOException("This Epic build is unverified. MTOU requires Among Us 2026.9.29 (19.0.0).");
+                if (!SupportedEpicVersion(gameVersion, storefrontVersions))
+                    throw new IOException("MTOU requires Among Us 2026.9.29. Detected game version: "
+                        + (gameVersion ?? "unknown") + ". Epic build: "
+                        + (storefrontVersions.Count == 0 ? "unknown" : String.Join(", ", storefrontVersions))
+                        + ". Verify the game in Epic Games Launcher. No game files were changed.");
+                Log("Epic game version: " + (gameVersion ?? "storefront version verified") + "; store build: " + String.Join(", ", storefrontVersions));
                 return;
             }
             var common = Directory.GetParent(Full(source));
@@ -339,6 +382,40 @@ namespace Marmo.SteamInstaller
             finally { if (File.Exists(temporary)) File.Delete(temporary); }
         }
 
+        public static void PublishInstallation(string stage, string destination)
+        {
+            // Indexers/scanners can briefly hold the freshly copied directory open.
+            // Retry only the atomic rename; never overwrite a competing destination.
+            for (int attempt = 0; ; attempt++)
+            {
+                NoLinks(stage); NoLinks(destination);
+                if (Directory.Exists(destination) || File.Exists(destination))
+                    throw new IOException("The installation destination now exists. Choose a new folder; existing files were not replaced.");
+                try { Directory.Move(stage, destination); return; }
+                catch (UnauthorizedAccessException) { if (attempt >= 12) throw; }
+                catch (IOException error)
+                {
+                    int code = error.HResult & 0xffff;
+                    if (attempt >= 12 || (code != 32 && code != 33 && code != 5)) throw;
+                }
+                System.Threading.Thread.Sleep(250);
+            }
+        }
+        static string SaveInstallFailure(string stage, string operation, Exception error)
+        {
+            string detail = "Operation: " + operation + "\r\n" + error;
+            if (Directory.Exists(stage))
+                try { File.WriteAllText(Path.Combine(stage, "INSTALL_FAILED.txt"), detail); }
+                catch (IOException) { } catch (UnauthorizedAccessException) { }
+            try
+            {
+                string logs = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "MTOU", "InstallerLogs");
+                Directory.CreateDirectory(logs);
+                string filename = Path.Combine(logs, "install-" + Guid.NewGuid().ToString("N") + ".log");
+                File.WriteAllText(filename, detail); return filename;
+            }
+            catch (IOException) { return null; } catch (UnauthorizedAccessException) { return null; }
+        }
         public string Install(string source, string destination, string archiveOverride)
         {
             source = Full(source); destination = Full(destination);
@@ -352,20 +429,24 @@ namespace Marmo.SteamInstaller
             string archive = GetDependencies(archiveOverride);
             ValidateDestination(source, destination, PackageRoot);
             string stage = destination + ".installing-" + Guid.NewGuid().ToString("N").Substring(0, 8);
-            Directory.CreateDirectory(stage);
+            string operation = "Creating the installation folder";
             try
             {
+                Directory.CreateDirectory(stage);
                 long copied = 0;
                 foreach (string file in files)
                 {
                     string relative = file.Substring(source.Length).TrimStart('\\', '/');
+                    operation = "Copying " + relative;
                     string target = SafePath(stage, relative);
                     Directory.CreateDirectory(Path.GetDirectoryName(target)); File.Copy(file, target, false);
                     copied += new FileInfo(file).Length;
                     Progress(42 + (int)(copied * 40 / Math.Max(1, size)), "Copying your installed game: " + (copied / 1048576) + " MB");
                 }
                 Progress(84, "Installing verified loader and required plugins...");
+                operation = "Extracting verified dependencies";
                 ExtractRuntime(archive, stage);
+                operation = "Installing the mod and launcher";
                 string plugin = Path.Combine(stage, "BepInEx", "plugins", "TOU-Marmo.dll");
                 Directory.CreateDirectory(Path.GetDirectoryName(plugin));
                 File.Copy(payload, plugin, false);
@@ -377,8 +458,10 @@ namespace Marmo.SteamInstaller
                     CheckPin(launcher, Manifest.Launcher);
                 }
                 if (Manifest.Platform != "Epic") File.WriteAllText(Path.Combine(stage, "steam_appid.txt"), "945360\n", Encoding.ASCII);
-                File.WriteAllText(Path.Combine(stage, "Play MTOU.cmd"), "@echo off\r\ncd /d \"%~dp0\"\r\nstart \"\" \"%~dp0Among Us.exe\"\r\n", Encoding.ASCII);
+                string playExecutable = Manifest.Platform == "Epic" && Manifest.Launcher != null ? "Marmo Town of Us.exe\" --wait" : "Among Us.exe\"";
+                File.WriteAllText(Path.Combine(stage, "Play MTOU.cmd"), "@echo off\r\ncd /d \"%~dp0\"\r\nstart \"\" \"%~dp0" + playExecutable + "\r\n", Encoding.ASCII);
                 string notices = Path.Combine(PackageRoot, "Notices");
+                operation = "Writing notices and installation information";
                 if (Directory.Exists(notices))
                     foreach (string file in Directory.GetFiles(notices, "*", SearchOption.AllDirectories))
                     {
@@ -395,15 +478,19 @@ namespace Marmo.SteamInstaller
                     + "First launch generates IL2CPP wrappers and can take several minutes.\r\n", Encoding.UTF8);
                 if (File.Exists(Path.Combine(stage, "BepInEx", "plugins", "TownOfUsMira.dll"))) throw new IOException("Conflicting plugin detected.");
                 // Publish the completed folder once; Directory.Move refuses an existing destination.
-                Directory.Move(stage, destination);
+                operation = "Finishing installation (renaming the temporary folder)";
+                PublishInstallation(stage, destination);
                 Progress(100, "Ready. Keep your storefront client running and use the MTOU launcher.");
                 Log("Installed MTOU " + Manifest.AssemblyRevision + "; SHA256 " + Manifest.Payload.Sha256);
                 return destination;
             }
             catch (Exception error)
             {
-                if (Directory.Exists(stage)) File.WriteAllText(Path.Combine(stage, "INSTALL_FAILED.txt"), error.ToString());
-                throw new IOException(error.Message + "\r\nIncomplete files, if any, are in: " + stage, error);
+                string log = SaveInstallFailure(stage, operation, error);
+                throw new IOException(operation + ": " + error.Message
+                    + (error is UnauthorizedAccessException ? "\r\nWindows denied access. Close programs using this folder and retry, or choose a different writable MTOU folder." : "")
+                    + "\r\nIncomplete files, if any, are in: " + stage
+                    + (log == null ? "" : "\r\nDiagnostic log: " + log), error);
             }
         }
     }

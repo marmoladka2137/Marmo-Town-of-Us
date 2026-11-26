@@ -1,4 +1,4 @@
-﻿using MiraAPI.GameOptions;
+using MiraAPI.GameOptions;
 using MiraAPI.Modifiers;
 using TownOfUs.Modifiers.Neutral;
 using TownOfUs.Options.Roles.Neutral;
@@ -15,6 +15,7 @@ public sealed class MedusaStoneGazeButton : TownOfUsRoleButton<MedusaRole>
     public override float Cooldown => Math.Clamp(OptionGroupSingleton<MedusaOptions>.Instance.StoneGazeCooldown.Value + MapCooldown, 5f, 120f);
     public override float EffectDuration => OptionGroupSingleton<MedusaOptions>.Instance.StoneGazeDuration.Value;
     public override int MaxUses => (int)OptionGroupSingleton<MedusaOptions>.Instance.StoneGazeUses.Value;
+    public override bool ZeroIsInfinite { get; set; } = true;
     public override LoadableAsset<Sprite> Sprite => TouNeutAssets.StoneGazeSprite;
 
     public override bool Enabled(RoleBehaviour? role)

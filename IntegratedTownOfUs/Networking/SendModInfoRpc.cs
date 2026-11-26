@@ -33,8 +33,12 @@ internal sealed class SendClientModInfoRpc(TouMarmo.TouMarmoPlugin plugin, uint 
             return;
         }
 
-        writer.Write((byte)data.Count);
-        foreach (var kvp in data)
+        var payload=new Dictionary<byte,string>(data)
+        {
+            [TouMarmo.Modules.BuildCompatibility.ManifestKey]=TouMarmo.Modules.BuildCompatibility.Manifest
+        };
+        writer.Write((byte)payload.Count);
+        foreach (var kvp in payload)
         {
             writer.Write(kvp.Key);
             writer.Write(kvp.Value);
@@ -67,6 +71,10 @@ internal sealed class SendClientModInfoRpc(TouMarmo.TouMarmoPlugin plugin, uint 
 
     internal static void ReceiveClientModInfo(PlayerControl client, Dictionary<byte, string> list)
     {
+        TouMarmo.Modules.BuildCompatibility.Record(client,list);
+        TouMarmo.Modules.ClientBuildGate.Receive(client);
+        if(list.Keys.All(key=>key==TouMarmo.Modules.BuildCompatibility.ManifestKey)) return;
+        if(!client || !client.Data || !AmongUsClient.Instance || !PlayerControl.LocalPlayer || !PlayerControl.LocalPlayer.Data) return;
         // Added the original Move Mod to blacklist due to it having (unintended) cheat functionalities (player can still move themselves and zoom out in the game)
         string[] blacklist =
         [
@@ -82,16 +90,17 @@ internal sealed class SendClientModInfoRpc(TouMarmo.TouMarmoPlugin plugin, uint 
         string[] badModArray = [];
         string[] otherModArray = [];
         var data = AmongUsClient.Instance.GetClientFromCharacter(client);
+        if(data==null || data.PlatformData==null) return;
         var platform = data.PlatformData.Platform;
         HudManagerHelper.RefreshPlatformData();
         var sbuilder = new StringBuilder();
         Error(
-            $"DEBUGGING DATA for {client.Data.PlayerName}: Among Us {list[0]} ({platform})");
+            $"DEBUGGING DATA for {client.Data.PlayerName}: Among Us {list.GetValueOrDefault((byte)0,"Unknown")} ({platform})");
         Error(
             $"{client.Data.PlayerName} is joining with the following plugins:");
         foreach (var mod in list)
         {
-            if (mod.Key < 1)
+            if (mod.Key < 1 || mod.Key==TouMarmo.Modules.BuildCompatibility.ManifestKey)
             {
                 continue;
             }
@@ -150,7 +159,7 @@ internal sealed class SendClientModInfoRpc(TouMarmo.TouMarmoPlugin plugin, uint 
             var newModDictionary = new List<string>();
             foreach (var mod in list)
             {
-                if (mod.Key < 1)
+                if (mod.Key < 1 || mod.Key==TouMarmo.Modules.BuildCompatibility.ManifestKey)
                 {
                     continue;
                 }

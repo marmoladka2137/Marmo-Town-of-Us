@@ -12,6 +12,7 @@ namespace TouMarmo.Buttons;
 public sealed class SweetsAbilityButton : TownOfUsRoleButton<SweetsRole, PlayerControl>
 {
     private bool _showingPollinate;
+    private Vector3 labelScale = Vector3.one;
     private float requestedAt = -10f;
 
     public override void ClickHandler()
@@ -43,7 +44,10 @@ public sealed class SweetsAbilityButton : TownOfUsRoleButton<SweetsRole, PlayerC
 
     public override void CreateButton(Transform parent)
     {
+        var hadButton = Button != null && Button;
         base.CreateButton(parent);
+        if (!hadButton && Button && Button!.buttonLabelText)
+            labelScale = Button.buttonLabelText.transform.localScale;
         // Force the next FixedUpdate to re-apply the correct Flower/Pollinate look.
         _showingPollinate = false;
     }
@@ -56,6 +60,9 @@ public sealed class SweetsAbilityButton : TownOfUsRoleButton<SweetsRole, PlayerC
         return PlayerControl.LocalPlayer.GetClosestLivingPlayer(false, Distance, false,
             p => !SweetsRuntime.Flowers.Contains(p.PlayerId) && !p.IsImpostorAligned());
     }
+    public override bool IsTargetValid(PlayerControl? target) => SweetsRuntime.PollinateMode
+        ? target && target==PlayerControl.LocalPlayer && MarmoSession.Alive(target)
+        : base.IsTargetValid(target);
 
     public override void SetOutline(bool active)
     {
@@ -83,6 +90,7 @@ public sealed class SweetsAbilityButton : TownOfUsRoleButton<SweetsRole, PlayerC
 
         if (Button == null) return;
         Button.buttonLabelText.text = Name;
+        Button.buttonLabelText.transform.localScale = labelScale * (pollinate ? .88f : 1f);
 
         // Show progress of distributed flowers as given/required (e.g. 1/3) while giving flowers.
         if (!pollinate)

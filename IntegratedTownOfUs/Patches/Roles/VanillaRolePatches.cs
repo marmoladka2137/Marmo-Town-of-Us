@@ -45,23 +45,27 @@ public static class VanillaRolePatches
         return true;
     }
 
-    [HarmonyPatch(nameof(RoleBehaviour.RoleIconSolid), MethodType.Getter)]
-    [HarmonyPrefix]
-    [HarmonyPriority(Priority.First)]
-    public static bool VanillaIconPrefix(RoleBehaviour __instance, ref Sprite __result)
+}
+
+// RoleIconSolid is a native IL2CPP field in the supported game, not a native
+// method. Detouring its generated CLR accessor falls back to the managed patch
+// backend and can corrupt method resolution during startup. Set the same icon
+// on the returned role instead of detouring that field accessor.
+[HarmonyPatch(typeof(RoleManager),nameof(RoleManager.GetRole))]
+public static class VanillaRoleIcons
+{
+    [HarmonyPostfix]
+    public static void Postfix(RoleBehaviour __result)
     {
-        if (__instance.IsCustomRole())
+        if (!__result || __result.IsCustomRole())
         {
-            return true;
+            return;
         }
 
-        var newIcon = TouRoleUtils.TryGetVanillaRoleIcon(__instance.Role);
+        var newIcon = TouRoleUtils.TryGetVanillaRoleIcon(__result.Role);
         if (newIcon != null)
         {
-            // Error($"Patched role icon for {__instance.Role}");
-            __result = newIcon;
-            return false;
+            __result.RoleIconSolid = newIcon;
         }
-        return true;
     }
 }

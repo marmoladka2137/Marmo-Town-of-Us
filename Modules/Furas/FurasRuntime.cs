@@ -67,7 +67,7 @@ public static class FurasRuntime
         return state;
     }
     public static bool InRound => !LobbyBehaviour.Instance && !MeetingHud.Instance && !ExileController.Instance && !IntroCutscene.Instance && ShipStatus.Instance;
-    public static bool CommsBlocked => Options.BlockedByComms.Value && (VanillaSystemCheckPatches.HqCommsSystem?.IsActive == true || VanillaSystemCheckPatches.HudCommsSystem?.IsActive == true);
+    public static bool CommsBlocked => false; // Role abilities remain usable during communications sabotage.
     public static bool Available(PlayerControl p) => MarmoSession.InRound && p && p.Data != null && !p.Data.Disconnected && !p.HasDied() && p.Data.Role is FurasRole && !For(p).Lost;
     public static void Clear()
     {
@@ -91,7 +91,7 @@ public static class FurasRuntime
     {
         if (s.Active && owner.AmOwner)
         {
-            owner.moveable = s.PreviousMoveable && !MeetingHud.Instance && !ExileController.Instance;
+            owner.moveable = s.PreviousMoveable;
             owner.NetTransform.SetPaused(false);
             try
             {
@@ -118,6 +118,9 @@ public static class FurasRuntime
         s.View = null;
     }
     private static FurasMotion? sight;
+    // Movement must include ShortObjects, unlike visibility checks which can
+    // legitimately see across low map props. Share this mask with remote foxes.
+    public static int MovementCollisionMask => Constants.ShipAndAllObjectsMask;
     public static bool ClearPath(Vector2 from, Vector2 to) =>
         (sight ??= new FurasMotion(Constants.ShipAndObjectsMask)).ClearPath(from, to);
     public static void BeginControl(PlayerControl owner, int index)
@@ -182,7 +185,7 @@ public static class FurasRuntime
     {
         if (!Available(owner)) return;
         var s = For(owner);
-        if (s.Active || s.Points.Count >= Options.MaxPoints.Value || Time.time < s.PlaceReadyAt || Vector2.Distance(position, owner.GetTruePosition()) > 0.6f) return;
+        if (s.Active || s.Points.Count >= TouMarmo.Modules.AbilityLimits.Count(Options.MaxPoints.Value) || Time.time < s.PlaceReadyAt || Vector2.Distance(position, owner.GetTruePosition()) > 0.6f) return;
         s.Points.Add(position);
         s.Selected = s.Points.Count - 1;
         s.PlaceReadyAt = Time.time + Options.PlaceCooldown.Value;
@@ -229,7 +232,7 @@ public static class FurasRuntime
             return;
         }
         var radius=Mathf.Clamp(owner.Collider.bounds.extents.x,0.20f,0.35f);
-        s.Motion=new FurasMotion(Constants.ShipAndObjectsMask,radius);
+        s.Motion=new FurasMotion(MovementCollisionMask,radius);
         s.Active = true;
         obj.transform.position = new Vector3(s.Position.x, s.Position.y, s.Position.y / 1000f);
         if (!owner.AmOwner) return;
@@ -290,7 +293,7 @@ public static class FurasRuntime
     {
         if (!MarmoSession.IsHost || !Available(owner) || CommsBlocked || TimeLordRewindSystem.IsRewinding || owner.GetModifiers<DisabledModifier>().Any(m => !m.CanUseAbilities)) return;
         var s = For(owner);
-        if (s.ControlId != controlId || attackId <= s.AttackId || s.AttackPending || !s.Active || Time.time < s.KillReadyAt || s.Kills >= Options.MaxKills.Value || !MarmoSession.Alive(victim) || victim == owner || victim.inVent ||
+        if (s.ControlId != controlId || attackId <= s.AttackId || s.AttackPending || !s.Active || Time.time < s.KillReadyAt || s.Kills >= TouMarmo.Modules.AbilityLimits.Count(Options.MaxKills.Value) || !MarmoSession.Alive(victim) || victim == owner || victim.inVent ||
             Vector2.Distance(s.Position, victim.GetTruePosition()) > Options.KillRange.Value + 0.15f || !ClearPath(s.Position, victim.GetTruePosition())) return;
         s.KillReadyAt = Time.time + Options.KillCooldown.Value;
         s.PendingVictim = victim.PlayerId;

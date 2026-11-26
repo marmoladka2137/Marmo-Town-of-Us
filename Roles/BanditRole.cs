@@ -6,6 +6,7 @@ using UnityEngine;
 namespace TouMarmo.Roles;
 public sealed class BanditRole(IntPtr cppPtr) : CrewmateRole(cppPtr), ITownOfUsRole
 {
+    public override bool IsAffectedByComms => false;
     public string IdPart => "Bandit";
     public string RoleNameLocale => "TouMarmo.Role.Bandit";
     public string RoleDescriptionLocale => "TouMarmo.Role.Bandit.IntroBlurb";

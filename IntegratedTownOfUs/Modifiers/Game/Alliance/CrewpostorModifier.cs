@@ -194,10 +194,7 @@ public sealed class CrewpostorModifier : AllianceGameModifier, IWikiDiscoverable
             }
         }
 
-        if (AmongUsClient.Instance.AmHost)
-        {
-            discardedImp.RpcSetRole(newRole, true);
-        }
+        discardedImp.ChangeRole((ushort)newRole);
     }
 
     public override int GetAmountPerGame()

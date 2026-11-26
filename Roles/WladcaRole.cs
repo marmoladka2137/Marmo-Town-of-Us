@@ -26,7 +26,7 @@ public sealed class WladcaRole(IntPtr cppPtr) : CrewmateRole(cppPtr), ITownOfUsR
     public float EmpoweredUntil { get; private set; }
     public bool Empowered => Time.time < EmpoweredUntil && !Player.HasDied();
     public bool HasImpostorVision => Empowered && OptionGroupSingleton<WladcaOptions>.Instance.ImpostorVision.Value;
-    public override bool IsAffectedByComms => !(Empowered && OptionGroupSingleton<WladcaOptions>.Instance.IgnoreComms.Value);
+    public override bool IsAffectedByComms => false;
 
     public CustomRoleConfiguration Configuration => new(this)
     {

@@ -13,7 +13,7 @@ public sealed class ComposterOptions : AbstractRoleOptionGroup<ComposterRole>
     public ModdedNumberOption TrapCooldown { get; } = new("ComposterAddon.Option.TrapCooldown", 25f, 5f, 120f, 2.5f, "#", "#", MiraNumberSuffixes.Seconds, null, halfIncrements: false);
 
 
-    public ModdedNumberOption MaxTrapsPerRound { get; } = new("ComposterAddon.Option.MaxTrapsPerRound", 2f, 1f, 10f, 1f, "#", "#", MiraNumberSuffixes.None, "0", halfIncrements: true);
+    public ModdedNumberOption MaxTrapsPerRound { get; } = new("ComposterAddon.Option.MaxTrapsPerRound", 2f, 0, 10f, 1f, "∞", "#", MiraNumberSuffixes.None, "0", halfIncrements: true);
 
 
     public ModdedNumberOption TrapRadius { get; } = new("ComposterAddon.Option.TrapRadius", 0.3f, 0.1f, 0.75f, 0.05f, "#", "#", MiraNumberSuffixes.Multiplier, "0.00", halfIncrements: false);

@@ -25,7 +25,7 @@ public sealed class SimpModifier : TouGameModifier
     public override string GetDescription()
     {
         if (TargetId == byte.MaxValue) return "Waiting for a target.";
-        return TargetEjected ? "Target ejected. Kill cooldown increased." :
-            $"Protect {Target?.Data?.PlayerName ?? "(disconnected)"}. Kill cooldown -25%.";
+        return TargetEjected ? "Your target was voted out. Your kill cooldown is now longer." :
+            $"Target: {Target?.Data?.PlayerName ?? "unavailable"}. Your kill cooldown is shorter. If your target is voted out, it becomes longer.";
     }
 }

@@ -19,6 +19,7 @@ public sealed class MonarchKnightButton : TownOfUsRoleButton<MonarchRole, Player
     public override float Cooldown => OptionGroupSingleton<MonarchOptions>.Instance.KnightCooldown + MapCooldown;
     public override float EffectDuration => OptionGroupSingleton<MonarchOptions>.Instance.KnightDelay;
     public override int MaxUses => (int)OptionGroupSingleton<MonarchOptions>.Instance.MaxKnights;
+    public override bool ZeroIsInfinite { get; set; } = true;
     public override LoadableAsset<Sprite> Sprite => TouCrewAssets.KnightSprite;
     public PlayerControl? _knightedTarget;
     private bool _isProcessingClick;

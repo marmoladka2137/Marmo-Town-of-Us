@@ -1,4 +1,4 @@
-﻿using MiraAPI.GameOptions;
+using MiraAPI.GameOptions;
 using MiraAPI.GameOptions.Attributes;
 using MiraAPI.GameOptions.OptionTypes;
 using MiraAPI.Utilities;
@@ -16,7 +16,7 @@ public sealed class TrapperOptions : AbstractRoleOptionGroup<TrapperRole>
     [ModdedNumberOption("TouOptionTrapperMinAmountOfTimeInTrap", 0f, 15f, 0.5f, MiraNumberSuffixes.Seconds)]
     public float MinAmountOfTimeInTrap { get; set; } = 5f;
 
-    [ModdedNumberOption("TouOptionTrapperMaxNumberOfTraps", 1f, 15f, 1f, MiraNumberSuffixes.None, "0")]
+    [ModdedNumberOption("TouOptionTrapperMaxNumberOfTraps", 0f, 15f, 1f, MiraNumberSuffixes.None, "0", zeroInfinity: true)]
     public float MaxTraps { get; set; } = 5f;
 
     [ModdedNumberOption("TouOptionTrapperTrapSize", 0.05f, 1f, 0.05f, MiraNumberSuffixes.Multiplier, "0.00")]

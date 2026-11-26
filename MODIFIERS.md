@@ -142,3 +142,6 @@ All 51 assignable variants are listed below. Some are limited to specific roles 
 - Shields, role marks and temporary status effects are assigned by abilities; they are not random lobby modifiers.
 
 Chance, count and role-specific limits are configured in the lobby.
+
+## Hunger (MTOU)
+Each body you report adds a stacking speed bonus for the rest of the match. The host sets the bonus.

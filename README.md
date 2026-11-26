@@ -1,37 +1,35 @@
-# Marmo Town of Us
+# Marmo Town of Us (MTOU)
 
-<img src="Resources/Branding/MarmoLogo.png" width="320" alt="Marmo Town of Us">
+**1.1.1 · Windows · Steam / Epic Games**
 
-**1.1.0 Beta** · Additional roles, modifiers and settings for Among Us, based on Town of Us: Mira.
+[Download launcher](https://github.com/marmoladka2137/Marmo-Town-of-Us/releases/download/v1.1.1/MTOU-Launcher-1.1.1.zip) · [Download without launcher](https://github.com/marmoladka2137/Marmo-Town-of-Us/releases/download/v1.1.1/MTOU-Steam-1.1.1.zip) · [All releases](https://github.com/marmoladka2137/Marmo-Town-of-Us/releases) · [Discord](https://dc.gg/mtou)
 
-## Download / Pobierz
+Marmo Town of Us is an independent community modification based on Town of Us: Mira. It adds roles, modifiers and configurable mechanics to Among Us. Every player needs the same MTOU build. Do not combine it with a separate TownOfUsMira.dll.
 
-| Version | Download | Start |
-|---|---|---|
-| **Steam — bez launchera** | [Pobierz / Download](https://github.com/marmoladka2137/Marmo-Town-of-Us/releases/download/v1.1.0-beta/MTOU-Steam-1.1.0-Beta.zip) | `Among Us.exe` |
-| **Launcher** | [Pobierz / Download](https://github.com/marmoladka2137/Marmo-Town-of-Us/releases/download/v1.1.0-beta/MTOU-Launcher-1.1.0-Beta.zip) | `Marmo Town of Us.exe` |
+## Roles and modifiers
 
-### Steam
+[Roles](ROLES.md) · [Modifiers](MODIFIERS.md)
 
-Copy your Among Us folder, extract the Steam package into that copy beside `Among Us.exe`, then start the game with Steam running and signed in.
+MTOU additions include Doctor, Exorcist, Furas, Necromancer, Bandit, Composter, Wladca, Hugger, Sweets, Manipulator, Barszcz, Dirtek, Gambler, Gravedigger and Papetir. Modifiers include Balloon, Big Brain, Hunger, Kemada, One More Chance and Simp.
 
-Po polsku: skopiuj folder swojej gry, rozpakuj paczkę do kopii i uruchom `Among Us.exe` przy włączonym i zalogowanym Steamie.
+## Requirements
 
-### Launcher
+Your own compatible Among Us installation, Windows x64 and the matching mod dependencies. Reference game build: Among Us 2026.9.29 (19.0.0). Steam and Epic startup paths are supported by the launcher; full Epic gameplay remains unverified. Packages do not contain the base game.
 
-Extract the ZIP, open `Marmo Town of Us.exe`, select your store and choose **INSTALL MTOU**, then **PLAY MTOU**.
+## Changes in 1.1.1
 
-Windows x64. Reference game version: **2026.9.29**. Your own installed Among Us is required. Every player needs compatible mods. Epic gameplay and full multiplayer regression remain unverified.
+New roles and modifiers, updates to role abilities and synchronization, Papetir body presentation, consistent ability icon sizes, larger cooldown digits, and a fix for Amnesiac inheriting diagnostic abilities in Practice. See [CHANGELOG.md](CHANGELOG.md).
 
-[Roles](ROLES.md) · [Modifiers](MODIFIERS.md) · [Build](BUILDING.md) · [Known issues](KNOWN_ISSUES.md)
+Build and automated checks passed. Full gameplay, multiplayer, expanded lobbies and Epic end-to-end play remain unverified. See [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
-[Discord](https://dc.gg/mtou) · [Report a bug](https://github.com/marmoladka2137/Marmo-Town-of-Us/issues)
+## Source and credits
 
-<details>
-<summary>Credits and licenses</summary>
+[Building](BUILDING.md) · [Contributing](CONTRIBUTING.md) · [Credits](CREDITS.md) · [Third-party notices](THIRD_PARTY_NOTICES.md) · [Source provenance](SOURCE_PROVENANCE.md)
 
-Based on [Town of Us: Mira](https://github.com/AU-Avengers/TOU-Mira). Code: [GPLv3](LICENSE). Original MTOU artwork — created by Marmo, [CC BY 4.0](MTOU_ARTWORK_LICENSE.md). Upstream assets retain independent rights; animation/audio permissions remain unverified. [Credits](CREDITS.md) · [Third-party notices](THIRD_PARTY_NOTICES.md) · [License audit](LICENSE_AUDIT.md).
+GPL-3.0; individual third-party components retain their licenses. Original MTOU artwork by Marmo is provided under CC BY 4.0 where identified in the artwork notices. Rights to bundled companion mods, including AleLuduMod, remain with their respective authors. Credit does not transfer ownership or grant additional permissions.
+
+## Disclaimer
 
 This mod is not affiliated with Among Us or Innersloth LLC, and the content contained therein is not endorsed or otherwise sponsored by Innersloth LLC. Portions of the materials contained herein are property of Innersloth LLC. © Innersloth LLC.
 
-</details>
+Report bugs through [GitHub issues](https://github.com/marmoladka2137/Marmo-Town-of-Us/issues). Include the game/mod versions, role, settings and steps to reproduce; remove private information from logs.

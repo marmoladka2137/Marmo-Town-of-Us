@@ -10,7 +10,7 @@ public sealed class HnsCamouflagerOptions : AbstractRoleOptionGroup<HnsCamouflag
 {
     public override string GroupName => MiraLocaleManager.Get("TownOfUsMira.HideAndSeek.Role.Camouflager", "Camouflager");
 
-    [ModdedNumberOption("TownOfUsMira.HideAndSeek.Role.Option.CamouflagerCamoUses", 1f, 10f, 1f, MiraNumberSuffixes.None, "0", true)]
+    [ModdedNumberOption("TownOfUsMira.HideAndSeek.Role.Option.CamouflagerCamoUses", 0f, 10f, 1f, MiraNumberSuffixes.None, "0", true)]
     public float MaxCamoUses { get; set; } = 3f;
 
     [ModdedNumberOption("TownOfUsMira.HideAndSeek.Role.Option.CamouflagerCamoCooldown", 5f, 120f, 2.5f, MiraNumberSuffixes.Seconds)]

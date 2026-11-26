@@ -17,7 +17,7 @@ public sealed class PlumberOptions : AbstractRoleOptionGroup<PlumberRole>
     [ModdedNumberOption("Plumber Hits Required to Kill", 1f, 10f, 1f, MiraNumberSuffixes.None, "0")]
     public float HitsRequiredToKill { get; set; } = 3f;
 
-    [ModdedNumberOption("Plumber Maximum Nails", 1f, 50f, 1f, MiraNumberSuffixes.None, "0")]
+    [ModdedNumberOption("Plumber Maximum Nails", 0f, 50f, 1f, MiraNumberSuffixes.None, "0", zeroInfinity: true)]
     public float MaxTrappedVents { get; set; } = 3f;
 
     [ModdedNumberOption("Plumber Trap Cooldown", 5f, 120f, 2.5f, MiraNumberSuffixes.Seconds, "0.0")]

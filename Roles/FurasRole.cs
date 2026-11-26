@@ -9,6 +9,7 @@ using UnityEngine;
 namespace TouMarmo.Roles;
 public sealed class FurasRole(IntPtr cppPtr) : CrewmateRole(cppPtr), ITownOfUsRole
 {
+    public override bool IsAffectedByComms => false;
     public string IdPart => "Furas";
     public string RoleNameLocale => "TouMarmo.Role.Furas";
     public string RoleDescriptionLocale => "TouMarmo.Role.Furas.IntroBlurb";

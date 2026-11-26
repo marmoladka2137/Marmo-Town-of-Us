@@ -1,4 +1,4 @@
-﻿using MiraAPI.GameOptions;
+using MiraAPI.GameOptions;
 using MiraAPI.GameOptions.Attributes;
 using MiraAPI.GameOptions.OptionTypes;
 using MiraAPI.Utilities;
@@ -13,7 +13,7 @@ public sealed class MercenaryOptions : AbstractRoleOptionGroup<MercenaryRole>
     [ModdedNumberOption("TouOptionMercenaryCooldown", 5f, 120f, 2.5f, MiraNumberSuffixes.Seconds)]
     public float GuardCooldown { get; set; } = 25f;
 
-    [ModdedNumberOption("TouOptionMercenaryMaxGuards", 1f, 15f, 1f, MiraNumberSuffixes.None, "0")]
+    [ModdedNumberOption("TouOptionMercenaryMaxGuards", 0f, 15f, 1f, MiraNumberSuffixes.None, "0", zeroInfinity: true)]
     public float MaxUses { get; set; } = 6f;
 
     [ModdedToggleOption("TouOptionMercenaryGetMoreUsesFromCompletingTasks")]

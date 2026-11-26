@@ -113,8 +113,7 @@ public sealed class SoulguardRole(IntPtr cppPtr) : NeutralRole(cppPtr), ITownOfU
 
         var local = PlayerControl.LocalPlayer;
         return local.Data.Role is SoulguardRole { ProtectedPlayerId: not byte.MaxValue } guard &&
-                   !guard.Player.HasDied() && guard.ProtectedPlayer is { } protectedPlayer && !protectedPlayer.HasDied() ||
-               OpenedChats.Contains(local.PlayerId) && FindLivingGuard(local) != null;
+                   !guard.Player.HasDied() && guard.ProtectedPlayer is { } protectedPlayer && !protectedPlayer.HasDied();
     }
 
     [MethodRpc((uint)MarmoRpc.BondChat)]
@@ -126,21 +125,19 @@ public sealed class SoulguardRole(IntPtr cppPtr) : NeutralRole(cppPtr), ITownOfU
             return;
         }
 
-        var guard = sender.Data.Role as SoulguardRole ?? FindLivingGuard(sender);
+        var guard = sender.Data.Role as SoulguardRole;
         if (guard == null || guard.ProtectedPlayer is not { } protectedPlayer ||
-            sender != guard.Player && sender != protectedPlayer || guard.Player.HasDied() || protectedPlayer.HasDied())
+            sender != guard.Player || guard.Player.HasDied() || protectedPlayer.HasDied())
         {
             return;
         }
 
-        if (sender == guard.Player) OpenedChats.Add(protectedPlayer.PlayerId);
-        else if (!OpenedChats.Contains(protectedPlayer.PlayerId)) return;
 
         var local = PlayerControl.LocalPlayer;
-        if (local == guard.Player || local == protectedPlayer)
+        if (local == guard.Player)
         {
-            MiscUtils.AddTeamChat(sender.Data, "Dirtek Chat", text,
-                !sender.AmOwner, blackoutText: false, bubbleType: BubbleType.Lover,
+            MiscUtils.AddTeamChat(sender.Data, "<color=#65E6B3>Dirtek</color>", text,
+                !sender.AmOwner, blackoutText: false, bubbleType: BubbleType.Jailor,
                 onLeft: !sender.AmOwner);
             if (!sender.AmOwner)
             {

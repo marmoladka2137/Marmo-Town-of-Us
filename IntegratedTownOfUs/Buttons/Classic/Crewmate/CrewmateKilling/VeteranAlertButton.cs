@@ -1,4 +1,4 @@
-﻿using MiraAPI.GameOptions;
+using MiraAPI.GameOptions;
 using MiraAPI.Modifiers;
 using TownOfUs.Modifiers.Crewmate;
 using TownOfUs.Options.Roles.Crewmate;
@@ -15,6 +15,7 @@ public sealed class VeteranAlertButton : TownOfUsRoleButton<VeteranRole>, ILegac
     public override float Cooldown => Math.Clamp(OptionGroupSingleton<VeteranOptions>.Instance.AlertCooldown + MapCooldown, 5f, 120f);
     public override float EffectDuration => OptionGroupSingleton<VeteranOptions>.Instance.AlertDuration;
     public override int MaxUses => (int)OptionGroupSingleton<VeteranOptions>.Instance.MaxNumAlerts;
+    public override bool ZeroIsInfinite { get; set; } = true;
     public override LoadableAsset<Sprite> Sprite => LegacyAssets.IsLegacy ? LegacyCrewAssets.AlertSprite : TouCrewAssets.AlertSprite;
     public int ExtraUses { get; set; }
 

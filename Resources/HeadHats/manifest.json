@@ -1,0 +1,65 @@
+[
+  {
+    "asset": "Head01.png",
+    "input_file": "codex-clipboard-f4dc9262-befc-4ff3-a7e4-481561e7568b.png",
+    "sha256": "4abed8ddf016e55ca4581f3b5e3b22f3ab0af6f992655b802496e87060f4281c",
+    "bytes": 1859272,
+    "display_name": "Tusk"
+  },
+  {
+    "asset": "Head02.png",
+    "input_file": "codex-clipboard-626a9086-3ba2-408c-a44c-b61f1a0bf582.png",
+    "sha256": "d7ab26f8df63a877a3f9464d14febfa74f93bb5836360a3bef91a52183eb4d46",
+    "bytes": 2060027,
+    "display_name": "Duda"
+  },
+  {
+    "asset": "Head03.png",
+    "input_file": "codex-clipboard-1ebc39bc-31bf-4700-8bb2-160894c9cf21.png",
+    "sha256": "d32f5d3879d333ebd535740a9a006ce204d273c3199242575a618249d5ec8946",
+    "bytes": 2057684,
+    "display_name": "Friz"
+  },
+  {
+    "asset": "Head04.png",
+    "input_file": "codex-clipboard-abe5d284-3b60-4305-bd2f-b71231924c20.png",
+    "sha256": "e8fe76d5fb1854c3b8deb4e6828d27bbe37e8532c93de586ab663cb49babb28c",
+    "bytes": 2400907,
+    "display_name": "Trampek"
+  },
+  {
+    "asset": "Head05.png",
+    "input_file": "codex-clipboard-30e8e63c-9d89-4b88-af8e-4786d5794c8e.png",
+    "sha256": "821b0acccfa10118b44fee6b975f266b097c7abe508ce4cbe5229b358dc41566",
+    "bytes": 2532015,
+    "display_name": "Prince Polo"
+  },
+  {
+    "asset": "Head06.png",
+    "input_file": "codex-clipboard-c6f06262-8408-480c-b52e-5fd22b5663df.png",
+    "sha256": "d09962a617f476c2dbf2a79a1ada5114585cc3c3652c2c166e032021b199a838",
+    "bytes": 2256871,
+    "display_name": "Admiros"
+  },
+  {
+    "asset": "Head07.png",
+    "input_file": "codex-clipboard-71e57657-6577-4f80-8542-d396ebe818a3.png",
+    "sha256": "6d74e036f40d7698d3ed95b1f3fb05d406a66c54255efcaef506db7feef2c5bf",
+    "bytes": 2368212,
+    "display_name": "Zonobijka"
+  },
+  {
+    "asset": "Head08.png",
+    "input_file": "codex-clipboard-2744a1c4-8c07-4f55-b61d-8157be95468a.png",
+    "sha256": "dccd5221623451281cfd5d5688b54915ead89b6aa73b34bc007c2acc7750d6be",
+    "bytes": 2123848,
+    "display_name": "Wojan"
+  },
+  {
+    "asset": "Head09.png",
+    "input_file": "codex-clipboard-5c56dffd-0718-4b1c-9e62-7df569e222c5.png",
+    "sha256": "15b6e8f801428d3f1ba6c4caadd6209f907dc1efeef8ab9c109057d4b4031254",
+    "bytes": 2183556,
+    "display_name": "Palion"
+  }
+]

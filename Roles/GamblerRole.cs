@@ -35,7 +35,7 @@ public sealed class GamblerRole(IntPtr cppPtr) : NeutralRole(cppPtr), ITownOfUsR
     public byte LastShotTargetId { get; private set; } = byte.MaxValue;
     public bool HasWon { get; set; }
     public bool MetWinCon => HasWon;
-    public bool WinConditionMet() => HasWon && !Player.HasDied();
+    public bool WinConditionMet() => false; // Personal win is retained by DidWin; it must not end the match.
 
     public CustomRoleConfiguration Configuration => new(this)
     {
@@ -99,7 +99,7 @@ public sealed class GamblerRole(IntPtr cppPtr) : NeutralRole(cppPtr), ITownOfUsR
     {
         if (!MeetingHud.Instance || gambler.Data.Role is not GamblerRole role || !MarmoSession.Alive(gambler) ||
             !MarmoSession.Alive(target) || target == gambler || role.Marks.Count >=
-            (int)OptionGroupSingleton<GamblerOptions>.Instance.MaxMarks.Value)
+            (int)TouMarmo.Modules.AbilityLimits.Count(OptionGroupSingleton<GamblerOptions>.Instance.MaxMarks.Value))
         {
             return;
         }

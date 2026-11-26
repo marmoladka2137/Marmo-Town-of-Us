@@ -19,7 +19,7 @@ public sealed class TimeLordOptions : AbstractRoleOptionGroup<TimeLordRole>
     [ModdedNumberOption("TouOptionTimeLordRewindHistory", 1f, 15f, 0.5f, MiraNumberSuffixes.Seconds)]
     public float RewindHistorySeconds { get; set; } = 7.5f;
 
-    public ModdedNumberOption MaxUses { get; } = new("TouOptionTimeLordMaxUses", 3f, -1f, 15f, 1f, "#", "∞", MiraNumberSuffixes.None, "0");
+    public ModdedNumberOption MaxUses { get; } = new("TouOptionTimeLordMaxUses", 3f, 0f, 15f, 1f, "∞", "∞", MiraNumberSuffixes.None, "0");
 
     public ModdedNumberOption UsesPerTasks { get; } = new("TouOptionTimeLordUsesPerTasks", 3f, 0f, 15f, 1f, "Off", "#",
         MiraNumberSuffixes.None, "0")

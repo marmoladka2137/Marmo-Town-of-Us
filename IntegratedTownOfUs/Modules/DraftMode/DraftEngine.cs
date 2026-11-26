@@ -70,6 +70,7 @@ namespace TownOfUs.Modules.DraftMode
                 return;
             }
 
+            DraftApplier.PendingDraftStates.Clear();
             _draftSessionId++;
             _running = false;
             StopDraftCoroutines();
@@ -79,8 +80,9 @@ namespace TownOfUs.Modules.DraftMode
             _pool = DraftPoolBuilder.BuildPool(pidToSlot.Count, _rng);
             if (_pool == null || _pool.Count == 0)
             {
-                MiscUtils.LogInfo(Events.TownOfUsEventHandlers.LogLevel.Error, "[DraftEngine] Pool is empty, aborting and starting game normally");
-                Coroutines.Start(CoAutoStartGame());
+                MiscUtils.LogInfo(Events.TownOfUsEventHandlers.LogLevel.Error, "[DraftEngine] Pool is empty; refusing to bypass the requested draft");
+                if (GameStartManager.Instance) GameStartManager.Instance.ResetStartState();
+                TouMarmo.Modules.MarmoSession.Notify("No roles are available for the draft. Check the host's draft role settings.");
                 return;
             }
 
@@ -2329,38 +2331,45 @@ namespace TownOfUs.Modules.DraftMode
             var gsm = GameStartManager.Instance;
             int orig = gsm.MinPlayers;
 
-            gsm.ResetStartState();
-            gsm.MinPlayers = 1;
-            gsm.startState = GameStartManager.StartingStates.Countdown;
-            gsm.countDownTimer = 5f;
-
-            MiscUtils.LogInfo(Events.TownOfUsEventHandlers.LogLevel.Info,
-                "[DraftEngine] Starting post-draft countdown: 5.00s");
-
-            const float postDraftCountdownSeconds = 5f;
-            float remaining = postDraftCountdownSeconds;
-            while (AmongUsClient.Instance != null &&
-                   AmongUsClient.Instance.GameState == InnerNet.InnerNetClient.GameStates.Joined &&
-                   remaining > 0f)
+            try
             {
-                remaining -= Time.deltaTime;
-                gsm.countDownTimer = Mathf.Max(0f, remaining);
-                yield return null;
-            }
+                gsm.ResetStartState();
+                gsm.MinPlayers = 1;
+                gsm.startState = GameStartManager.StartingStates.Countdown;
+                gsm.countDownTimer = 5f;
 
-            if (AmongUsClient.Instance != null &&
-                AmongUsClient.Instance.GameState == InnerNet.InnerNetClient.GameStates.Joined &&
-                GameStartManager.Instance != null)
-            {
                 MiscUtils.LogInfo(Events.TownOfUsEventHandlers.LogLevel.Info,
-                    "[DraftEngine] Post-draft countdown finished, calling ReallyBegin");
-                GameStartManager.Instance.ReallyBegin(false);
+                    "[DraftEngine] Starting post-draft countdown: 5.00s");
+
+                const float postDraftCountdownSeconds = 5f;
+                float remaining = postDraftCountdownSeconds;
+                while (AmongUsClient.Instance != null &&
+                       AmongUsClient.Instance.GameState == InnerNet.InnerNetClient.GameStates.Joined &&
+                       remaining > 0f)
+                {
+                    remaining -= Time.deltaTime;
+                    gsm.countDownTimer = Mathf.Max(0f, remaining);
+                    yield return null;
+                }
+
+                if (AmongUsClient.Instance != null &&
+                    AmongUsClient.Instance.GameState == InnerNet.InnerNetClient.GameStates.Joined &&
+                    GameStartManager.Instance != null)
+                {
+                    MiscUtils.LogInfo(Events.TownOfUsEventHandlers.LogLevel.Info,
+                        "[DraftEngine] Post-draft countdown finished, calling ReallyBegin");
+                    GameStartManager.Instance.ReallyBegin(false);
+                }
+
+            }
+            finally
+            {
+                if (gsm) gsm.MinPlayers = orig;
+                GameStartPatch.SkipIntercept = false;
+                GameStartPatch.PostDraftCountdownActive = false;
+                TouMarmo.Modules.DraftSafety.DraftUiState.Restore();
             }
 
-            if (GameStartManager.Instance != null)
-                GameStartManager.Instance.MinPlayers = orig;
-            GameStartPatch.SkipIntercept = false;
-            GameStartPatch.PostDraftCountdownActive = false;
         }
 
         public void RequestShuffle(byte playerId, bool consumeUse = true)

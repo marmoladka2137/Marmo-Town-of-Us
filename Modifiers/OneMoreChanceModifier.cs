@@ -25,7 +25,7 @@ public sealed class OneMoreChanceModifier : TouGameModifier
     public static bool Consume(PlayerControl owner, PlayerControl victim)
     {
         var mod = owner.GetModifier<OneMoreChanceModifier>();
-        if (mod == null || !mod.TryConsume()) return false;
+        if (mod == null || !mod.IsModifierValidOn(owner.Data.Role) || !mod.TryConsume()) return false;
         Forgiven.Add((owner.PlayerId, victim.PlayerId));
         RpcConsume(owner, victim.PlayerId);
         return true;
@@ -51,7 +51,8 @@ public sealed class OneMoreChanceModifier : TouGameModifier
     public override bool IsModifierValidOn(RoleBehaviour role)
     {
         // Only valid on Sheriff, Officer, Jailor, Furas
-        if (role is null || role.Player is null) return false;
+        if (role is null || role.Player is null || !role.IsCrewmate() ||
+            role.Player.HasModifier<TownOfUs.Modifiers.Game.Alliance.CrewpostorModifier>()) return false;
         var roleName = role.GetType().Name;
         return AuditRules.OneMoreChanceRole(roleName)
             && base.IsModifierValidOn(role);

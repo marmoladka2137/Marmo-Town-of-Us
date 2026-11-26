@@ -1,4 +1,4 @@
-﻿using Il2CppInterop.Runtime.Attributes;
+using Il2CppInterop.Runtime.Attributes;
 using MiraAPI.GameOptions;
 using MiraAPI.Patches.Stubs;
 using MiraAPI.Roles;
@@ -111,6 +111,6 @@ public sealed class VeteranRole(IntPtr cppPtr) : CrewmateRole(cppPtr), ITouCrewR
     public override void Initialize(PlayerControl player)
     {
         RoleBehaviourStubs.Initialize(this, player);
-        Alerts = (int)OptionGroupSingleton<VeteranOptions>.Instance.MaxNumAlerts;
+        Alerts = (int)TouMarmo.Modules.AbilityLimits.Count(OptionGroupSingleton<VeteranOptions>.Instance.MaxNumAlerts);
     }
 }

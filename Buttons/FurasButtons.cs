@@ -7,13 +7,13 @@ namespace TouMarmo.Buttons;
 public sealed class FurasPlaceButton : TownOfUsRoleButton<FurasRole>
 {
     public override string Name => "Place Spawn";
-    public override BaseKeybind Keybind => Keybinds.SecondaryAction;
+    public override BaseKeybind Keybind => Keybinds.ModifierAction;
     public override Color TextOutlineColor => new Color32(239, 153, 69, 255);
     public override float InitialCooldown => 0;
     public override float Cooldown => FurasRuntime.Options.PlaceCooldown.Value;
     public override LoadableAsset<Sprite> Sprite => FurasAssets.PlaceSpawn;
     public override bool CanUse() => base.CanUse() && FurasRuntime.Available(PlayerControl.LocalPlayer) && !FurasRuntime.For(PlayerControl.LocalPlayer).Active &&
-        FurasRuntime.For(PlayerControl.LocalPlayer).Points.Count < FurasRuntime.Options.MaxPoints.Value;
+        FurasRuntime.For(PlayerControl.LocalPlayer).Points.Count < TouMarmo.Modules.AbilityLimits.Count(FurasRuntime.Options.MaxPoints.Value);
     protected override void OnClick() => FurasRuntime.RpcPlace(PlayerControl.LocalPlayer, PlayerControl.LocalPlayer.GetTruePosition());
 }
 public sealed class FurasControlButton : TownOfUsRoleButton<FurasRole>
@@ -27,7 +27,7 @@ public sealed class FurasControlButton : TownOfUsRoleButton<FurasRole>
     }
 
     public override string Name => "Control Pet";
-    public override BaseKeybind Keybind => Keybinds.PrimaryAction;
+    public override BaseKeybind Keybind => Keybinds.SecondaryAction;
     public override Color TextOutlineColor => new Color32(239, 153, 69, 255);
     public override float InitialCooldown => 0;
     public override float Cooldown => 0;
@@ -49,11 +49,8 @@ public sealed class FurasControlButton : TownOfUsRoleButton<FurasRole>
         var remaining = Mathf.Max(0,(s.Active ? s.EndsAt : s.ReadyAt)-Time.time);
         Button!.SetCooldownFormat(remaining,s.Active ? FurasRuntime.Options.ControlDuration.Value : FurasRuntime.Options.ControlCooldown.Value,CooldownTimerFormatString);
         var timer = Button!.cooldownTimerText;
-        var standard=HudManager.Instance.KillButton.cooldownTimerText;
-        timer.transform.localPosition=standard.transform.localPosition;
-        timer.transform.localScale=standard.transform.localScale;
-        timer.enableAutoSizing=false;
-        timer.fontSize=standard.fontSize;
+        var standard = HudManager.Instance?.KillButton?.cooldownTimerText;
+        if (standard) timer.transform.localPosition = standard!.transform.localPosition;
         timer.enableWordWrapping = false;
         timer.rectTransform.sizeDelta = new Vector2(2f,1f);
     }
@@ -106,7 +103,7 @@ public sealed class FurasAttackButton : TownOfUsRoleButton<FurasRole>
     }
 
     public override string Name => "Pet Kill";
-    public override BaseKeybind Keybind => Keybinds.ModifierAction;
+    public override BaseKeybind Keybind => Keybinds.PrimaryAction;
     public override Color TextOutlineColor => new Color32(239, 153, 69, 255);
     public override float InitialCooldown => 0;
     public override float Cooldown => FurasRuntime.Options.KillCooldown.Value;
@@ -116,7 +113,7 @@ public sealed class FurasAttackButton : TownOfUsRoleButton<FurasRole>
         var p = PlayerControl.LocalPlayer;
         if (!p) return false;
         var s = FurasRuntime.For(p);
-        return FurasRuntime.CanDrive(p) && s.Active && !s.AttackPending && Time.unscaledTime >= s.RequestUntil && Time.time >= s.KillReadyAt && s.Kills < FurasRuntime.Options.MaxKills.Value && FurasRuntime.Target(p) != null;
+        return FurasRuntime.CanDrive(p) && s.Active && !s.AttackPending && Time.unscaledTime >= s.RequestUntil && Time.time >= s.KillReadyAt && s.Kills < TouMarmo.Modules.AbilityLimits.Count(FurasRuntime.Options.MaxKills.Value) && FurasRuntime.Target(p) != null;
     }
     protected override void OnClick()
     {

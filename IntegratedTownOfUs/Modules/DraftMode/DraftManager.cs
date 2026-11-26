@@ -257,6 +257,7 @@ public static class DraftManager
 
     public static void Reset(bool cancelledBeforeCompletion)
     {
+        TouMarmo.Modules.DraftSafety.DraftUiState.Restore();
         IsDraftActive = false;
         if (cancelledBeforeCompletion)
         {

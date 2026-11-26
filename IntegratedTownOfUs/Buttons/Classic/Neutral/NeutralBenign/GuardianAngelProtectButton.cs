@@ -1,4 +1,4 @@
-﻿using MiraAPI.GameOptions;
+using MiraAPI.GameOptions;
 using MiraAPI.Modifiers;
 using TownOfUs.Modifiers.Neutral;
 using TownOfUs.Options.Roles.Neutral;
@@ -15,6 +15,7 @@ public sealed class GuardianAngelProtectButton : TownOfUsRoleButton<FairyRole>, 
     public override float Cooldown => Math.Clamp(OptionGroupSingleton<FairyOptions>.Instance.ProtectCooldown + MapCooldown, 5f, 120f);
     public override float EffectDuration => OptionGroupSingleton<FairyOptions>.Instance.ProtectDuration;
     public override int MaxUses => (int)OptionGroupSingleton<FairyOptions>.Instance.MaxProtects;
+    public override bool ZeroIsInfinite { get; set; } = true;
     public override LoadableAsset<Sprite> Sprite => LegacyAssets.IsLegacy ? LegacyNeutAssets.ProtectSprite : TouNeutAssets.ProtectSprite;
 
     protected override void OnClick()

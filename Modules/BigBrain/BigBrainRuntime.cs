@@ -31,20 +31,15 @@ public static class BigBrainRuntime
     public static void RpcRecord(PlayerControl source,PlayerControl target,ushort roleId,bool failed)
     {
         var mod=target.GetModifier<BigBrainModifier>(); var o=OptionGroupSingleton<UniversalModifiersOptions>.Instance;
-        if(mod==null || !MarmoSession.Alive(target) || source==target || MeetingHud.Instance || failed && !o.BigBrainFailed.Value || mod.PendingRoles.Count>=o.BigBrainDetections.Value) return;
+        if(mod==null || !MarmoSession.Alive(target) || source==target || MeetingHud.Instance || failed && !o.BigBrainFailed.Value || mod.PendingRoles.Count>=AbilityLimits.Count(o.BigBrainDetections.Value)) return;
         if(mod.LastDetection.TryGetValue(source.PlayerId,out var last) && Time.time-last<0.5f) return;
         mod.LastDetection[source.PlayerId]=Time.time;
-        mod.PendingRoles.Add(roleId);
+        if (!mod.PendingRoles.Contains(roleId)) mod.PendingRoles.Add(roleId);
     }
     internal static string BuildReport(IEnumerable<ushort> roleIds)
     {
-        var names=new List<string>();
-        foreach(var id in roleIds)
-        {
-            var name=ResolveRoleName(id);
-            if(!string.IsNullOrEmpty(name)) names.Add(name!);
-        }
-        return names.Count==0 ? string.Empty : "Detected roles: "+string.Join(", ",names)+".";
+        var names=FeedbackRules.UniqueRoles(roleIds.Distinct().Select(ResolveRoleName));
+        return names.Length==0 ? string.Empty : "Detected roles: "+string.Join(", ",names)+".";
     }
     // Resolve the display name from the live role registry first (works for modded roles),
     // then fall back to the registered role list.
@@ -90,8 +85,7 @@ public static class BigBrainButtonPatch
     {
         var methods=new HashSet<MethodBase>
         {
-            AccessTools.Method(typeof(CustomActionButton),nameof(CustomActionButton.ClickHandler)),
-            AccessTools.DeclaredMethod(typeof(TownOfUsTargetButton<PlayerControl>),nameof(CustomActionButton.ClickHandler))
+            AccessTools.Method(typeof(CustomActionButton),nameof(CustomActionButton.ClickHandler))
         };
         foreach(var assembly in new[]{typeof(TownOfUsTargetButton<>).Assembly,typeof(BigBrainButtonPatch).Assembly})
             foreach(var type in assembly.GetTypes().Where(t=>!t.ContainsGenericParameters && typeof(CustomActionButton<PlayerControl>).IsAssignableFrom(t)))
@@ -99,7 +93,11 @@ public static class BigBrainButtonPatch
                 var method=type.GetMethod(nameof(CustomActionButton.ClickHandler), BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly);
                 if(method!=null) methods.Add(method);
             }
-        return methods.Where(method=>method!=null);
+        // Never detour a constructed generic handler. .NET shares these method
+        // bodies across target types; patching one instantiation can crash CLR
+        // member resolution while Harmony builds the wrapper. The integrated
+        // TownOfUsTargetButton handler invokes the same tracking directly.
+        return methods.Where(method=>method!=null && method.DeclaringType?.IsGenericType!=true);
     }
     public sealed record Attempt(PlayerControl Source,PlayerControl Target,ushort Role,float Timer,int Uses);
     [HarmonyPrefix] public static void Prefix(CustomActionButton __instance,out Attempt? __state)

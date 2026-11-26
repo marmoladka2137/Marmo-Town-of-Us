@@ -2612,15 +2612,15 @@ You will slow down players around you in a radius, as well as being fast and hid
   <!-- Flash -->
     <!-- Flash Wiki / Description -->
     <string name="TownOfUsMira.Modifier.Flash">Flash</string>
-  <string name="TownOfUsMira.Modifier.Flash.TabDescription">Move faster.</string>
-  <string name="TownOfUsMira.Modifier.Flash.WikiDescription">Move faster.</string>
+  <string name="TownOfUsMira.Modifier.Flash.TabDescription">Your speed is [flashSpeed]x.</string>
+  <string name="TownOfUsMira.Modifier.Flash.WikiDescription">Your speed is [flashSpeed]x.</string>
   <!-- Flash Options -->
     <string name="TouOptionFlashSpeed">Flash Speed</string>
   <!-- Giant -->
     <!-- Giant Wiki / Description -->
     <string name="TownOfUsMira.Modifier.Giant">Giant</string>
-  <string name="TownOfUsMira.Modifier.Giant.TabDescription">Become larger and slower.</string>
-  <string name="TownOfUsMira.Modifier.Giant.WikiDescription">Become larger and slower.</string>
+  <string name="TownOfUsMira.Modifier.Giant.TabDescription">You are larger. Your speed is [giantSpeed]x.</string>
+  <string name="TownOfUsMira.Modifier.Giant.WikiDescription">You are larger. Your speed is [giantSpeed]x.</string>
   <!-- Giant Options -->
     <string name="TouOptionGiantSpeed">Giant Speed</string>
   <!-- Immovable -->
@@ -2631,8 +2631,8 @@ You will slow down players around you in a radius, as well as being fast and hid
   <!-- Mini -->
     <!-- Mini Wiki / Description -->
     <string name="TownOfUsMira.Modifier.Mini">Mini</string>
-  <string name="TownOfUsMira.Modifier.Mini.TabDescription">Become smaller and faster.</string>
-  <string name="TownOfUsMira.Modifier.Mini.WikiDescription">Become smaller and faster.</string>
+  <string name="TownOfUsMira.Modifier.Mini.TabDescription">You are smaller. Your speed is [miniSpeed]x.</string>
+  <string name="TownOfUsMira.Modifier.Mini.WikiDescription">You are smaller. Your speed is [miniSpeed]x.</string>
   <!-- Mini Options -->
     <string name="TouOptionMiniSpeed">Mini Speed</string>
   <!-- Radar -->

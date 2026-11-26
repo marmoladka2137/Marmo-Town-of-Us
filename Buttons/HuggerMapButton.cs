@@ -11,7 +11,7 @@ public sealed class HuggerMapButton : TownOfUsRoleButton<HuggerRole, PlayerContr
 {
     public override string Name => MiraLocaleManager.Get("ComposterAddon.Ability.Hug", "Hug");
     public override BaseKeybind Keybind => Keybinds.PrimaryAction;
-    public override Color TextOutlineColor => new Color32(205, 44, 72, 255);
+    public override Color TextOutlineColor => TownOfUs.TownOfUsColors.Impostor;
     public override float Cooldown => Math.Clamp(OptionGroupSingleton<HuggerOptions>.Instance.HugCooldown.Value + MapCooldown, 5f, 120f);
     public override LoadableAsset<Sprite> Sprite => HuggerAssets.Hug;
 

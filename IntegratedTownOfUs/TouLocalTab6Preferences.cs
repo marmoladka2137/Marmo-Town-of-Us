@@ -17,7 +17,7 @@ public class TouLocalTabPreferences(ConfigFile config) : LocalSettingsTab(config
 
     [LocalSliderSetting(min: 4f, max: 15f, suffixType: MiraNumberSuffixes.Seconds, formatString: "0", displayValue: true, roundValue: true)]
     public ConfigEntry<float> AutoRejoinDelay { get; private set; } =
-        config.Bind("End Game Screen", "AutoRejoinDelay", 4f);
+        config.Bind("End Game Screen", "AutoRejoinDelay", 5f);
 
     [LocalEnumSetting(names: ["EndRejoinAlways", "EndRejoinHost", "EndRejoinClient", "EndRejoinNever"])]
     public ConfigEntry<AutoRejoinSelection> AutoRejoinMode { get; private set; } =

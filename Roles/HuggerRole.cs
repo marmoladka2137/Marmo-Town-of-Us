@@ -26,7 +26,7 @@ public sealed class HuggerRole(IntPtr cppPtr) : ImpostorRole(cppPtr), ITownOfUsR
     public string RoleMedDescriptionLocale => "ComposterAddon.Role.Hugger.MedDescription";
     public string RoleLongDescriptionLocale => "ComposterAddon.Role.Hugger.TabDescription";
     public string RoleWikiDescriptionLocale => "ComposterAddon.Role.Hugger.WikiDescription";
-    public Color RoleColor => new Color32(205, 44, 72, 255);
+    public Color RoleColor => TownOfUs.TownOfUsColors.Impostor;
     public ModdedRoleTeams Team => ModdedRoleTeams.Impostor;
     public RoleAlignment RoleAlignment => RoleAlignment.ImpostorPower;
     public RoleOptionsGroup RoleOptionsGroup => TouRoleGroups.ImpPower;

@@ -15,7 +15,7 @@ public sealed class LookoutOptions : AbstractRoleOptionGroup<LookoutRole>
 
     public ModdedEnumOption WatchType { get; } = new("TouOptionLookoutFeedbackReveals", (int)LookoutView.Players, typeof(LookoutView));
 
-    [ModdedNumberOption("TouOptionLookoutMaxWatches", 1f, 15f, 1f, MiraNumberSuffixes.None, "0")]
+    [ModdedNumberOption("TouOptionLookoutMaxWatches", 0f, 15f, 1f, MiraNumberSuffixes.None, "0", zeroInfinity: true)]
     public float MaxWatches { get; set; } = 5;
 
     public ModdedToggleOption LookoutSeesIndirectAttacks { get; } = new("TouOptionLookoutSeesIndirectAttacks", false);

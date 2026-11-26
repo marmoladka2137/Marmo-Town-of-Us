@@ -94,6 +94,8 @@ public static class ChatPatches
             infoCommandList = infoCommandList.AddRangeToArray(MiraLocaleManager.Get(MiraLanguage.English, "InfoCommandList").Split(":"));
         }
 
+        if (TouMarmo.Modules.LobbyMimic.MimicCommands.Handle(__instance, textRegular)) return false;
+
         var spaceLess = text.Replace(" ", string.Empty);
         if (specCommandList.Any(x => spaceLess.StartsWith($"/{x}", StringComparison.OrdinalIgnoreCase)))
         {
@@ -397,6 +399,11 @@ public static class ChatPatches
 
         if (nameCommandList.Any(x => spaceLess.StartsWith($"/{x}", StringComparison.OrdinalIgnoreCase)))
         {
+            if (TouMarmo.Modules.LobbyMimic.MimicRuntime.Active)
+            {
+                MiscUtils.AddSystemChat(PlayerControl.LocalPlayer.Data, systemName, "Names and cosmetics are locked while lobby Mimic is active.");
+                ClearChat(__instance); return false;
+            }
             var stringToCheck =
                 nameCommandList.FirstOrDefault(x => spaceLess.StartsWith($"/{x}", StringComparison.OrdinalIgnoreCase))!;
             if (text.StartsWith($"/{stringToCheck} ", StringComparison.OrdinalIgnoreCase))
@@ -674,6 +681,8 @@ public static class ChatPatches
                 msg += $"{MiraLocaleManager.Get("UpCommandDescription")}\n";
             }
 
+            if (TouMarmo.Modules.LobbyMimic.MimicRuntime.CanCommand)
+                msg += "/mimic <player name> — copy their appearance for one game.\n/unmimic — restore original appearances.\n";
             msg += "</size>";
 
             MiscUtils.AddSystemChat(PlayerControl.LocalPlayer.Data, systemName, msg);
@@ -782,6 +791,8 @@ public static class ChatPatches
         }
 
         var systemName = $"<color=#8BFDFD>{MiraLocaleManager.Get("SystemChatTitle")}</color>";
+        if (TouMarmo.Modules.LobbyMimic.MimicCommands.Handle(__instance, textRegular)) return false;
+
         var spaceLess = text.Replace(" ", string.Empty);
 
         if (spaceLess.StartsWith("/", StringComparison.OrdinalIgnoreCase))

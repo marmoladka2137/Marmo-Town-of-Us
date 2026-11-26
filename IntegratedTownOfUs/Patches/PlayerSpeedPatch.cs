@@ -24,6 +24,8 @@ public static class PlayerSpeedPatch
              OptionGroupSingleton<AdvancedSabotageOptions>.Instance.HidePlayerSpeedInCamo))
         {
             __result *= pc.GetSpeedMultiplier();
+            if (!pc.HasDied() && pc.TryGetModifier<TouMarmo.Modifiers.HungerModifier>(out var hunger))
+                __result += hunger.Progress.Bonus;
         }
 
         if (pc.HasModifier<VenererSprintModifier>())

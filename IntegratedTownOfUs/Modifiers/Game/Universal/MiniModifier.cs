@@ -27,16 +27,20 @@ public sealed class MiniModifier : UniversalGameModifier, IWikiDiscoverable, IVi
         return appearance;
     }
 
-    public override string GetDescription()
+    public override string ModifierMedDescription => GetDescription();
+    public override string GetDescription() => FormatSpeed(MiraLocaleManager.Get($"TownOfUsMira.Modifier.{IdPart}.TabDescription"));
+
+    private static string FormatSpeed(string text)
     {
-        return MiraLocaleManager.Get($"TownOfUsMira.Modifier.{IdPart}.TabDescription").Replace("<miniSpeed>",
-            $"{Math.Round(OptionGroupSingleton<MiniOptions>.Instance.MiniSpeed, 2)}");
+        var speed = OptionGroupSingleton<MiniOptions>.Instance.MiniSpeed.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
+        return text.Contains("<miniSpeed>") || text.Contains("[miniSpeed]")
+            ? text.Replace("<miniSpeed>", speed).Replace("[miniSpeed]", speed)
+            : $"{text} ({speed}x)";
     }
 
     public string GetAdvancedDescription()
     {
-        return MiraLocaleManager.Get($"TownOfUsMira.Modifier.{IdPart}.WikiDescription").Replace("<miniSpeed>",
-            $"{Math.Round(OptionGroupSingleton<MiniOptions>.Instance.MiniSpeed, 2)}");
+        return FormatSpeed(MiraLocaleManager.Get($"TownOfUsMira.Modifier.{IdPart}.WikiDescription"));
     }
 
     public List<CustomButtonWikiDescription> Abilities { get; } = [];

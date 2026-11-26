@@ -1,4 +1,4 @@
-﻿using MiraAPI.GameOptions;
+using MiraAPI.GameOptions;
 using MiraAPI.GameOptions.Attributes;
 using MiraAPI.GameOptions.OptionTypes;
 using MiraAPI.Utilities;
@@ -29,7 +29,7 @@ public sealed class InquisitorOptions : AbstractRoleOptionGroup<InquisitorRole>
         };
 
     public ModdedNumberOption MaxUses { get; set; } =
-        new("TouOptionInquisitorMaxInquiries", 5f, 1f, 15f, 1f, MiraNumberSuffixes.None, "0")
+        new("TouOptionInquisitorMaxInquiries", 5f, 0f, 15f, 1f, MiraNumberSuffixes.None, "0", zeroInfinity: true)
         {
             Visible = () => !OptionGroupSingleton<InquisitorOptions>.Instance.CantInquire
         };

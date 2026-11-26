@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using MiraAPI.GameOptions;
 using MiraAPI.Hud;
 using Reactor.Utilities;
@@ -15,6 +15,7 @@ public sealed class OfficerLoadButton : TownOfUsRoleButton<OfficerRole>
     public override Color TextOutlineColor => TownOfUsColors.Officer;
     public override float Cooldown => Math.Clamp(OptionGroupSingleton<OfficerOptions>.Instance.LoadCooldown.Value + MapCooldown, 5f, 120f);
     public override int MaxUses => (int)OptionGroupSingleton<OfficerOptions>.Instance.MaxBulletsTotal;
+    public override bool ZeroIsInfinite { get; set; } = true;
     public override LoadableAsset<Sprite> Sprite => TouCrewAssets.OfficerLoadSprite;
     public static OfficerShootButton ShootButton => CustomButtonSingleton<OfficerShootButton>.Instance;
     public static int MaxLoadedBullets => (int)OptionGroupSingleton<OfficerOptions>.Instance.MaxBulletsAtOnce;

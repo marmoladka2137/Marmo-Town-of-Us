@@ -1,6 +1,7 @@
 using MiraAPI.Events;
 using MiraAPI.GameOptions;
 using MiraAPI.Hud;
+using MiraAPI.Modifiers;
 using MiraAPI.Networking;
 using Reactor.Networking.Attributes;
 using Reactor.Networking.Rpc;
@@ -18,7 +19,7 @@ public static class PlumberNailRuntime
     private static readonly Dictionary<byte, float> ReadyAt = new();
     private static readonly Dictionary<byte, int> Placed = new();
     private static readonly Dictionary<byte, int> OccupiedVents = new();
-    public static int MaxTrappedVents => (int)OptionGroupSingleton<PlumberOptions>.Instance.MaxTrappedVents;
+    public static int MaxTrappedVents => (int)TouMarmo.Modules.AbilityLimits.Count(OptionGroupSingleton<PlumberOptions>.Instance.MaxTrappedVents);
     public static int HitsToKill => (int)OptionGroupSingleton<PlumberOptions>.Instance.HitsRequiredToKill;
     public static float TrapCooldown => OptionGroupSingleton<PlumberOptions>.Instance.TrapCooldown;
     public static bool IsTrapped(int id) => State.Traps.ContainsKey(id);
@@ -52,19 +53,22 @@ public static class PlumberNailRuntime
 
     public static bool InRange(PlayerControl player, Vent vent) => player && vent &&
         Vector2.Distance(player.GetTruePosition(), vent.transform.position) <= vent.UsableDistance + .1f &&
-        !PhysicsHelpers.AnythingBetween(player.Collider, player.Collider.bounds.center, vent.transform.position, Constants.ShipAndAllObjectsMask, false);
+        // Match vanilla Vent.CanUse: vent/short-object geometry must not block
+        // interacting with the vent itself. Ship walls still block placement.
+        !PhysicsHelpers.AnythingBetween(player.Collider, player.Collider.bounds.center, vent.transform.position, Constants.ShipOnlyMask, false);
 
     [MethodRpc((uint)TownOfUsRpc.PlumberPlaceNail, LocalHandling = RpcLocalHandling.Before)]
     public static void RpcPlaceNail(PlayerControl plumber, int ventId)
     {
         if (!MarmoSession.IsHost || !MarmoSession.InRound || !MarmoSession.Alive(plumber) ||
-            plumber.Data.Role is not PlumberRole || plumber.inVent || !plumber.CanMove || MeetingHud.Instance) return;
+            plumber.Data.Role is not PlumberRole || plumber.inVent || !plumber.moveable || MeetingHud.Instance ||
+            plumber.GetModifiers<TownOfUs.Modifiers.DisabledModifier>().Any(m=>!m.CanUseAbilities)) return;
         var vent = Helpers.GetVentById(ventId);
         if (!vent || !InRange(plumber, vent!) || !State.CanPlace(ventId, plumber.PlayerId, MaxTrappedVents) ||
             Time.time < ReadyAt.GetValueOrDefault(plumber.PlayerId)) return;
         var extra = OptionGroupSingleton<PlumberOptions>.Instance.TaskUses
             ? plumber.Data.Tasks.ToArray().Count(task => task.Complete) : 0;
-        if (Placed.GetValueOrDefault(plumber.PlayerId) >= MaxTrappedVents + extra) return;
+        if (Placed.GetValueOrDefault(plumber.PlayerId) >= (long)MaxTrappedVents + extra) return;
         RpcApplyNail(PlayerControl.LocalPlayer, plumber, ventId);
     }
 
@@ -78,7 +82,8 @@ public static class PlumberNailRuntime
         Placed[plumber.PlayerId] = Placed.GetValueOrDefault(plumber.PlayerId) + 1;
         if (!plumber.AmOwner) return;
         var button = CustomButtonSingleton<PlumberNailButton>.Instance;
-        button.SetUses(Math.Max(0, button.MaxUses + button.ExtraUses - Placed[plumber.PlayerId]));
+        button.SetUses(button.ZeroIsInfinite && button.MaxUses==0 ? 0 :
+            (int)Math.Clamp((long)button.MaxUses + button.ExtraUses - Placed[plumber.PlayerId],0,int.MaxValue));
         button.SetTimer(button.Cooldown);
         var flush = CustomButtonSingleton<PlumberFlushButton>.Instance;
         flush.SetTimer(flush.Cooldown);

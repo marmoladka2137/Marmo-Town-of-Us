@@ -1,4 +1,4 @@
-﻿using HarmonyLib;
+using HarmonyLib;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.Events.Vanilla.Meeting;
@@ -22,9 +22,9 @@ public static class MorphlingEvents
     {
         CustomRoleUtils.GetActiveRolesOfType<MorphlingRole>().Do(x => x.Clear());
         var button = CustomButtonSingleton<MorphlingMorphButton>.Instance;
-        button.SetUses((int)OptionGroupSingleton<MorphlingOptions>.Instance.MaxMorphs);
+        button.SetUses((int)TouMarmo.Modules.AbilityLimits.Count(OptionGroupSingleton<MorphlingOptions>.Instance.MaxMorphs));
 
-        if ((int)OptionGroupSingleton<MorphlingOptions>.Instance.MaxMorphs == 0)
+        if ((int)TouMarmo.Modules.AbilityLimits.Count(OptionGroupSingleton<MorphlingOptions>.Instance.MaxMorphs) == 0)
         {
             button.Button?.usesRemainingText.gameObject.SetActive(false);
             button.Button?.usesRemainingSprite.gameObject.SetActive(false);

@@ -1,4 +1,4 @@
-﻿using MiraAPI.GameOptions;
+using MiraAPI.GameOptions;
 using MiraAPI.GameOptions.OptionTypes;
 using MiraAPI.Utilities;
 using TownOfUs.Interfaces;
@@ -35,8 +35,8 @@ public sealed class OfficerOptions : AbstractRoleOptionGroup<OfficerRole>, IWiki
             Visible = () => !OptionGroupSingleton<OfficerOptions>.Instance.CanOnlyShootActiveKillers.Value
         };
 
-    public ModdedNumberOption MaxBulletsTotal { get; set; } = new("TouOptionOfficerMaxBulletsTotal", 9f, 3f, 15f, 1f,
-        MiraNumberSuffixes.None);
+    public ModdedNumberOption MaxBulletsTotal { get; set; } = new("TouOptionOfficerMaxBulletsTotal", 9f, 0f, 15f, 1f,
+        MiraNumberSuffixes.None, zeroInfinity: true);
 
     public ModdedNumberOption MaxBulletsAtOnce { get; set; } = new("TouOptionOfficerMaxBulletsAtOnce", 3f, 2f, 9f, 1f,
         MiraNumberSuffixes.None);

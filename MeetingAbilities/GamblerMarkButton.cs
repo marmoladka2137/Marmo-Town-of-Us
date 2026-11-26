@@ -13,7 +13,7 @@ public sealed class GamblerMarkButton : TargetedMeetingButton
     private MeetingHud? _meeting;
 
     public override string Name => MiraLocaleManager.Get("TouMarmo.Ability.Mark", "Mark");
-    public override int MaxUses => (int)OptionGroupSingleton<GamblerOptions>.Instance.MaxMarks.Value;
+    public override int MaxUses => (int)TouMarmo.Modules.AbilityLimits.Count(OptionGroupSingleton<GamblerOptions>.Instance.MaxMarks.Value);
     public override MeetingButtonUsesMode UsesMode { get; } = MeetingButtonUsesMode.PerMeeting;
     public override float Cooldown => 0.0001f;
     public override float InitialCooldown => 0.0001f;
@@ -41,6 +41,7 @@ public sealed class GamblerMarkButton : TargetedMeetingButton
         }
         var button = base.CreateButton(area);
         _buttons.Add(button);
+        RefreshButtons();
         return button;
     }
 
@@ -64,7 +65,19 @@ public sealed class GamblerMarkButton : TargetedMeetingButton
             {
                 continue;
             }
-            var active = UsesLeft > 0 && Enabled(PlayerControl.LocalPlayer.Data.Role) && IsTargetValid(button.VoteArea);
+            var hammer = button.VoteArea.JudgeOverruleButton;
+            if (hammer)
+            {
+                // Match HUG: the native hammer slot is outside the sliding voting controls.
+                button.transform.SetParent(button.VoteArea.transform, true);
+                button.transform.position = hammer.transform.position;
+                var scale = hammer.transform.lossyScale;
+                var parentScale = button.VoteArea.transform.lossyScale;
+                if (Mathf.Abs(parentScale.x) > 0.0001f && Mathf.Abs(parentScale.y) > 0.0001f)
+                    button.transform.localScale = new Vector3(scale.x / parentScale.x, scale.y / parentScale.y, 1);
+            }
+            var active = button.VoteArea.Buttons.activeSelf && UsesLeft > 0 &&
+                Enabled(PlayerControl.LocalPlayer.Data.Role) && IsTargetValid(button.VoteArea);
             if (button.gameObject.activeSelf != active)
             {
                 button.gameObject.SetActive(active);

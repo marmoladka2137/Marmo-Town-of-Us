@@ -99,7 +99,8 @@ public sealed class ToBecomeTraitorModifier : ExcludedGameModifier, IAssignableT
             return;
         }
 
-        player.ChangeRole(RoleId.Get<TraitorRole>());
+        if (!TouMarmo.Modules.Bandit.BanditRuntime.PromoteVictim(player, RoleId.Get<TraitorRole>()))
+            player.ChangeRole(RoleId.Get<TraitorRole>());
         if (player.HasModifier<ToBecomeTraitorModifier>())
         {
             player.RemoveModifier<ToBecomeTraitorModifier>();

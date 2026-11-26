@@ -1,4 +1,4 @@
-﻿using HarmonyLib;
+using HarmonyLib;
 using MiraAPI.GameOptions;
 using MiraAPI.Hud;
 using MiraAPI.Modifiers;
@@ -18,6 +18,7 @@ public sealed class SatelliteButton : TownOfUsButton, ILegacyCapable
     public override Color TextOutlineColor => TownOfUsColors.Satellite;
     public override float Cooldown => Math.Clamp(OptionGroupSingleton<SatelliteOptions>.Instance.Cooldown + MapCooldown, 5f, 120f);
     public override int MaxUses => (int)OptionGroupSingleton<SatelliteOptions>.Instance.MaxNumCast;
+    public override bool ZeroIsInfinite { get; set; } = true;
     public override ButtonLocation Location => ButtonLocation.BottomLeft;
     public override LoadableAsset<Sprite> Sprite => LegacyAssets.IsLegacy ? LegacyAssets.BroadcastSprite : TouAssets.BroadcastSprite;
     public bool CanStillUse = true;

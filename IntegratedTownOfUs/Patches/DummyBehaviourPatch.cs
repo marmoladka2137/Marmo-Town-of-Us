@@ -2,6 +2,7 @@ using System.Collections;
 using AmongUs.GameOptions;
 using HarmonyLib;
 using MiraAPI.Modifiers;
+using TownOfUs.Modules;
 using MiraAPI.Roles;
 using MiraAPI.Utilities;
 using Reactor.Utilities;
@@ -92,7 +93,7 @@ public static class DummyBehaviourPatches
         }
 
         var randomTeamMod = MiscUtils.AllModifiers
-            .Where(x => x is TouGameModifier touGameMod && touGameMod.IsModifierValidOn(dummy.Data.Role)).Random();
+            .Where(x => x is TouGameModifier touGameMod && !ModifierAutomation.IsDiagnostic(x) && touGameMod.IsModifierValidOn(dummy.Data.Role)).Random();
         if (randomTeamMod != null)
         {
             dummy.RpcAddModifier(randomTeamMod.GetType());

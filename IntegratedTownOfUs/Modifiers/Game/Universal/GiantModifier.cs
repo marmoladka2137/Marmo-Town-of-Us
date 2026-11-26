@@ -27,16 +27,20 @@ public sealed class GiantModifier : UniversalGameModifier, IWikiDiscoverable, IV
         return appearance;
     }
 
-    public override string GetDescription()
+    public override string ModifierMedDescription => GetDescription();
+    public override string GetDescription() => FormatSpeed(MiraLocaleManager.Get($"TownOfUsMira.Modifier.{IdPart}.TabDescription"));
+
+    private static string FormatSpeed(string text)
     {
-        return MiraLocaleManager.Get($"TownOfUsMira.Modifier.{IdPart}.TabDescription").Replace("<giantSpeed>",
-            $"{Math.Round(OptionGroupSingleton<GiantOptions>.Instance.GiantSpeed, 2)}");
+        var speed = OptionGroupSingleton<GiantOptions>.Instance.GiantSpeed.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
+        return text.Contains("<giantSpeed>") || text.Contains("[giantSpeed]")
+            ? text.Replace("<giantSpeed>", speed).Replace("[giantSpeed]", speed)
+            : $"{text} ({speed}x)";
     }
 
     public string GetAdvancedDescription()
     {
-        return MiraLocaleManager.Get($"TownOfUsMira.Modifier.{IdPart}.WikiDescription").Replace("<giantSpeed>",
-                   $"{Math.Round(OptionGroupSingleton<GiantOptions>.Instance.GiantSpeed, 2)}") +
+        return FormatSpeed(MiraLocaleManager.Get($"TownOfUsMira.Modifier.{IdPart}.WikiDescription")) +
                MiscUtils.AppendOptionsText(GetType());
     }
 

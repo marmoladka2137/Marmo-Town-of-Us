@@ -1,4 +1,4 @@
-﻿using Il2CppInterop.Runtime.Attributes;
+using Il2CppInterop.Runtime.Attributes;
 using MiraAPI.Events;
 using MiraAPI.GameOptions;
 using MiraAPI.Hud;
@@ -36,7 +36,7 @@ public sealed class EngineerTouRole(IntPtr cppPtr) : CrewmateRole(cppPtr), ITown
             [
                 new(MiraLocaleManager.Get($"TownOfUsMira.Role.{IdPart}Fix", "Fix"),
                     MiraLocaleManager.Get($"TownOfUsMira.Role.{IdPart}Fix.WikiDescription").Replace("<engiMaxFixes>",
-                        $"{(int)OptionGroupSingleton<EngineerOptions>.Instance.MaxFixes}"),
+                        $"{(int)TouMarmo.Modules.AbilityLimits.Count(OptionGroupSingleton<EngineerOptions>.Instance.MaxFixes)}"),
                     TouCrewAssets.FixButtonSprite)
             ];
         }
@@ -52,7 +52,7 @@ public sealed class EngineerTouRole(IntPtr cppPtr) : CrewmateRole(cppPtr), ITown
                 new(MiraLocaleManager.Get($"TownOfUsMira.Role.{IdPart}Fix", "Fix"),
                     MiraLocaleManager.Get("MiraApi.AbilityType.Basic"),
                     MiraLocaleManager.Get($"TownOfUsMira.Role.{IdPart}Fix.WikiDescription").Replace("<engiMaxFixes>",
-                        $"{(int)OptionGroupSingleton<EngineerOptions>.Instance.MaxFixes}"),
+                        $"{(int)TouMarmo.Modules.AbilityLimits.Count(OptionGroupSingleton<EngineerOptions>.Instance.MaxFixes)}"),
                     TouCrewAssets.FixButtonSprite)
             ];
         }

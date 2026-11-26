@@ -1,4 +1,4 @@
-﻿using MiraAPI.GameOptions;
+using MiraAPI.GameOptions;
 using MiraAPI.GameOptions.Attributes;
 using MiraAPI.GameOptions.OptionTypes;
 using MiraAPI.Utilities;
@@ -29,7 +29,7 @@ public sealed class MirrorcasterOptions : AbstractRoleOptionGroup<MirrorcasterRo
     [ModdedToggleOption("TouOptionMirrorcasterAccumulateMultipleUnleashes")]
     public bool MultiUnleash { get; set; } = false;
 
-    [ModdedNumberOption("TouOptionMirrorcasterMaxNumberOfMagicMirrors", 1f, 15f, 1f, MiraNumberSuffixes.None, "0")]
+    [ModdedNumberOption("TouOptionMirrorcasterMaxNumberOfMagicMirrors", 0f, 15f, 1f, MiraNumberSuffixes.None, "0", zeroInfinity: true)]
     public float MaxMirrors { get; set; } = 5f;
 }
 

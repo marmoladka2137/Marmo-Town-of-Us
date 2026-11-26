@@ -15,6 +15,7 @@ public sealed class SeerIntuitButton : TownOfUsRoleButton<SeerRole, PlayerContro
     public override BaseKeybind Keybind => Keybinds.SecondaryAction;
     public override Color TextOutlineColor => TownOfUsColors.Seer;
     public override int MaxUses => (int)OptionGroupSingleton<SeerOptions>.Instance.MaxCompares;
+    public override bool ZeroIsInfinite { get; set; } = true;
 
     public override bool Enabled(RoleBehaviour? role)
     {

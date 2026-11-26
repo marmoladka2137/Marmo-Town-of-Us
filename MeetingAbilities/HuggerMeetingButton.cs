@@ -15,7 +15,7 @@ public sealed class HuggerMeetingButton : TargetedMeetingButton
     public override float Cooldown => 0.0001f;
     public override float InitialCooldown => 0.0001f;
     public override LoadableAsset<Sprite> Sprite => HuggerAssets.Hug;
-    public override Color OutlineColor => new Color32(205, 44, 72, 255);
+    public override Color OutlineColor => TownOfUs.TownOfUsColors.Impostor;
     public override bool Enabled(RoleBehaviour role) => role is HuggerRole hugger &&
         !hugger.Player.HasDied() && (!hugger.HuggedImpostor || !hugger.HuggedOther);
 

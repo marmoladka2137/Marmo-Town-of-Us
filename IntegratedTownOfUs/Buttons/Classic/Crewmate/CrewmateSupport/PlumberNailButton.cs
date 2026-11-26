@@ -15,6 +15,7 @@ public sealed class PlumberNailButton : TownOfUsVentRoleButton<PlumberRole>, ILe
     public override Color TextOutlineColor => TownOfUsColors.Plumber;
     public override float Cooldown => Math.Clamp(OptionGroupSingleton<PlumberOptions>.Instance.TrapCooldown + MapCooldown, 5f, 120f);
     public override int MaxUses => (int)OptionGroupSingleton<PlumberOptions>.Instance.MaxTrappedVents;
+    public override bool ZeroIsInfinite { get; set; } = true;
     public override LoadableAsset<Sprite> Sprite => TouMarmo.Assets.MarmoAssets.PlumberNail;
     public int ExtraUses { get; set; }
     private float requestedAt = -10f;
@@ -49,7 +50,7 @@ public sealed class PlumberNailButton : TownOfUsVentRoleButton<PlumberRole>, ILe
         // Can't place nail in a vent that already has one
         if (PlumberNailRuntime.IsTrapped(target.Id)) return false;
         // Can't place more than max trapped vents
-        return PlumberNailRuntime.State.CanPlace(target.Id, PlayerControl.LocalPlayer.PlayerId, MaxUses) &&
+        return PlumberNailRuntime.State.CanPlace(target.Id, PlayerControl.LocalPlayer.PlayerId, PlumberNailRuntime.MaxTrappedVents) &&
             PlumberNailRuntime.InRange(PlayerControl.LocalPlayer, target);
     }
 

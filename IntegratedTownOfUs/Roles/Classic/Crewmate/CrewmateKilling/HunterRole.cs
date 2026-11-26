@@ -53,7 +53,7 @@ public sealed class HunterRole(IntPtr cppPtr) : CrewmateRole(cppPtr), ITouCrewRo
                 new(MiraLocaleManager.Get($"TownOfUsMira.Role.{IdPart}Stalk", "Stalk"),
                     MiraLocaleManager.Get($"TownOfUsMira.Role.{IdPart}Stalk.WikiDescription")
                         .Replace("<hunterMaxStalkUsages>",
-                            $"{(int)OptionGroupSingleton<HunterOptions>.Instance.StalkUses}"),
+                            $"{(int)TouMarmo.Modules.AbilityLimits.Count(OptionGroupSingleton<HunterOptions>.Instance.StalkUses)}"),
                     TouCrewAssets.StalkButtonSprite)
             ];
         }
@@ -70,7 +70,7 @@ public sealed class HunterRole(IntPtr cppPtr) : CrewmateRole(cppPtr), ITouCrewRo
                     MiraLocaleManager.Get("MiraApi.AbilityType.Interaction"),
                     MiraLocaleManager.Get($"TownOfUsMira.Role.{IdPart}Stalk.WikiDescription")
                         .Replace("<hunterMaxStalkUsages>",
-                            $"{(int)OptionGroupSingleton<HunterOptions>.Instance.StalkUses}"),
+                            $"{(int)TouMarmo.Modules.AbilityLimits.Count(OptionGroupSingleton<HunterOptions>.Instance.StalkUses)}"),
                     TouCrewAssets.StalkButtonSprite)
             ];
         }

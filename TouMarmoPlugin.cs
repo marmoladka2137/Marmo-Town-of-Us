@@ -25,8 +25,8 @@ public sealed class TouMarmoPlugin : BasePlugin, IMiraPlugin
 {
     public const string PluginId = "pl.marmo.toumarmo";
     public const string PluginName = "Marmo Town of Us";
-    public const string PluginVersion = "1.1.0-beta";
-    public const string DisplayVersion = "1.1.0 Beta";
+    public const string PluginVersion = "1.1.1";
+    public const string DisplayVersion = "1.1.1";
     // MTOU release preparation, 2026-11-17. Self-assigned all-client UUID;
     // distinct from the unchanged BepInEx plugin ID. Keep stable across releases.
     public const string LobbyRegistrationGuid = "f3dc9545-e8f3-4a99-a95d-17ae396dd698";
@@ -56,6 +56,7 @@ public sealed class TouMarmoPlugin : BasePlugin, IMiraPlugin
         // save-file patches change the data file names, and running the reload first made the
         // game read the vanilla profile and save it into the modded profile - which reset the
         // player's nickname and cosmetics on every launch.
+        TouMarmo.Modules.Cosmetics.HeadHatCollection.Register();
         ApplyHarmonyPatches();
         TouMarmo.Modules.Profile.CosmeticSelectionRuntime.Initialize();
 
@@ -95,6 +96,7 @@ public sealed class TouMarmoPlugin : BasePlugin, IMiraPlugin
 
     private void ApplyHarmonyPatches()
     {
+        var tracePath=Environment.GetEnvironmentVariable("MTOU_STARTUP_TRACE");
         // Patch all Harmony patches in this unified assembly (TOU + MTOU), excluding known crashy MTOU patches.
         foreach (var type in Assembly.GetExecutingAssembly().GetTypes())
         {
@@ -104,7 +106,9 @@ public sealed class TouMarmoPlugin : BasePlugin, IMiraPlugin
                 if (type.Name is "BanditKillAccessPatch" or "BanditDidWinPatch" or "BanditWinGate") continue;
                 if ((type == typeof(TouMarmo.Modules.Profile.QaSaveRoot) || type == typeof(TouMarmo.Modules.Profile.QaSaveWriteBoundary)) && !TouMarmo.Modules.Profile.ProfilePaths.IsQa) continue;
                 if (!CustomAttributeData.GetCustomAttributes(type).Any(attribute => attribute.AttributeType == typeof(HarmonyPatch))) continue;
+                if(!string.IsNullOrEmpty(tracePath)) File.AppendAllText(tracePath,"BEGIN " + type.FullName + "\n");
                 Harmony.CreateClassProcessor(type).Patch();
+                if(!string.IsNullOrEmpty(tracePath)) File.AppendAllText(tracePath,"END " + type.FullName + "\n");
             }
             catch (Exception error)
             {

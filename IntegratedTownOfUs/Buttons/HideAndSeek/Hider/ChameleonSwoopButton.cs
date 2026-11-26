@@ -1,4 +1,4 @@
-﻿using MiraAPI.GameOptions;
+using MiraAPI.GameOptions;
 using MiraAPI.Modifiers;
 using TownOfUs.Modifiers;
 using TownOfUs.Modifiers.HnsCrewmate;
@@ -16,6 +16,7 @@ public sealed class ChameleonSwoopButton : TownOfUsRoleButton<HnsChameleonRole>
     public override float Cooldown => Math.Clamp(OptionGroupSingleton<HnsChameleonOptions>.Instance.SwoopCooldown + MapCooldown, 5f, 120f);
     public override float EffectDuration => OptionGroupSingleton<HnsChameleonOptions>.Instance.SwoopDuration;
     public override int MaxUses => (int)OptionGroupSingleton<HnsChameleonOptions>.Instance.MaxSwoops;
+    public override bool ZeroIsInfinite { get; set; } = true;
     public override LoadableAsset<Sprite> Sprite => TouCrewAssets.CrewSwoopSprite;
 
     public override void ClickHandler()

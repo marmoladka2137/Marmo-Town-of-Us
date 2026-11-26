@@ -17,6 +17,7 @@ public sealed class TimeLordRewindButton : TownOfUsRoleButton<TimeLordRole>, ILe
     public override float EffectDuration => OptionGroupSingleton<TimeLordOptions>.Instance.RewindDuration;
 
     public override int MaxUses => (int)OptionGroupSingleton<TimeLordOptions>.Instance.MaxUses;
+    public override bool ZeroIsInfinite { get; set; } = true;
 
     public override LoadableAsset<Sprite> Sprite => LegacyAssets.IsLegacy ? LegacyCrewAssets.RewindSprite : TouCrewAssets.RewindSprite;
 

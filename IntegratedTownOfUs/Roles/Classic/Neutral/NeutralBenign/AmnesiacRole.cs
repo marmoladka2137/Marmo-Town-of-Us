@@ -301,8 +301,7 @@ AchievementsAPIHelper.Unlock(TouAchievements.AmnesiaSquared);
         }
 
         // Doesn't give Double Shot if Assassin isn't available
-        var modifier = target.GetModifiers<TouGameModifier>().FirstOrDefault(x => x is not AssassinModifier &&
-            (x is not DoubleShotModifier || amneIsAssassin));
+        var modifier = ModifierAutomation.RememberedFactionModifier(target.GetModifiers<TouGameModifier>(),amneIsAssassin);
         if (opts.InheritFactionModifier && modifier != null)
         {
             player.AddModifier(modifier.GetType());

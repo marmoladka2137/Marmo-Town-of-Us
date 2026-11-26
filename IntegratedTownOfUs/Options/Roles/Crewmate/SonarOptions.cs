@@ -1,4 +1,4 @@
-﻿using MiraAPI.GameOptions;
+using MiraAPI.GameOptions;
 using MiraAPI.GameOptions.Attributes;
 using MiraAPI.GameOptions.OptionTypes;
 using MiraAPI.Utilities;
@@ -13,7 +13,7 @@ public sealed class SonarOptions : AbstractRoleOptionGroup<SonarRole>
     [ModdedNumberOption("TouOptionSonarTrackCooldown", 1f, 30f, 1f, MiraNumberSuffixes.Seconds)]
     public float TrackCooldown { get; set; } = 20f;
 
-    [ModdedNumberOption("TouOptionSonarMaxNumberOfTracks", 1f, 15f, 1f, MiraNumberSuffixes.None, "0")]
+    [ModdedNumberOption("TouOptionSonarMaxNumberOfTracks", 0f, 15f, 1f, MiraNumberSuffixes.None, "0", zeroInfinity: true)]
     public float MaxTracks { get; set; } = 5f;
 
     [ModdedNumberOption("TouOptionSonarArrowUpdateInterval", 0f, 15f, 0.5f, MiraNumberSuffixes.Seconds)]

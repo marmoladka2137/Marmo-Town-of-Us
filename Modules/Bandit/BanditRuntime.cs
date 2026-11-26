@@ -91,7 +91,7 @@ public static class BanditRuntime
         if(!MarmoSession.InRound || !MarmoSession.Alive(p) || !MarmoSession.Alive(target) || p==target || p.Data.Role is not BanditRole ||
             IsVictim(p) || IsReserved(target)) return false;
         var s=For(p); var o=Options;
-        return NewRoleRules.CanSteal(s.Steals,(int)o.MaxSteals.Value,s.UsedThisRound,s.Active || s.Pending) && Time.time>=s.ReadyAt &&
+        return NewRoleRules.CanSteal(s.Steals,(int)TouMarmo.Modules.AbilityLimits.Count(o.MaxSteals.Value),s.UsedThisRound,s.Active || s.Pending) && Time.time>=s.ReadyAt &&
             (target.IsCrewmate() && o.Crew.Value || target.IsImpostor() && o.Impostor.Value || target.IsNeutral() && o.Neutral.Value) &&
             Vector2.Distance(p.GetTruePosition(),target.GetTruePosition())<=StealRange && FurasRuntime.ClearPath(p.GetTruePosition(),target.GetTruePosition());
     }
@@ -165,6 +165,19 @@ public static class BanditRuntime
         p.ChangeRole(roleId);
         RefreshRole(p);
     }
+    public static bool PromoteVictim(PlayerControl player, ushort roleId)
+    {
+        var state = States.Values.FirstOrDefault(s => s.Active && s.Victim == player.PlayerId);
+        if (state == null) return false;
+        state.VictimRole = roleId;
+        state.SavedRole = null;
+        state.RestoreExternal = null;
+        Restoring = true;
+        try { player.ChangeRole(roleId); }
+        finally { Restoring = false; }
+        RefreshRole(player);
+        return true;
+    }
     public static void Pin(PlayerControl p)
     {
         if(IsBorrower(p)) p.Data.Role.TeamType=RoleTeamTypes.Crewmate;
@@ -200,7 +213,9 @@ public static class BanditRuntime
     [RegisterEvent(-1000)] public static void Round(RoundStartEvent e)
     {
         foreach(var state in States.Values)
+        {
             if (!state.Active && !state.Pending) state.UsedThisRound=false;
+        }
     }
     [MethodRpc(1074,LocalHandling=RpcLocalHandling.Before)]
     public static void RpcCancelPending(PlayerControl p)
@@ -210,6 +225,12 @@ public static class BanditRuntime
         state.PendingTarget=byte.MaxValue;
         state.MeetingSeen=false;
         state.Steals=Math.Max(0,state.Steals-1);
+    }
+    [RegisterEvent]
+    public static void Meeting(MiraAPI.Events.Vanilla.Meeting.StartMeetingEvent e)
+    {
+        foreach (var state in States.Values)
+            if (state.Active || state.Pending) state.MeetingSeen = true;
     }
     public static void Tick()
     {
@@ -318,4 +339,5 @@ public static class BanditGuessLock
 {
     [HarmonyPrefix] public static bool Prefix(TownOfUs.Modifiers.Game.Assailant.AssassinModifier __instance)=>!BanditRuntime.IsVictim(__instance.Player);
 }
+
 

@@ -7,7 +7,7 @@ namespace TouMarmo.Options;
 public sealed class FurasOptions : AbstractRoleOptionGroup<FurasRole>
 {
     public override string GroupName => "Furas";
-    public ModdedNumberOption MaxPoints { get; } = new("Maximum Spawn Points", 3, 1, 6, 1, "#", "#", MiraNumberSuffixes.None, null, halfIncrements: true);
+    public ModdedNumberOption MaxPoints { get; } = new("Maximum Spawn Points", 3, 0, 6, 1, "∞", "#", MiraNumberSuffixes.None, null, halfIncrements: true);
 
     public ModdedNumberOption PlaceCooldown { get; } = new("Place Spawn Cooldown", 5, 1, 30, 1, "#", "#", MiraNumberSuffixes.Seconds, null, halfIncrements: true);
 
@@ -23,7 +23,7 @@ public sealed class FurasOptions : AbstractRoleOptionGroup<FurasRole>
 
     public ModdedNumberOption KillRange { get; } = new("Pet Kill Range", 1, 0.5f, 2f, 0.25f, "#", "#", MiraNumberSuffixes.None, null, halfIncrements: false);
 
-    public ModdedNumberOption MaxKills { get; } = new("Kills Per Control", 1, 1, 5, 1, "#", "#", MiraNumberSuffixes.None, null, halfIncrements: true);
+    public ModdedNumberOption MaxKills { get; } = new("Kills Per Control", 1, 0, 5, 1, "∞", "#", MiraNumberSuffixes.None, null, halfIncrements: true);
 
     public ModdedToggleOption LoseOnCrewKill { get; } = new("Lose Ability After Killing A Crewmate", true);
 
@@ -35,7 +35,7 @@ public sealed class FurasOptions : AbstractRoleOptionGroup<FurasRole>
 
     public ModdedToggleOption ShowMarkers { get; } = new("Show Own Spawn Markers", true);
 
-    public ModdedToggleOption BlockedByComms { get; } = new("Comms Blocks Pet Control", true);
+    public ModdedToggleOption BlockedByComms { get; } = new("Comms Blocks Pet Control", false) { Visible = () => false }; // Retain option ID for existing presets.
 
 }
 

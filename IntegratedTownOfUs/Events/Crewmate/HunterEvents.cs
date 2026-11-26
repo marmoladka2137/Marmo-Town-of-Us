@@ -1,4 +1,4 @@
-﻿using MiraAPI.Events;
+using MiraAPI.Events;
 using MiraAPI.Events.Mira;
 using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.Events.Vanilla.Meeting;
@@ -62,7 +62,7 @@ public static class HunterEvents
 
         var hunterStalk = CustomButtonSingleton<HunterStalkButton>.Instance;
         hunterStalk.ExtraUses = 0;
-        hunterStalk.SetUses((int)OptionGroupSingleton<HunterOptions>.Instance.StalkUses);
+        hunterStalk.SetUses((int)TouMarmo.Modules.AbilityLimits.Count(OptionGroupSingleton<HunterOptions>.Instance.StalkUses));
         if (!hunterStalk.LimitedUses)
         {
             hunterStalk.Button?.usesRemainingText.gameObject.SetActive(false);

@@ -62,6 +62,29 @@ public static class LauncherTests
                 Check(process.WaitForExit(10000)&&process.ExitCode==0,"The actual launcher starts its child and exits successfully");
             }
             Check(File.ReadAllText(Path.Combine(game,"launcher-child.txt"))==Path.GetFullPath(game),"Child receives the correct working directory");
+            if(args.Length>3 && !String.IsNullOrEmpty(args[3]))
+            {
+                File.Delete(Path.Combine(game,"steam_appid.txt"));
+                bool missing=false;try{LauncherCore.StartInfo(game);}catch(IOException){missing=true;}
+                Check(missing,"Epic never silently falls back to a direct unauthenticated game launch");
+                byte[] archive=File.ReadAllBytes(args[3]);
+                LauncherCore.EnsureEpicStarter(game,archive);
+                var epicStart=LauncherCore.StartInfo(game);
+                Check(epicStart.FileName==Path.Combine(game,"EpicGamesStarter.exe")&&epicStart.WorkingDirectory==game,"Epic uses the verified sign-in starter in the modded game folder");
+                Check(epicStart.UseShellExecute&&String.IsNullOrEmpty(epicStart.Arguments),"Epic sign-in stays interactive and no authentication tokens are fabricated");
+                Check(File.ReadAllText(Path.Combine(game,"launcher-child.txt"))==Path.GetFullPath(game),"Preparing the Epic starter does not execute the game or alter game data");
+                File.Delete(Path.Combine(game,"EpicGamesStarter.exe"));
+                byte[] corrupt=(byte[])archive.Clone();corrupt[100]^=1;
+                bool corruptBlocked=false;try{LauncherCore.EnsureEpicStarter(game,corrupt);}catch(IOException){corruptBlocked=true;}
+                Check(corruptBlocked&&!File.Exists(Path.Combine(game,"EpicGamesStarter.exe")),"Corrupt starter download never publishes an executable");
+                Put(Path.Combine(game,"EpicGamesStarter.exe"),"modified helper");
+                bool modifiedBlocked=false;try{LauncherCore.StartInfo(game);}catch(IOException){modifiedBlocked=true;}
+                Check(modifiedBlocked,"A modified Epic helper is never launched");
+                bool preserved=false;try{LauncherCore.EnsureEpicStarter(game,archive);}catch(IOException){preserved=File.ReadAllText(Path.Combine(game,"EpicGamesStarter.exe"))=="modified helper";}
+                Check(preserved,"An unknown existing helper is preserved and reported instead of overwritten");
+                Put(Path.Combine(game,"steam_appid.txt"),"945360");
+                Check(LauncherCore.StartInfo(game).FileName==Path.Combine(game,"Among Us.exe"),"Steam keeps its original direct launch path");
+            }
             Put(Path.Combine(game,"BepInEx/plugins/TownOfUsMira.dll"),"duplicate");
             Check(!LauncherCore.IsModdedGame(game),"Reject a conflicting standalone ToU plugin");
             Console.WriteLine("PASS: "+count+" launcher checks. Fixture child only; no game or multiplayer test.");return 0;

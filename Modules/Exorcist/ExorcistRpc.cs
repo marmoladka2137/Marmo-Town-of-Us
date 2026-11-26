@@ -8,4 +8,5 @@ public enum ExorcistRpc : uint
     StopDrag = 1133,
     PrayerRequest = 1134,
     Prayer = 1135,
+    RevealSuspects = 1137,
 }

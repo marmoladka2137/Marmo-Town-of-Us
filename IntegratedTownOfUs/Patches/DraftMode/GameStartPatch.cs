@@ -62,8 +62,16 @@ namespace TownOfUs.Patches.DraftMode
 
             MiscUtils.LogInfo(Events.TownOfUsEventHandlers.LogLevel.Info, "[GameStartPatch] DRAFT MODE DETECTED - Starting draft");
 
+            if (PlayerControl.AllPlayerControls.ToArray().Any(p => p && p.Data == null))
+            {
+                __state=false;
+                __instance.ResetStartState();
+                TouMarmo.Modules.MarmoSession.Notify("Wait for all players to finish loading before starting the draft.");
+                return false;
+            }
+
             var players = PlayerControl.AllPlayerControls.ToArray()
-                .Where(p => p != null && !p.Data.Disconnected && !SpectatorRole.TrackedSpectators.Contains(p.Data.PlayerName))
+                .Where(p => p != null && p.Data != null && !p.Data.Disconnected && !SpectatorRole.TrackedSpectators.Contains(p.Data.PlayerName))
                 .ToList();
 
             if (players.Count == 0)

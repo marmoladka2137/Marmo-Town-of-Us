@@ -17,7 +17,7 @@ namespace TownOfUs.Modules.DraftMode;
 public static class DraftRpcs
 {
     [MethodRpc((uint)TownOfUsRpc.DraftSubmitPick)]
-    public static void RpcSubmitPick(PlayerControl sender, int index, int roleId)
+    public static void RpcSubmitPick(PlayerControl sender, int index, int roleId, int turn)
     {
         if (!AmongUsClient.Instance.AmHost) return;
         if (sender == null) return;
@@ -29,12 +29,15 @@ public static class DraftRpcs
             return;
         }
 
+        if (turn != DraftManager.CurrentTurnNumber) return;
         DraftManager.SubmitPick(sender.PlayerId, (byte)index, (ushort)roleId);
     }
 
     [MethodRpc((uint)TownOfUsRpc.DraftStart)]
     public static void RpcStartDraft(PlayerControl sender, int totalSlots)
     {
+        if (!sender || !sender.IsHost()) return;
+        TouMarmo.Modules.DraftSafety.DraftUiState.Capture();
         HudManagerPatches.ResetZoom();
         DraftManager.IsDraftActive = true;
         DraftAudio.PlayDraftStart();
@@ -46,6 +49,7 @@ public static class DraftRpcs
     [MethodRpc((uint)TownOfUsRpc.DraftSlotNotify)]
     public static void RpcSlotNotify(PlayerControl sender, byte playerId, int slotNumber)
     {
+        if (!sender || !sender.IsHost()) return;
         var state = DraftManager.GetStateForPlayer(playerId);
         if (state == null)
         {
@@ -61,10 +65,11 @@ public static class DraftRpcs
     }
 
     [MethodRpc((uint)TownOfUsRpc.DraftPickerReady)]
-    public static void RpcPickerReady(PlayerControl sender)
+    public static void RpcPickerReady(PlayerControl sender, int turn)
     {
         if (!AmongUsClient.Instance.AmHost) return;
         if (sender == null) return;
+        if (turn != DraftManager.CurrentTurnNumber) return;
         DraftManager.NotifyPickerReady(sender.PlayerId);
     }
 
@@ -88,6 +93,7 @@ public static class DraftRpcs
     [MethodRpc((uint)TownOfUsRpc.DraftCancel)]
     public static void RpcCancelDraft(PlayerControl sender)
     {
+        if (!sender || !sender.IsHost()) return;
         DraftManager.Reset(cancelledBeforeCompletion: true);
         DraftScreenController.Hide();
         DraftCancelButton.Hide();
@@ -96,12 +102,14 @@ public static class DraftRpcs
     [MethodRpc((uint)TownOfUsRpc.DraftEnd)]
     public static void RpcEndDraft(PlayerControl sender)
     {
+        if (!sender || !sender.IsHost()) return;
         RpcCancelDraft(sender);
     }
 
     [MethodRpc((uint)TownOfUsRpc.DraftCreateNotif)]
     public static void RpcCreateNotif(PlayerControl sender, string message)
     {
+        if (!sender || !sender.IsHost()) return;
         if (string.IsNullOrEmpty(message)) return;
         var notif = Helpers.CreateAndShowNotification(message, Color.white,
             new Vector3(0f, 1f, -20f), spr: TouAssets.IconDraftMode.LoadAsset());
@@ -111,6 +119,7 @@ public static class DraftRpcs
     [MethodRpc((uint)TownOfUsRpc.DraftBroadcastRecap)]
     public static void RpcBroadcastRecap(PlayerControl sender, string recapData)
     {
+        if (!sender || !sender.IsHost()) return;
 
         var mode = DraftRecapMode.Nothing;
         var entries = new List<(int slot, string label, string colorHex)>();
@@ -214,9 +223,10 @@ public sealed class DraftAnnounceTurnRpc(TouMarmo.TouMarmoPlugin plugin, uint id
 
     public override void Handle(PlayerControl innerNetObject, DraftTurnAnnouncement? data)
     {
-        if (data == null) return;
+        if (data == null || !innerNetObject || !innerNetObject.IsHost() || !DraftManager.IsDraftActive || !LobbyBehaviour.Instance) return;
 
 
+        if (data.TurnNumber < DraftManager.CurrentTurnNumber) return;
         DraftManager.SetClientTurn(data.TurnNumber, data.Slot);
 
         var offeredList = data.RoleIds;
@@ -249,9 +259,8 @@ public sealed class DraftAnnounceTurnRpc(TouMarmo.TouMarmoPlugin plugin, uint id
             DraftScreenController.TargetPickerId = data.PickerId;
             DraftScreenController.Show(offeredList.ToArray(), offeredNames.ToArray());
         }
-        else
+        else if (DraftManager.GetStateForPlayer(localPlayerId)?.IsPickingNow != true)
         {
-
             DraftStatusOverlay.SetState(OverlayState.Waiting);
         }
     }
@@ -297,7 +306,7 @@ public sealed class DraftPickConfirmedRpc(TouMarmo.TouMarmoPlugin plugin, uint i
 
     public override void Handle(PlayerControl innerNetObject, DraftPickConfirmedData? data)
     {
-        if (data == null) return;
+        if (data == null || !innerNetObject || !innerNetObject.IsHost() || !DraftManager.IsDraftActive || !LobbyBehaviour.Instance) return;
 
         if (!AmongUsClient.Instance.AmHost)
         {
@@ -312,7 +321,7 @@ public sealed class DraftPickConfirmedRpc(TouMarmo.TouMarmoPlugin plugin, uint i
         DraftManager.ConfirmPick(data.Slot, data.RoleId);
 
         var localSlot = DraftManager.GetSlotForPlayer(PlayerControl.LocalPlayer.PlayerId);
-        if (data.Slot == localSlot && data.RoleId != 0)
+        if (data.Slot == localSlot)
         {
             DraftScreenController.Hide();
             DraftScreenController.ShowFinalPickNotification(data.RoleId);
@@ -336,7 +345,7 @@ public static class DraftNetworkHelper
         if (AmongUsClient.Instance.AmHost)
             DraftManager.SubmitPick(idToSend, (byte)index, roleId);
         else
-            DraftRpcs.RpcSubmitPick(PlayerControl.LocalPlayer, index, roleId);
+            DraftRpcs.RpcSubmitPick(PlayerControl.LocalPlayer, index, roleId, DraftManager.CurrentTurnNumber);
     }
 
     public static void BroadcastSlotNotifications(int totalSlots, Dictionary<byte, int> pidToSlot)
@@ -425,7 +434,7 @@ public static class DraftNetworkHelper
         if (AmongUsClient.Instance.AmHost)
             DraftManager.NotifyPickerReady(PlayerControl.LocalPlayer.PlayerId);
         else
-            DraftRpcs.RpcPickerReady(PlayerControl.LocalPlayer);
+            DraftRpcs.RpcPickerReady(PlayerControl.LocalPlayer, DraftManager.CurrentTurnNumber);
     }
 
     public static void RequestShuffle()

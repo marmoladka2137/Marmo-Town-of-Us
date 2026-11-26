@@ -1,4 +1,4 @@
-﻿using HarmonyLib;
+using HarmonyLib;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.Events.Vanilla.Meeting;
@@ -43,7 +43,7 @@ public static class TrapperEvents
 
             if (PlayerControl.LocalPlayer.Data.Role is TrapperRole)
             {
-                var uses = OptionGroupSingleton<TrapperOptions>.Instance.MaxTraps;
+                var uses = TouMarmo.Modules.AbilityLimits.Count(OptionGroupSingleton<TrapperOptions>.Instance.MaxTraps);
                 CustomButtonSingleton<TrapperTrapButton>.Instance.SetUses((int)uses);
             }
         }

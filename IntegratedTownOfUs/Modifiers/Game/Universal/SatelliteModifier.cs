@@ -1,4 +1,4 @@
-﻿using Il2CppInterop.Runtime.Attributes;
+using Il2CppInterop.Runtime.Attributes;
 using MiraAPI.GameOptions;
 using MiraAPI.Modifiers;
 using MiraAPI.Modifiers.Types;
@@ -37,7 +37,7 @@ public sealed class SatelliteModifier : UniversalGameModifier, IWikiDiscoverable
     public string GetAdvancedDescription()
     {
         return MiraLocaleManager.Get($"TownOfUsMira.Modifier.{IdPart}.WikiDescription").Replace("<maxUses>",
-                   $"{Math.Round(OptionGroupSingleton<SatelliteOptions>.Instance.MaxNumCast, 0)}") +
+                   $"{Math.Round((double)TouMarmo.Modules.AbilityLimits.Count(OptionGroupSingleton<SatelliteOptions>.Instance.MaxNumCast), 0)}") +
                MiscUtils.AppendOptionsText(GetType());
     }
 
@@ -50,7 +50,7 @@ public sealed class SatelliteModifier : UniversalGameModifier, IWikiDiscoverable
             [
                 new(MiraLocaleManager.Get($"TownOfUsMira.Modifier.{IdPart}Broadcast"),
                     MiraLocaleManager.Get($"TownOfUsMira.Modifier.{IdPart}Broadcast.WikiDescription").Replace("<maxUses>",
-                        $"{Math.Round(OptionGroupSingleton<SatelliteOptions>.Instance.MaxNumCast, 0)}"),
+                        $"{Math.Round((double)TouMarmo.Modules.AbilityLimits.Count(OptionGroupSingleton<SatelliteOptions>.Instance.MaxNumCast), 0)}"),
                     TouAssets.BroadcastSprite)
             ];
         }

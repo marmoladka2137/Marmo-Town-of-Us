@@ -9,7 +9,7 @@ public sealed class HnsChameleonOptions : AbstractRoleOptionGroup<HnsChameleonRo
 {
     public override string GroupName => MiraLocaleManager.Get("TownOfUsMira.HideAndSeek.Role.Chameleon", "Chameleon");
 
-    [ModdedNumberOption("TownOfUsMira.HideAndSeek.Role.Option.ChameleonSwoopUsesPerRound", 1f, 10f, 1f, MiraNumberSuffixes.None, "0", true)]
+    [ModdedNumberOption("TownOfUsMira.HideAndSeek.Role.Option.ChameleonSwoopUsesPerRound", 0f, 10f, 1f, MiraNumberSuffixes.None, "0", true)]
     public float MaxSwoops { get; set; } = 5f;
 
     [ModdedNumberOption("TownOfUsMira.HideAndSeek.Role.Option.ChameleonSwoopCooldown", 5f, 120f, 2.5f, MiraNumberSuffixes.Seconds)]

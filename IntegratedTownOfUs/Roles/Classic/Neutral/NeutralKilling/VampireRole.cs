@@ -172,6 +172,12 @@ public sealed class VampireRole(IntPtr cppPtr) : NeutralRole(cppPtr), ITownOfUsR
 
         target.ChangeRole(RoleId.Get<VampireRole>());
         target.AddModifier<VampireBittenModifier>();
+        if (target.AmOwner)
+        {
+            MiraAPI.Patches.Hud.ButtonResetPatches.ResetCooldowns();
+            if (HudManager.Instance)
+                HudManager.Instance.SetHudActive(target, target.Data.Role, !MeetingHud.Instance && !ExileController.Instance);
+        }
 
         if (OptionGroupSingleton<VampireOptions>.Instance.CanGuessAsNewVamp)
         {

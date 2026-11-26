@@ -24,7 +24,7 @@ public static class ComposterEvents
         }
 
         var button = CustomButtonSingleton<PlaceTrapButton>.Instance;
-        button.SetUses((int)OptionGroupSingleton<ComposterOptions>.Instance.MaxTrapsPerRound.Value);
+        button.SetUses((int)TouMarmo.Modules.AbilityLimits.Count(TouMarmo.Modules.AbilityLimits.Count(OptionGroupSingleton<ComposterOptions>.Instance.MaxTrapsPerRound.Value)));
         button.ResetCooldownAndOrEffect();
     }
 

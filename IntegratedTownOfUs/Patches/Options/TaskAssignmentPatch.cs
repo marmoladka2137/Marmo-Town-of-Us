@@ -12,6 +12,11 @@ public static class TaskAssignmentPatch
     public static void Prefix(ShipStatus __instance, ref int count,
         ref Il2CppSystem.Collections.Generic.List<NormalPlayerTask> unusedTasks)
     {
+        if(unusedTasks==null || unusedTasks.Count==0 || !unusedTasks[0])
+        {
+            count=0;
+            return;
+        }
         var type = unusedTasks[0].Length;
 
         if (type is TaskLength.Short)

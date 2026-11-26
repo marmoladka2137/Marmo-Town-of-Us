@@ -1,4 +1,4 @@
-﻿using MiraAPI.GameOptions;
+using MiraAPI.GameOptions;
 using MiraAPI.GameOptions.OptionTypes;
 using MiraAPI.Utilities;
 using TownOfUs.Roles.Impostor;
@@ -12,7 +12,7 @@ public sealed class PuppeteerOptions : AbstractRoleOptionGroup<PuppeteerRole>
     public override Color GroupColor => Palette.ImpostorRoleRed;
 
     public ModdedNumberOption ControlUses { get; } =
-        new($"TouOptionPuppeteerControlUses", 3f, -1f, 30f, 1f, "#", "∞", MiraNumberSuffixes.None, "0");
+        new($"TouOptionPuppeteerControlUses", 3f, 0f, 30f, 1f, "∞", "∞", MiraNumberSuffixes.None, "0");
 
     public ModdedNumberOption ControlPerKills { get; } = new("TouOptionPuppeteerControlPerKill", 2f, 0f, 15f, 1f, "Off", "#", MiraNumberSuffixes.None, "0")
     {

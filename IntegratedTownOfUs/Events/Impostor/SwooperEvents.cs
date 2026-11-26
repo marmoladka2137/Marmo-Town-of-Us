@@ -1,4 +1,4 @@
-﻿using MiraAPI.Events;
+using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.Events.Vanilla.Meeting;
 using MiraAPI.Events.Vanilla.Usables;
@@ -19,9 +19,9 @@ public static class SwooperEvents
     public static void EjectionEventEventHandler(EjectionEvent _)
     {
         var button = CustomButtonSingleton<SwooperSwoopButton>.Instance;
-        button.SetUses((int)OptionGroupSingleton<SwooperOptions>.Instance.MaxSwoops);
+        button.SetUses((int)TouMarmo.Modules.AbilityLimits.Count(OptionGroupSingleton<SwooperOptions>.Instance.MaxSwoops));
 
-        if ((int)OptionGroupSingleton<SwooperOptions>.Instance.MaxSwoops == 0)
+        if ((int)TouMarmo.Modules.AbilityLimits.Count(OptionGroupSingleton<SwooperOptions>.Instance.MaxSwoops) == 0)
         {
             button.Button?.usesRemainingText.gameObject.SetActive(false);
             button.Button?.usesRemainingSprite.gameObject.SetActive(false);

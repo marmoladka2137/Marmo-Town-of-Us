@@ -12,7 +12,7 @@ public sealed class SpellslingerOptions : AbstractRoleOptionGroup<SpellslingerRo
     [ModdedNumberOption("TouOptionSpellslingerHexCooldown", 5f, 120f, 2.5f, MiraNumberSuffixes.Seconds)]
     public float HexCooldown { get; set; } = 25f;
 
-    [ModdedNumberOption("TouOptionSpellslingerMaxHexes", 3f, 15f, 1f, MiraNumberSuffixes.None, "0")]
+    [ModdedNumberOption("TouOptionSpellslingerMaxHexes", 0f, 15f, 1f, MiraNumberSuffixes.None, "0", zeroInfinity: true)]
     public float MaxHexes { get; set; } = 5f;
 
     [ModdedNumberOption("TouOptionSpellslingerHexBombDuration", 30f, 180f, 5f, MiraNumberSuffixes.Seconds)]

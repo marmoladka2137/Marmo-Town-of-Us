@@ -6,6 +6,7 @@ namespace TouMarmo.Modules.Necromancer;
 // This object contains cosmetics only. The deceased player keeps their ghost and controls.
 public sealed class NecromancerPuppet : IDisposable
 {
+    private readonly GameObject root;
     private readonly CosmeticsLayer cosmetics;
     private readonly SpriteAnim animator;
     private readonly GameObject bodyImage;
@@ -17,15 +18,16 @@ public sealed class NecromancerPuppet : IDisposable
     public NecromancerPuppet(NetworkedPlayerInfo.PlayerOutfit outfit, Transform body, SpriteRenderer? reference = null, bool controlledHere = false)
     {
         this.controlledHere=controlledHere;
-        cosmetics = Object.Instantiate(AmongUsClient.Instance.PlayerPrefab.cosmetics, body);
+        root = new GameObject("Necromancer walking corpse");
+        root.transform.position=body.position;
+        cosmetics = Object.Instantiate(AmongUsClient.Instance.PlayerPrefab.cosmetics, root.transform);
         bodyImage=new GameObject("Necromancer animated body");
         var stage="body setup";
         try
         {
-            bodyImage.transform.SetParent(body,false);
-            bodyImage.transform.localPosition=new Vector3(0,0.2f,-0.02f);
-            // Zwiększono skalę body image z 0.7f na 1.0f, żeby outfit był większy.
-            bodyImage.transform.localScale=Vector3.one*1.0f;
+            bodyImage.transform.SetParent(root.transform,false);
+            bodyImage.transform.localPosition=new Vector3(0,0.13f,-0.02f);
+            bodyImage.transform.localScale=Vector3.one*0.65f;
             var image=bodyImage.AddComponent<SpriteRenderer>();
             var source=reference ?? AmongUsClient.Instance.PlayerPrefab.GetComponentsInChildren<SpriteRenderer>(true).First();
             // A prefab/ghost renderer can use a plain sprite or masked material. Use the
@@ -45,15 +47,15 @@ public sealed class NecromancerPuppet : IDisposable
             cosmetics.visor.transform.localPosition=new Vector2(-0.045f,0.575f);
             // Zwiększono skalę cosmetics z 0.35f na 0.5f, żeby outfit był czytelniejszy.
             cosmetics.transform.localScale=Vector3.one*0.5f;
-            cosmetics.petParent=body;
+            cosmetics.petParent=root.transform;
             stage="set living cosmetics";
             cosmetics.ResetCosmetics();
             cosmetics.name = "Necromancer living puppet";
             cosmetics.transform.localPosition = new Vector3(0,0.2f,-0.01f);
             cosmetics.gameObject.SetActive(true);
-            cosmetics.SetHat(outfit.HatId,outfit.ColorId);
-            cosmetics.SetVisor(outfit.VisorId,outfit.ColorId);
-            cosmetics.SetSkin(outfit.SkinId,outfit.ColorId);
+            // Render only the animated classic body. No hats, visor accessories,
+            // skins or pets are copied from the deceased player's outfit.
+            cosmetics.gameObject.SetActive(false);
             cosmetics.SetMaskType(PlayerMaterial.MaskType.None);
             image.sharedMaterial=bodyMaterial;
             if (cosmetics.nameText) cosmetics.nameText.gameObject.SetActive(false);
@@ -61,7 +63,7 @@ public sealed class NecromancerPuppet : IDisposable
             foreach (var part in cosmetics.GetComponentsInChildren<Transform>(true))
                 part.gameObject.layer=LayerMask.NameToLayer("Players");
             stage="collect renderers";
-            renderers = cosmetics.GetComponentsInChildren<SpriteRenderer>(true).Concat(new[]{image}).ToArray();
+            renderers = new[]{image};
             stage="color renderers";
             foreach (var renderer in renderers)
             {
@@ -93,12 +95,13 @@ public sealed class NecromancerPuppet : IDisposable
         {
             if(bodyMaterial) Object.Destroy(bodyMaterial);
             Object.Destroy(cosmetics.gameObject);
-            Object.Destroy(bodyImage);
+            Object.Destroy(bodyImage); Object.Destroy(root);
             throw new InvalidOperationException($"Necromancer model failed during {stage}.",error);
         }
     }
     public void Tick(Vector2 position)
     {
+        root.transform.position=new Vector3(position.x,position.y,position.y/1000f);
         var delta=position-previous;
         previous=position;
         var clip=delta.sqrMagnitude>0.000001f ? run : idle;
@@ -117,5 +120,5 @@ public sealed class NecromancerPuppet : IDisposable
         }
         foreach(var renderer in renderers) if(renderer) renderer.enabled=visible;
     }
-    public void Dispose() { if(cosmetics) Object.Destroy(cosmetics.gameObject); if(bodyImage) Object.Destroy(bodyImage); if(bodyMaterial) Object.Destroy(bodyMaterial); }
+    public void Dispose() { if(cosmetics) Object.Destroy(cosmetics.gameObject); if(bodyImage) Object.Destroy(bodyImage); if(bodyMaterial) Object.Destroy(bodyMaterial); if(root) Object.Destroy(root); }
 }

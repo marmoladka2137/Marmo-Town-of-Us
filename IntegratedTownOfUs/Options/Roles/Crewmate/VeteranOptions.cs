@@ -1,4 +1,4 @@
-﻿using MiraAPI.GameOptions;
+using MiraAPI.GameOptions;
 using MiraAPI.GameOptions.Attributes;
 using MiraAPI.GameOptions.OptionTypes;
 using MiraAPI.Utilities;
@@ -16,7 +16,7 @@ public sealed class VeteranOptions : AbstractRoleOptionGroup<VeteranRole>
     [ModdedNumberOption("TouOptionVeteranAlertDuration", 5f, 15f, 2.5f, MiraNumberSuffixes.Seconds)]
     public float AlertDuration { get; set; } = 10f;
 
-    [ModdedNumberOption("TouOptionVeteranMaxNumberofAlerts", 1f, 15f, 1f, MiraNumberSuffixes.None, "0")]
+    [ModdedNumberOption("TouOptionVeteranMaxNumberofAlerts", 0f, 15f, 1f, MiraNumberSuffixes.None, "0", zeroInfinity: true)]
     public float MaxNumAlerts { get; set; } = 5f;
 
     [ModdedToggleOption("TouOptionVeteranCanBeKilledOnAlert")]

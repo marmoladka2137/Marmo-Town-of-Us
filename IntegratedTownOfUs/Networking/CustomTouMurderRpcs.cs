@@ -949,6 +949,8 @@ public static class CustomTouMurderRpcs
         bool playKillSound = true,
         string causeOfDeath = "null")
     {
+        // A late RPC can outlive a joining/disconnected player's data or role.
+        if(!host || !source || !target || !source.Data || !target.Data || !source.Data.Role) return;
         if (LobbyBehaviour.Instance)
         {
             source.isKilling = false;

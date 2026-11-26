@@ -55,7 +55,7 @@ public static class ProtectionRuntime
     public static bool NativeGuardianBlocks(BeforeMurderEvent e)
     {
         if (e.IsCancelled || e.IgnoreDefense || Bypass(e.Target) || !e.Target.ProtectedByGa()) return false;
-        return Block(e, e.Source, e.Target, ProtectionKind.VanillaGuardian);
+        return Block(e, e.Source, e.Target, ProtectionKind.VanillaGuardian, PlayerControl.AllPlayerControls.ToArray().FirstOrDefault(p => p.PlayerId == e.Target.protectedByGuardianId));
     }
 
     public static bool Block(MiraCancelableEvent e, PlayerControl source, PlayerControl target,
@@ -91,59 +91,11 @@ public static class ProtectionRuntime
     {
         var local = PlayerControl.LocalPlayer;
         if (!local || !source || !target || target.HasDied()) return;
-        bool entitled = source.AmOwner;
+        // Failed attacks notify only the attacker and the protection provider.
+        // Shield visibility settings must never grant the recipient an attack flash.
+        bool entitled = FeedbackRules.ShieldFlash(source.AmOwner, provider && provider!.AmOwner);
         bool knowsSource = provider && provider!.AmOwner;
-        if (kind == ProtectionKind.Mirrorcaster)
-        {
-            var who = OptionGroupSingleton<MirrorcasterOptions>.Instance.WhoGetsNotification;
-            entitled = knowsSource || source.AmOwner && who == MirrorOption.MirrorcasterAndKiller;
-        }
-        if (kind == ProtectionKind.Medic)
-        {
-            var who = OptionGroupSingleton<MedicOptions>.Instance.WhoGetsNotification;
-            entitled |= who == MedicOption.Everyone ||
-                target.AmOwner && who is MedicOption.Shielded or MedicOption.ShieldedAndMedic ||
-                provider && provider!.AmOwner && who is MedicOption.Medic or MedicOption.ShieldedAndMedic;
-            knowsSource |= entitled && !source.AmOwner;
-        }
-        else if (kind == ProtectionKind.Warden)
-        {
-            var who = OptionGroupSingleton<WardenOptions>.Instance.ShowFortified;
-            bool targetKnows = target.AmOwner && who is FortifyOptions.Self or FortifyOptions.SelfAndWarden or FortifyOptions.Everyone;
-            entitled |= provider && provider!.AmOwner || targetKnows;
-            knowsSource |= targetKnows;
-        }
-        else if (kind == ProtectionKind.Cleric)
-        {
-            bool targetKnows = target.AmOwner && OptionGroupSingleton<ClericOptions>.Instance.ShowBarrier;
-            entitled |= provider && provider!.AmOwner && OptionGroupSingleton<ClericOptions>.Instance.AttackNotif || targetKnows;
-            knowsSource |= targetKnows;
-        }
-        else if (kind == ProtectionKind.GuardianAngel)
-        {
-            var o = OptionGroupSingleton<FairyOptions>.Instance;
-            bool targetKnows = target.AmOwner && o.FairyTargetKnows && o.ShowProtect != ProtectOptions.Fairy;
-            entitled |= knowsSource || targetKnows;
-            knowsSource |= targetKnows;
-        }
-        else if (kind == ProtectionKind.Herbalist)
-            entitled |= provider && provider!.AmOwner && OptionGroupSingleton<HerbalistOptions>.Instance.AttackNotif;
-        else if (kind == ProtectionKind.Dirtek)
-        {
-            // A passive bond must not announce itself to the protected player.
-            if (target.AmOwner && !(provider && provider!.AmOwner)) return;
-            entitled |= provider && provider!.AmOwner;
-        }
-        else if (kind == ProtectionKind.Doctor)
-        {
-            entitled |= target.AmOwner || provider && provider!.AmOwner;
-            knowsSource |= target.AmOwner;
-        }
-        else if (kind is ProtectionKind.Survivor or ProtectionKind.Invulnerable or ProtectionKind.Veteran or ProtectionKind.Monarch)
-        {
-            entitled |= target.AmOwner;
-            knowsSource |= target.AmOwner;
-        }
+        if (target.AmOwner && !source.AmOwner && !(provider && provider!.AmOwner)) return;
         if (!entitled) return;
         var key = (source.PlayerId, target.PlayerId, kind);
         if (LastFlash.TryGetValue(key, out var last) && Time.unscaledTime - last < .2f) return;

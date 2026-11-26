@@ -34,8 +34,9 @@ public sealed class ExorcistPrayerButton : TownOfUsRoleButton<ExorcistRole>
     {
         base.FixedUpdate(playerControl);
         if (!Button) return;
-        var remaining = Mathf.Max(0, (int)ExorcistRuntime.Options.PrayerUses.Value - ExorcistRuntime.PrayersUsed);
+        var remaining = Mathf.Max(0, (int)TouMarmo.Modules.AbilityLimits.Count(ExorcistRuntime.Options.PrayerUses.Value) - ExorcistRuntime.PrayersUsed);
         Button!.SetUsesRemaining(remaining);
+        if (ExorcistRuntime.Options.PrayerUses.Value == 0 && Button.usesRemainingText) Button.usesRemainingText.text="∞";
     }
 
     protected override void OnClick() => ExorcistRuntime.RpcPrayerRequest(PlayerControl.LocalPlayer);

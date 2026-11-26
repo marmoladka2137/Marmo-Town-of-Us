@@ -28,27 +28,29 @@ public static class SimpEvents
     [RegisterEvent(100)]
     public static void RoundStart(RoundStartEvent ev)
     {
-        if (AmongUsClient.Instance.AmHost)
+        AssignMissingTargets();
+        var local = PlayerControl.LocalPlayer;
+        if (local && !local.HasDied() && local.GetModifier<SimpModifier>() is { } simp && local.Data.Role.IsImpostor())
+            RefreshCooldown(local);
+    }
+    public static void AssignMissingTargets()
+    {
+        if (AmongUsClient.Instance && AmongUsClient.Instance.AmHost)
         {
             foreach (var owner in PlayerControl.AllPlayerControls.ToArray())
             {
                 var mod = owner.GetModifier<SimpModifier>();
-                if (mod == null || mod.TargetId != byte.MaxValue || owner.HasDied() || !owner.Data.Role.IsImpostor()) continue;
+                if (owner.Data?.Role == null || mod == null || mod.TargetId != byte.MaxValue || owner.HasDied() || !owner.Data.Role.IsImpostor()) continue;
                 var candidates = PlayerControl.AllPlayerControls.ToArray().Where(p => p != owner && p.Data != null &&
                     !p.HasDied() && !p.Data.Disconnected && p.Data.Role is not SpectatorRole).ToArray();
                 if (candidates.Length > 0) RpcAssign(owner, candidates[System.Random.Shared.Next(candidates.Length)]);
             }
         }
-        var local = PlayerControl.LocalPlayer;
-        if (local && !local.HasDied() && local.GetModifier<SimpModifier>() is { } simp && local.Data.Role.IsImpostor())
-        {
-            RefreshCooldown(local);
-
-        }
     }
     [MethodRpc(1040, LocalHandling = RpcLocalHandling.Before)]
     public static void RpcAssign(PlayerControl owner, PlayerControl target)
     {
+        if (!owner || !target || target.Data == null || target.Data.Disconnected) return;
         var mod = owner.GetModifier<SimpModifier>();
         if (mod == null || mod.TargetId != byte.MaxValue || owner == target || target.HasDied()) return;
         mod.TargetId = target.PlayerId;

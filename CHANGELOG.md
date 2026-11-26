@@ -1,9 +1,12 @@
-# MTOU 1.1.0 Beta — 2026-11-19
+# Changelog
 
-- Game and launcher display the same version: **1.1.0 Beta**. Internal file/assembly revision: **1.1.0.19**.
-- Launcher version metadata is generated from TOU-Marmo.csproj during compilation.
-- Steam/Epic installation discovery, separate game copies and verified public mod updates are included.
-- Download navigation points to the current Windows package.
-- This publication changes launcher version presentation and documentation; gameplay DLL and dependency pins are unchanged.
+## 1.1.1 — 2026-11-26
 
-See LAUNCHER_RELEASE_TESTS.md and KNOWN_ISSUES.md for tested scope and limitations.
+- Added Manipulator, Gravedigger, Papetir and Hunger.
+- Updated role abilities, target handling and client build compatibility checks.
+- Updated Papetir corpse details to follow falling animation frames.
+- Standardized ability icon sizes and increased cooldown digits by 30%.
+- Prevented Practice diagnostic modifiers from being randomly assigned to dummies or inherited by Amnesiac.
+- Launcher and mod both display 1.1.1; previous releases remain available.
+
+Validation: Release builds and available automated checks passed. Live gameplay and multiplayer were not rerun for this release.

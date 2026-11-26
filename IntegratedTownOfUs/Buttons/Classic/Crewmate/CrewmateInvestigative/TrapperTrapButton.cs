@@ -1,4 +1,4 @@
-﻿using MiraAPI.GameOptions;
+using MiraAPI.GameOptions;
 using TownOfUs.Modules;
 using TownOfUs.Options.Roles.Crewmate;
 using TownOfUs.Roles.Crewmate;
@@ -13,6 +13,7 @@ public sealed class TrapperTrapButton : TownOfUsRoleButton<TrapperRole>, ILegacy
     public override Color TextOutlineColor => TownOfUsColors.Trapper;
     public override float Cooldown => Math.Clamp(OptionGroupSingleton<TrapperOptions>.Instance.TrapCooldown + MapCooldown, 5f, 120f);
     public override int MaxUses => (int)OptionGroupSingleton<TrapperOptions>.Instance.MaxTraps;
+    public override bool ZeroIsInfinite { get; set; } = true;
     public override LoadableAsset<Sprite> Sprite => LegacyAssets.IsLegacy ? LegacyCrewAssets.TrapSprite : TouCrewAssets.TrapSprite;
     public int ExtraUses { get; set; }
 

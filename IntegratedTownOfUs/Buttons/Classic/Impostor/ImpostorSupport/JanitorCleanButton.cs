@@ -15,6 +15,7 @@ public sealed class JanitorCleanButton : TownOfUsKillRoleButton<JanitorRole, Dea
     public override float Cooldown => Math.Clamp(OptionGroupSingleton<JanitorOptions>.Instance.CleanCooldown + MapCooldown, 5f, 120f);
     public override float EffectDuration => OptionGroupSingleton<JanitorOptions>.Instance.CleanDelay + 0.001f;
     public override int MaxUses => (int)OptionGroupSingleton<JanitorOptions>.Instance.MaxClean;
+    public override bool ZeroIsInfinite { get; set; } = true;
     public override LoadableAsset<Sprite> Sprite => LegacyAssets.IsLegacy ? LegacyImpAssets.CleanButtonSprite : TouImpAssets.CleanButtonSprite;
 
     public DeadBody? CleaningBody { get; set; }

@@ -1,4 +1,4 @@
-﻿using MiraAPI.GameOptions;
+using MiraAPI.GameOptions;
 using MiraAPI.Modifiers;
 using TownOfUs.Modifiers.Crewmate;
 using TownOfUs.Options.Roles.Crewmate;
@@ -15,6 +15,7 @@ public sealed class SonarTrackButton : TownOfUsRoleButton<SonarRole, PlayerContr
     public override Color TextOutlineColor => TownOfUsColors.Sonar;
     public override float Cooldown => Math.Clamp(OptionGroupSingleton<SonarOptions>.Instance.TrackCooldown + MapCooldown, 5f, 120f);
     public override int MaxUses => (int)OptionGroupSingleton<SonarOptions>.Instance.MaxTracks;
+    public override bool ZeroIsInfinite { get; set; } = true;
     public override LoadableAsset<Sprite> Sprite => LegacyAssets.IsLegacy ? LegacyCrewAssets.TrackSprite : TouCrewAssets.TrackSprite;
     public int ExtraUses { get; set; }
 

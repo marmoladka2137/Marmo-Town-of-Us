@@ -67,7 +67,7 @@ public static class TimeLordEvents
         }
 
         var btn = CustomButtonSingleton<TimeLordRewindButton>.Instance;
-        btn.SetUses((int)OptionGroupSingleton<TimeLordOptions>.Instance.MaxUses.Value);
+        btn.SetUses((int)TouMarmo.Modules.AbilityLimits.Count(OptionGroupSingleton<TimeLordOptions>.Instance.MaxUses.Value));
         if (!btn.LimitedUses)
         {
             btn.Button?.usesRemainingText.gameObject.SetActive(false);

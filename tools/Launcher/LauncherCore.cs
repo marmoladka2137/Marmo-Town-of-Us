@@ -4,11 +4,68 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using System.Net;
+using System.IO.Compression;
+using System.Security.Cryptography;
 
 namespace Marmo.Launcher
 {
     public static class LauncherCore
     {
+        const string EpicArchiveUrl = "https://github.com/whichtwix/EpicGamesStarter/releases/download/1.1.0/EpicGamesStarter.exe.zip";
+        const string EpicArchiveHash = "15FB526B39B90A6E571397EC9981FADED67E140A6DD3F42C011C7F4060188BC8";
+        const string EpicExeHash = "7E1D7E1D2D96ACA2AE3A4229F0C2902B1997D94F166F70CE2ACD4E7B5BCB8C42";
+        static string Sha(byte[] bytes)
+        {
+            using (var hash = SHA256.Create()) return BitConverter.ToString(hash.ComputeHash(bytes)).Replace("-", "");
+        }
+        static bool VerifiedEpicStarter(string path)
+        {
+            if (!File.Exists(path)) return false;
+            if ((File.GetAttributes(path) & FileAttributes.ReparsePoint) != 0) throw new IOException("Epic starter must not be a link.");
+            return new FileInfo(path).Length == 15316174 && Sha(File.ReadAllBytes(path)) == EpicExeHash;
+        }
+        public static void EnsureEpicStarter(string folder, byte[] suppliedArchive = null)
+        {
+            if (!MatchesStore(folder, true)) return;
+            string target = Path.Combine(Path.GetFullPath(folder), "EpicGamesStarter.exe");
+            if (VerifiedEpicStarter(target)) return;
+            if (File.Exists(target)) throw new IOException("EpicGamesStarter.exe is not the verified supported starter. Rename that file and retry PLAY; your game files were not changed.");
+            byte[] archive = suppliedArchive;
+            if (archive == null)
+            {
+                ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls12;
+                var request = (HttpWebRequest)WebRequest.Create(EpicArchiveUrl);
+                request.UserAgent = "MTOU-Launcher/1.1.0"; request.Timeout = 60000; request.ReadWriteTimeout = 60000;
+                using (var response = request.GetResponse()) using (var input = response.GetResponseStream()) using (var output = new MemoryStream())
+                {
+                    var buffer = new byte[65536]; int count;
+                    while ((count = input.Read(buffer, 0, buffer.Length)) > 0)
+                    {
+                        if (output.Length + count > 6865606) throw new IOException("Epic starter download exceeds its pinned size.");
+                        output.Write(buffer, 0, count);
+                    }
+                    archive = output.ToArray();
+                }
+            }
+            if (archive.Length != 6865606 || Sha(archive) != EpicArchiveHash) throw new IOException("Epic starter download failed SHA-256 verification.");
+            byte[] executable;
+            using (var zip = new ZipArchive(new MemoryStream(archive), ZipArchiveMode.Read))
+            {
+                var entry = zip.GetEntry("EpicGamesStarter.exe");
+                if (zip.Entries.Count != 1 || entry == null || entry.Length != 15316174) throw new IOException("Unexpected Epic starter archive.");
+                using (var input = entry.Open()) using (var output = new MemoryStream()) { input.CopyTo(output); executable = output.ToArray(); }
+            }
+            if (Sha(executable) != EpicExeHash) throw new IOException("Epic starter executable failed SHA-256 verification.");
+            string temporary = target + "." + Guid.NewGuid().ToString("N") + ".tmp";
+            try
+            {
+                File.WriteAllBytes(temporary, executable);
+                try { File.Move(temporary, target); }
+                catch (IOException) { if (!VerifiedEpicStarter(target)) throw; }
+            }
+            finally { if (File.Exists(temporary)) File.Delete(temporary); }
+        }
         public static string DisplayVersion(string folder)
         {
             try
@@ -120,12 +177,16 @@ namespace Marmo.Launcher
         {
             if (!IsModdedGame(folder)) throw new IOException("Select the installed MTOU game folder, containing Among Us.exe and the MTOU plugin.");
             folder = Path.GetFullPath(folder);
-            var start = new ProcessStartInfo(Path.Combine(folder, "Among Us.exe"))
+            bool epic = MatchesStore(folder, true);
+            string executable = epic ? "EpicGamesStarter.exe" : "Among Us.exe";
+            if (epic && !VerifiedEpicStarter(Path.Combine(folder, executable)))
+                throw new IOException("Epic sign-in starter is missing or modified. Use PLAY in the updated MTOU launcher to prepare it.");
+            var start = new ProcessStartInfo(Path.Combine(folder, executable))
             {
                 WorkingDirectory = folder,
-                UseShellExecute = false
+                UseShellExecute = epic
             };
-            if (!String.IsNullOrWhiteSpace(logFile)) start.Arguments = "-logFile \"" + Path.GetFullPath(logFile) + "\"";
+            if (!epic && !String.IsNullOrWhiteSpace(logFile)) start.Arguments = "-logFile \"" + Path.GetFullPath(logFile) + "\"";
             return start;
         }
         public static bool IsRunning(string folder)

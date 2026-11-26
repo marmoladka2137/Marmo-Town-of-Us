@@ -1,4 +1,4 @@
-﻿using MiraAPI.GameOptions;
+using MiraAPI.GameOptions;
 using TownOfUs.Modules;
 using TownOfUs.Options.Roles.Impostor;
 using TownOfUs.Roles.Impostor;

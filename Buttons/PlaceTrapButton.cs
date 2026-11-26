@@ -16,7 +16,7 @@ public sealed class PlaceTrapButton : TownOfUsRoleButton<ComposterRole>
     public override float Cooldown => Math.Clamp(
         OptionGroupSingleton<ComposterOptions>.Instance.TrapCooldown.Value + MapCooldown, 5f, 120f);
     public override int MaxUses => (int)OptionGroupSingleton<ComposterOptions>.Instance.MaxTrapsPerRound.Value;
-    public override bool ZeroIsInfinite => false;
+    public override bool ZeroIsInfinite => true;
     public override bool UsableFirstRound => true;
     public override LoadableAsset<Sprite> Sprite => ComposterAssets.TrapButton;
 

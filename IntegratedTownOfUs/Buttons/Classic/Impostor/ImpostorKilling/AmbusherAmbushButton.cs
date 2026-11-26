@@ -1,4 +1,4 @@
-﻿using HarmonyLib;
+using HarmonyLib;
 using MiraAPI.GameOptions;
 using MiraAPI.Hud;
 using MiraAPI.Modifiers;
@@ -17,6 +17,7 @@ public sealed class AmbusherAmbushButton : TownOfUsKillRoleButton<AmbusherRole, 
     public override Color TextOutlineColor => TownOfUsColors.Impostor;
     public override float Cooldown => PlayerControl.LocalPlayer.GetKillCooldown();
     public override int MaxUses => (int)OptionGroupSingleton<AmbusherOptions>.Instance.MaxAmbushes;
+    public override bool ZeroIsInfinite { get; set; } = true;
     public override LoadableAsset<Sprite> Sprite => TouImpAssets.AmbushSprite;
 
     public void SetDiseasedTimer(float multiplier)

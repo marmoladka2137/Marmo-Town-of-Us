@@ -1,4 +1,4 @@
-﻿using Il2CppInterop.Runtime.Attributes;
+using Il2CppInterop.Runtime.Attributes;
 using MiraAPI.GameOptions;
 using MiraAPI.Modifiers;
 using MiraAPI.Modifiers.Types;
@@ -46,7 +46,7 @@ public sealed class ButtonBarryModifier : UniversalGameModifier, IWikiDiscoverab
             [
                 new(MiraLocaleManager.Get($"TownOfUsMira.Modifier.{IdPart}Button"),
                     MiraLocaleManager.Get($"TownOfUsMira.Modifier.{IdPart}Button.WikiDescription").Replace("<barryUses>",
-                        $"{Math.Round(OptionGroupSingleton<ButtonBarryOptions>.Instance.MaxNumButtons, 0)}"),
+                        $"{Math.Round((double)TouMarmo.Modules.AbilityLimits.Count(OptionGroupSingleton<ButtonBarryOptions>.Instance.MaxNumButtons), 0)}"),
                     TouAssets.BarryButtonSprite)
             ];
         }

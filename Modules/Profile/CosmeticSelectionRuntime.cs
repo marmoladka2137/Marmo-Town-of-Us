@@ -32,7 +32,7 @@ public static class CosmeticSelectionRuntime
     }
     public static void Capture(string slot)
     {
-        if(Store==null || DataManager.player==null) return;
+        if(TouMarmo.Modules.LobbyMimic.MimicRuntime.Active || Store==null || DataManager.player==null) return;
         try{Store.Choose(slot,Read(DataManager.Player.Customization,slot));pending=true;}
         catch(Exception error){Warning($"Cosmetic preference save failed: {error.GetType().Name}");}
     }
@@ -62,7 +62,7 @@ public static class CosmeticSelectionRuntime
     }
     public static void Tick()
     {
-        if(!pending || Store==null || Time.unscaledTime<nextCheck || DataManager.player==null) return;
+        if(TouMarmo.Modules.LobbyMimic.MimicRuntime.Active || !pending || Store==null || Time.unscaledTime<nextCheck || DataManager.player==null) return;
         nextCheck=Time.unscaledTime+1;
         // Custom cosmetics may be installed asynchronously; never replace them with empty ids.
         if(Store.Values.Any(p=>!Resolved(p.Key,p.Value))) return;

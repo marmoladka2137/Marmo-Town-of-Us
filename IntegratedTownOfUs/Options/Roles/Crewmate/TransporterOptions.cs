@@ -1,4 +1,4 @@
-﻿using MiraAPI.GameOptions;
+using MiraAPI.GameOptions;
 using MiraAPI.GameOptions.Attributes;
 using MiraAPI.Utilities;
 using TownOfUs.Roles.Crewmate;
@@ -12,7 +12,7 @@ public sealed class TransporterOptions : AbstractRoleOptionGroup<TransporterRole
     [ModdedNumberOption("TouOptionTransporterTransportCooldown", 5f, 120f, 2.5f, MiraNumberSuffixes.Seconds)]
     public float TransporterCooldown { get; set; } = 25f;
 
-    [ModdedNumberOption("TouOptionTransporterMaxUses", 1f, 15f, 1f, MiraNumberSuffixes.None, "0")]
+    [ModdedNumberOption("TouOptionTransporterMaxUses", 0f, 15f, 1f, MiraNumberSuffixes.None, "0", zeroInfinity: true)]
     public float MaxNumTransports { get; set; } = 5f;
 
     [ModdedToggleOption("TouOptionTransporterMoveWithMenu")]

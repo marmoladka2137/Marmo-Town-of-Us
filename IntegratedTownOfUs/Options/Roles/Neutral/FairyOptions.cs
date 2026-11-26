@@ -1,4 +1,4 @@
-﻿using MiraAPI.GameOptions;
+using MiraAPI.GameOptions;
 using MiraAPI.GameOptions.Attributes;
 using MiraAPI.Utilities;
 using TownOfUs.Roles.Neutral;
@@ -15,7 +15,7 @@ public sealed class FairyOptions : AbstractRoleOptionGroup<FairyRole>
     [ModdedNumberOption("TouOptionFairyDuration", 5f, 15f, 1f, MiraNumberSuffixes.Seconds)]
     public float ProtectDuration { get; set; } = 10f;
 
-    [ModdedNumberOption("TouOptionFairyMaxProtects", 1, 15, 1, MiraNumberSuffixes.None, "0")]
+    [ModdedNumberOption("TouOptionFairyMaxProtects", 0f, 15, 1, MiraNumberSuffixes.None, "0", zeroInfinity: true)]
     public float MaxProtects { get; set; } = 5;
 
     [ModdedToggleOption("TouOptionFairyGetMoreUsesFromCompletingTasks")]

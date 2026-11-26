@@ -17,7 +17,7 @@ public sealed class SatelliteOptions : AbstractTouModifierOptionGroup<SatelliteM
     [ModdedNumberOption("TouOptionSatelliteButtonCooldown", 5f, 60f, 2.5f, MiraNumberSuffixes.Seconds)]
     public float Cooldown { get; set; } = 15f;
 
-    [ModdedNumberOption("TouOptionSatelliteMaxUses", 1f, 15f, 1f, MiraNumberSuffixes.None, "0")]
+    [ModdedNumberOption("TouOptionSatelliteMaxUses", 0f, 15f, 1f, MiraNumberSuffixes.None, "0", zeroInfinity: true)]
     public float MaxNumCast { get; set; } = 5f;
 
     [ModdedToggleOption("TouOptionSatelliteOneUsagePerRound")]

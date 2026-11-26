@@ -466,6 +466,12 @@ public sealed class HudManagerHelper(nint cppPtr) : MonoBehaviour(cppPtr)
                     player.cosmetics.colorBlindText.enabled = true;
                 }
 
+                if (!localDead && !player.AmOwner && PlayerControl.LocalPlayer.Data.Role is TouMarmo.Roles.SoulguardRole &&
+                    HudManagerPatches.CommsSaboActive())
+                {
+                    playerName = string.Empty;
+                    player.cosmetics.colorBlindText.enabled = false;
+                }
                 player.cosmetics.nameText.text = playerName;
                 player.cosmetics.nameText.color = playerColor;
 

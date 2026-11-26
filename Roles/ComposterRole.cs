@@ -41,7 +41,7 @@ public sealed class ComposterRole(IntPtr cppPtr)
 
     public bool IsPowerCrew => !Player.HasDied() &&
         (ActiveTrapIds.Count > 0 ||
-         PlacedThisRound < (int)OptionGroupSingleton<ComposterOptions>.Instance.MaxTrapsPerRound.Value);
+         PlacedThisRound < (int)TouMarmo.Modules.AbilityLimits.Count(TouMarmo.Modules.AbilityLimits.Count(OptionGroupSingleton<ComposterOptions>.Instance.MaxTrapsPerRound.Value)));
 
     public CustomRoleConfiguration Configuration => new(this)
     {
@@ -128,7 +128,7 @@ public sealed class ComposterRole(IntPtr cppPtr)
             return;
         }
 
-        var maximum = (int)OptionGroupSingleton<ComposterOptions>.Instance.MaxTrapsPerRound.Value;
+        var maximum = (int)TouMarmo.Modules.AbilityLimits.Count(TouMarmo.Modules.AbilityLimits.Count(OptionGroupSingleton<ComposterOptions>.Instance.MaxTrapsPerRound.Value));
         if (role.PlacedThisRound >= maximum || role.ActiveTrapIds.Contains(trapId) ||
             Vector2.Distance(player.GetTruePosition(), position) > 1.5f)
         {

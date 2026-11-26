@@ -125,6 +125,7 @@ public static class IntroScenePatches
         }
         else
         {
+            maxDepth = Math.Max(1,maxDepth);
             int num5 = num2 / maxDepth;
             float num6 = Mathf.Lerp(1f, 0.75f, num5);
             poolablePlayer.transform.localPosition = new Vector3(0.9f * num * num2 * num6,

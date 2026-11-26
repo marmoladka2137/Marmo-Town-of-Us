@@ -49,7 +49,7 @@ public static class ExorcistRuntime
     public static bool CanUsePrayer(PlayerControl exorcist)
     {
         if (!MarmoSession.Alive(exorcist) || !IsExorcist(exorcist) || !MarmoSession.InRound) return false;
-        if (For(exorcist).Used >= (int)Options.PrayerUses.Value || Time.time < For(exorcist).ReadyAt) return false;
+        if (For(exorcist).Used >= (int)TouMarmo.Modules.AbilityLimits.Count(Options.PrayerUses.Value) || Time.time < For(exorcist).ReadyAt) return false;
         return true;
     }
 
@@ -94,7 +94,8 @@ public static class ExorcistRuntime
             var record = GameHistory.KilledPlayers.LastOrDefault(x => x.VictimId == victimId);
             if (record == null) continue;
             var killer = GameData.Instance?.GetPlayerById(record.KillerId)?.Object;
-            if (!killer || killer.Data?.Role == null) continue;
+            if (!MarmoSession.Alive(killer) || killer!.Data?.Role == null || killer == exorcist) continue;
+            if (ExorcistSuspectRules.Decoys(killer.PlayerId, exorcist.PlayerId, LivingPlayers()).Length == 0) continue;
             var historicalRole = killer.GetRoleWhenAlive();
             if (historicalRole == null) continue;
             var isQualifying = historicalRole.IsImpostor;
@@ -117,6 +118,9 @@ public static class ExorcistRuntime
         reveal = new ExorcistReveal(pick.KillerId, killerName, killerRole);
         return true;
     }
+
+    private static byte[] LivingPlayers() => PlayerControl.AllPlayerControls.ToArray()
+        .Where(p => MarmoSession.Alive(p)).Select(p => p.PlayerId).ToArray();
 
     [MethodRpc((uint)ExorcistRpc.PrayerRequest, LocalHandling = RpcLocalHandling.Before)]
     public static void RpcPrayerRequest(PlayerControl exorcist)
@@ -168,16 +172,40 @@ public static class ExorcistRuntime
             var reveal = pair.Value.Pending;
             pair.Value.Pending = null;
             var exorcist = MarmoSession.Player(pair.Key);
-            if (reveal == null || !MarmoSession.Alive(exorcist) || !exorcist!.AmOwner || !IsExorcist(exorcist)) continue;
-            Coroutines.Start(ShowMeetingReveal(exorcist, reveal));
+            if (!MarmoSession.IsHost || reveal == null || !MarmoSession.Alive(exorcist) || !IsExorcist(exorcist)) continue;
+            var living = LivingPlayers();
+            var decoys = ExorcistSuspectRules.Decoys(reveal.KillerId, pair.Key, living);
+            var suspects = ExorcistSuspectRules.Select(reveal.KillerId, pair.Key, living,
+                decoys.Length > 0 ? UnityEngine.Random.Range(0, decoys.Length) : -1,
+                UnityEngine.Random.Range(0, 2) == 0);
+            if (suspects.Length != 2)
+            {
+                RpcFeedback(exorcist!, false, "Prayer could not identify two living suspects.");
+                continue;
+            }
+            var first = MarmoSession.Player(suspects[0]);
+            var second = MarmoSession.Player(suspects[1]);
+            if (first == null || second == null || !first || !second || first.Data == null || second.Data == null) continue;
+            RpcRevealSuspects(exorcist!, first.Data.PlayerName, second.Data.PlayerName, reveal.KillerRole);
         }
     }
 
-    private static System.Collections.IEnumerator ShowMeetingReveal(PlayerControl exorcist, ExorcistReveal reveal)
+    [MethodRpc((uint)ExorcistRpc.RevealSuspects, LocalHandling = RpcLocalHandling.Before)]
+    public static void RpcRevealSuspects(PlayerControl exorcist, string first, string second, string killerRole)
+    {
+        if (!MarmoSession.Alive(exorcist) || !IsExorcist(exorcist) || !exorcist.AmOwner) return;
+        Coroutines.Start(ShowMeetingReveal(exorcist, first, second, killerRole));
+    }
+
+    private static System.Collections.IEnumerator ShowMeetingReveal(PlayerControl exorcist, string first, string second, string killerRole)
     {
         yield return null;
+        var deadline = Time.realtimeSinceStartup + 5f;
+        while (!MeetingHud.Instance && Time.realtimeSinceStartup < deadline) yield return null;
         if (!MeetingHud.Instance || !MarmoSession.Alive(exorcist) || !exorcist.AmOwner || (!HudManager.Instance || !HudManager.Instance.Chat)) yield break;
-        var msg = $"Prayer revealed: {reveal.KillerName} was {reveal.KillerRole}.";
+        var msg = MiraLocaleManager.Get("TouMarmo.Role.Exorcist.PrayerReveal",
+            "Prayer revealed: <first> or <second>. One of them is the killer, whose role is <role>.")
+            .Replace("<first>", first).Replace("<second>", second).Replace("<role>", killerRole);
         MiscUtils.AddFakeChat(exorcist.Data, "<color=#B19CD9>Exorcist</color>", msg, true, true);
     }
 

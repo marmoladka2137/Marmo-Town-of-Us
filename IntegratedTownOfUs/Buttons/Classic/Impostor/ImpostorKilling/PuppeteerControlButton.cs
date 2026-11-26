@@ -1,4 +1,4 @@
-﻿using MiraAPI.GameOptions;
+using MiraAPI.GameOptions;
 using MiraAPI.Modifiers;
 using MiraAPI.Hud;
 using MiraAPI.Utilities;
@@ -23,6 +23,7 @@ public sealed class PuppeteerControlButton : TownOfUsRoleButton<PuppeteerRole>, 
     public override float EffectDuration =>
         OptionGroupSingleton<PuppeteerOptions>.Instance.ControlDuration.Value;
     public override int MaxUses => (int)OptionGroupSingleton<PuppeteerOptions>.Instance.ControlUses.Value;
+    public override bool ZeroIsInfinite { get; set; } = true;
     public int ExtraUses { get; set; }
     public override LoadableAsset<Sprite> Sprite => TouImpAssets.ControlSprite;
     private static PuppeteerKillButton KillButton => CustomButtonSingleton<PuppeteerKillButton>.Instance;
@@ -71,7 +72,7 @@ public sealed class PuppeteerControlButton : TownOfUsRoleButton<PuppeteerRole>, 
             }
             return base.CanUse();
         }
-        
+
         if (TimeLordRewindSystem.IsRewinding)
         {
             return false;

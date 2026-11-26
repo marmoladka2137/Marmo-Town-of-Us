@@ -26,16 +26,20 @@ public sealed class FlashModifier : UniversalGameModifier, IWikiDiscoverable, IV
         return appearance;
     }
 
-    public override string GetDescription()
+    public override string ModifierMedDescription => GetDescription();
+    public override string GetDescription() => FormatSpeed(MiraLocaleManager.Get($"TownOfUsMira.Modifier.{IdPart}.TabDescription"));
+
+    private static string FormatSpeed(string text)
     {
-        return MiraLocaleManager.Get($"TownOfUsMira.Modifier.{IdPart}.TabDescription").Replace("<flashSpeed>",
-            $"{Math.Round(OptionGroupSingleton<FlashOptions>.Instance.FlashSpeed, 2)}");
+        var speed = OptionGroupSingleton<FlashOptions>.Instance.FlashSpeed.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
+        return text.Contains("<flashSpeed>") || text.Contains("[flashSpeed]")
+            ? text.Replace("<flashSpeed>", speed).Replace("[flashSpeed]", speed)
+            : $"{text} ({speed}x)";
     }
 
     public string GetAdvancedDescription()
     {
-        return MiraLocaleManager.Get($"TownOfUsMira.Modifier.{IdPart}.WikiDescription").Replace("<flashSpeed>",
-                   $"{Math.Round(OptionGroupSingleton<FlashOptions>.Instance.FlashSpeed, 2)}") +
+        return FormatSpeed(MiraLocaleManager.Get($"TownOfUsMira.Modifier.{IdPart}.WikiDescription")) +
                MiscUtils.AppendOptionsText(GetType());
     }
 

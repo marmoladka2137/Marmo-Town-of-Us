@@ -23,3 +23,8 @@ Existing source credits include Launchpad Reloaded for Discord Status, Unlock dl
 Liberation Sans Regular 2.00.1: digitized data © 2010 Google Corporation; © 2012 Red Hat, Inc.; designer Steve Matteson, as recorded in the font. Retains OFL-1.1 and reserved-name notices. AssetRipper.Primitives' inherited uTinyRipper MIT notice credits mafaca (2020). The integration explicitly labels Atony as the source for Black Minipostor, Flopster and Tortellini; no other cosmetic artist is inferred merely from a filename.
 
 Among Us and underlying game materials/trademarks belong to Innersloth and the relevant rightsholders. Unity/TMP and service/platform materials retain their respective rights. No endorsement or official partnership is claimed.
+
+
+## Bundled companion mods
+
+AleLuduMod belongs to its original AleLuduMod authors and contributors; AUnlocker belongs to its original authors; Mini.RegionInstall belongs to its original authors. Their code, names, copyright and licenses remain theirs. MTOU does not claim authorship or ownership of these mods. Dependency-specific copyright and license texts are preserved in LICENSES/ and THIRD_PARTY_NOTICES.md.

@@ -17,8 +17,8 @@ using Object=UnityEngine.Object;
 namespace TouMarmo.Modules.Necromancer;
 public sealed class NecroState
 {
-    public int Controls,Reanimations;
-    public float ReadyAt,EndsAt,KillAt,NextSync,RepathAt;
+    public int Controls,Reanimations,Kills,ControlSerial;
+    public float ReadyAt,EndsAt,KillAt,NextSync,RepathAt,NextBeginSync;
     public byte BodyId=byte.MaxValue,KillerId=byte.MaxValue;
     public bool Automatic,Killed,Paused,PreviousMoveable,Attached,AttackPending;
     public byte PendingVictim=byte.MaxValue;
@@ -37,7 +37,7 @@ public static class NecromancerRuntime
     public static readonly Dictionary<byte,NecroState> States=new();
     public static NecromancerOptions Options=>OptionGroupSingleton<NecromancerOptions>.Instance;
     public static NecroState For(PlayerControl p){if(!States.TryGetValue(p.PlayerId,out var s)) States[p.PlayerId]=s=new(); return s;}
-    public static DeadBody? FindBody(byte id)=>Object.FindObjectsOfType<DeadBody>().FirstOrDefault(b=>b.ParentId==id && !b.Reported);
+    public static DeadBody? FindBody(byte id)=>Object.FindObjectsOfType<DeadBody>().FirstOrDefault(b=>b.ParentId==id && !b.Reported && !Papetir.PapetirRuntime.IsPaper(b));
     private static DeadBody[] bodies = Array.Empty<DeadBody>();
     private static float refreshAt;
     private static readonly HashSet<byte> pendingBodies=new();
@@ -54,10 +54,10 @@ public static class NecromancerRuntime
     public static bool Occupied(byte id)=>States.Values.Any(s=>s.Active && s.BodyId==id);
     public static bool CanUse(PlayerControl p,DeadBody body,bool automatic,float tolerance=0)
     {
-        if(!MarmoSession.InRound || !MarmoSession.Alive(p) || p.Data.Role is not NecromancerRole || !body || body.Reported || Occupied(body.ParentId)) return false;
+        if(automatic || !MarmoSession.InRound || !MarmoSession.Alive(p) || p.Data.Role is not NecromancerRole || !body || body.Reported || Papetir.PapetirRuntime.IsPaper(body) || Occupied(body.ParentId)) return false;
         var dead=MarmoSession.Player(body.ParentId); var s=For(p);
         return dead && dead!.Data.IsDead && !s.Active && Time.time>=s.ReadyAt &&
-            (automatic ? s.Reanimations<Options.ReanimateUses.Value : s.Controls<Options.ControlUses.Value) &&
+            (TouMarmo.Modules.AbilityLimits.Count(Options.ControlUses.Value) == 0 || s.Controls<TouMarmo.Modules.AbilityLimits.Count(Options.ControlUses.Value)) &&
             Vector2.Distance(p.GetTruePosition(),body.TruePosition)<=2.25f+tolerance && FurasRuntime.ClearPath(p.GetTruePosition(),body.TruePosition);
     }
     [MethodRpc(1080,LocalHandling=RpcLocalHandling.Before)]
@@ -71,6 +71,7 @@ public static class NecromancerRuntime
     [MethodRpc(1081,LocalHandling=RpcLocalHandling.Before)]
     public static void RpcBegin(PlayerControl p,byte bodyId,bool automatic,byte killerId,Vector2 position)
     {
+        if (automatic) return;
         if (!BodyReady(bodyId))
         {
             if (pendingBodies.Add(p.PlayerId)) Coroutines.Start(WaitForBody(p,bodyId,automatic,killerId,position));
@@ -88,7 +89,7 @@ public static class NecromancerRuntime
     private static IEnumerator WaitForBody(PlayerControl p,byte id,bool automatic,byte killer,Vector2 position)
     {
         var ship=ShipStatus.Instance;
-        var deadline=Time.realtimeSinceStartup+3f;
+        var deadline=Time.realtimeSinceStartup+10f;
         while (pendingBodies.Contains(p.PlayerId) && MarmoSession.Alive(p) && ship && ShipStatus.Instance==ship && MarmoSession.InRound &&
             !BodyReady(id) && Time.realtimeSinceStartup<deadline)
             yield return null;
@@ -102,9 +103,10 @@ public static class NecromancerRuntime
         var body=FindBody(bodyId); var s=For(p);
         if(!body || s.Active || Occupied(bodyId) || !MarmoSession.Alive(p)) return;
         s.Body=body; s.BodyOffset=body!.TruePosition-(Vector2)body.transform.position; s.BodyId=bodyId; s.KillerId=killerId; s.Automatic=automatic; s.Killed=false; s.Paused=false;
+        s.ControlSerial++;
         s.Position=s.Rendered=s.From=position; s.PacketAt=Time.time;
-        s.EndsAt=Time.time+(automatic?Options.ReanimateDuration.Value:Options.ControlDuration.Value);
-        s.AttackPending=false; s.PendingVictim=byte.MaxValue;
+        s.EndsAt=Options.ControlDuration.Value == 0 ? float.PositiveInfinity : Time.time+Options.ControlDuration.Value;
+        s.AttackPending=false; s.PendingVictim=byte.MaxValue; s.Kills=0;
         s.NextSync=0;
         s.KillAt=Time.time+Options.KillCooldown.Value; s.Path.Clear(); s.RepathAt=0;
         if(automatic) s.Reanimations++; else s.Controls++;
@@ -165,7 +167,7 @@ public static class NecromancerRuntime
         if(!p.AmOwner || !s.Attached) return;
         s.Attached=false;
         p.NetTransform.SetPaused(false);
-        p.moveable=s.PreviousMoveable && !MeetingHud.Instance && !ExileController.Instance;
+        p.moveable=s.PreviousMoveable;
         if(HudManager.Instance) HudManager.Instance.PlayerCam.SetTarget(p);
         if(p.lightSource){p.lightSource.transform.SetParent(p.transform,false); p.lightSource.Initialize(p.Collider.offset/2f);}
     }
@@ -191,26 +193,38 @@ public static class NecromancerRuntime
     {
         var s=For(p); if(!s.Active || s.Automatic) return null;
         return PlayerControl.AllPlayerControls.ToArray().Where(t=>t!=p && MarmoSession.Alive(t) && !t.inVent &&
-            (Options.CanKillCrew.Value || !t.IsCrewmate()) && Vector2.Distance(s.Position,t.GetTruePosition())<=1.3f && FurasRuntime.ClearPath(s.Position,t.GetTruePosition()))
+            Vector2.Distance(s.Position,t.GetTruePosition())<=1.3f && FurasRuntime.ClearPath(s.Position,t.GetTruePosition()))
             .OrderBy(t=>Vector2.Distance(s.Position,t.GetTruePosition())).FirstOrDefault();
     }
     [MethodRpc(1084,LocalHandling=RpcLocalHandling.Before)] public static void RpcAttack(PlayerControl p,PlayerControl target)
     {
         if(!MarmoSession.IsHost || !MarmoSession.InRound || !MarmoSession.Alive(p) || p.Data.Role is not NecromancerRole) return;
         var s=For(p); if(!s.Active || s.Automatic || s.Paused || s.Killed || s.AttackPending || Time.time<s.KillAt || !MarmoSession.Alive(target) || target==p ||
-            target.inVent || !Options.CanKillCrew.Value && target.IsCrewmate() || Vector2.Distance(s.Position,target.GetTruePosition())>1.45f || !FurasRuntime.ClearPath(s.Position,target.GetTruePosition())) return;
+            target.inVent || Vector2.Distance(s.Position,target.GetTruePosition())>1.45f || !FurasRuntime.ClearPath(s.Position,target.GetTruePosition())) return;
         // Reserve the attempt, not a successful kill. A shield must not spend the only kill.
         s.PendingVictim=target.PlayerId;
         RpcAttackState(PlayerControl.LocalPlayer,p,true,false,Options.KillCooldown.Value);
         p.RpcSpecialMurder(target,MeetingCheck.OutsideMeeting,isIndirect:true,ignoreShield:false,resetKillTimer:false,teleportMurderer:false,showKillAnim:false,causeOfDeath:"Necromancer");
-        Coroutines.Start(FinishAttack(p,target,s.BodyId));
+        Coroutines.Start(FinishAttack(p,target,s,s.ControlSerial));
     }
-    private static IEnumerator FinishAttack(PlayerControl owner,PlayerControl victim,byte bodyId)
+    private static IEnumerator FinishAttack(PlayerControl owner,PlayerControl victim,NecroState expected,int serial)
     {
-        yield return null; yield return null;
+        // Murder confirmation follows a coroutine/animation, not a fixed number
+        // of rendered frames. Keep the victim reserved until confirmation.
+        var deadline=Time.unscaledTime+3f;
+        while(Time.unscaledTime<deadline)
+        {
+            if(!owner) yield break;
+            if(!States.TryGetValue(owner.PlayerId,out var current) || !ReferenceEquals(current,expected) ||
+                !current.Active || current.ControlSerial!=serial || !current.AttackPending) yield break;
+            yield return null;
+        }
+        if(!owner) yield break;
         var s=For(owner);
-        if(s.Active && s.BodyId==bodyId && s.AttackPending)
-            RpcAttackState(PlayerControl.LocalPlayer,owner,false,victim && victim.HasDied(),Mathf.Max(0,s.KillAt-Time.time));
+        if(ReferenceEquals(s,expected) && s.Active && s.ControlSerial==serial && s.AttackPending)
+            // Only Killed(AfterMurderEvent) confirms our own kill. Another attacker
+            // killing this victim must not consume the corpse's attack allowance.
+            RpcAttackState(PlayerControl.LocalPlayer,owner,false,false,Mathf.Max(0,s.KillAt-Time.time));
     }
     [RegisterEvent]
     public static void Killed(AfterMurderEvent e)
@@ -225,7 +239,9 @@ public static class NecromancerRuntime
     {
         if(!host || !host.IsHost() || !owner || !float.IsFinite(cooldown)) return;
         var s=For(owner); if(!s.Active) return;
-        s.AttackPending=pending; s.Killed|=killed;
+        s.Kills=FeedbackRules.CorpseKills(s.Kills, s.AttackPending, killed);
+        s.AttackPending=pending;
+        s.Killed=s.Kills>=AbilityLimits.Count(Options.KillsPerControl.Value);
         s.KillAt=Time.time+Mathf.Clamp(cooldown,0,Options.KillCooldown.Value);
         if(!pending) s.PendingVictim=byte.MaxValue;
     }
@@ -262,6 +278,12 @@ public static class NecromancerRuntime
             if(!MarmoSession.Alive(p) || p!.Data.Role is not NecromancerRole || !s.Body || s.Body!.Reported || !dead || !dead!.Data.IsDead || dead.Data.Disconnected)
             {Stop(entry.Key);continue;}
             if(s.Paused || !MarmoSession.InRound) continue;
+            // Re-announce active control so a late corpse spawn can recover on remote peers.
+            if (MarmoSession.IsHost && Time.time >= s.NextBeginSync)
+            {
+                s.NextBeginSync = Time.time + 1f;
+                RpcBegin(p, s.BodyId, false, s.KillerId, s.Position);
+            }
             if(Time.time>=s.EndsAt){Stop(entry.Key);continue;}
             var controlling=s.Automatic ? MarmoSession.IsHost : p.AmOwner;
             if(controlling)

@@ -1,4 +1,4 @@
-﻿using MiraAPI.GameOptions;
+using MiraAPI.GameOptions;
 using MiraAPI.Modifiers;
 using MiraAPI.Utilities;
 using TownOfUs.Modifiers.Crewmate;
@@ -17,6 +17,7 @@ public sealed class HunterStalkButton : TownOfUsRoleButton<HunterRole, PlayerCon
     public override float Cooldown => Math.Clamp(OptionGroupSingleton<HunterOptions>.Instance.HunterStalkCooldown + MapCooldown, 5f, 120f);
     public override float EffectDuration => OptionGroupSingleton<HunterOptions>.Instance.HunterStalkDuration;
     public override int MaxUses => (int)OptionGroupSingleton<HunterOptions>.Instance.StalkUses;
+    public override bool ZeroIsInfinite { get; set; } = true;
     public override LoadableAsset<Sprite> Sprite => LegacyAssets.IsLegacy ? LegacyCrewAssets.StalkButtonSprite : TouCrewAssets.StalkButtonSprite;
     public int ExtraUses { get; set; }
 

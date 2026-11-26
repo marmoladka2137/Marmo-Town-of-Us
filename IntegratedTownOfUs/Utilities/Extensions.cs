@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using AmongUs.GameOptions;
 using LibCpp2IL;
 using MiraAPI.Events;
@@ -468,7 +468,10 @@ public static class Extensions
         var roleBehaviour = Object.Instantiate(newRole, data.gameObject.transform);
         var oldRole = player.Data.Role;
 
+        player.Data.Role = roleBehaviour;
+        player.Data.RoleType = roleBehaviour.Role;
         roleBehaviour.Initialize(player);
+        player.roleAssigned = true;
 
         if (player.AmOwner && HudManager.Instance)
         {

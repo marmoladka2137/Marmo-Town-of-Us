@@ -1,4 +1,4 @@
-﻿using MiraAPI.GameOptions;
+using MiraAPI.GameOptions;
 using Reactor.Utilities.Extensions;
 using TownOfUs.Options.Roles.Crewmate;
 using TownOfUs.Roles.Crewmate;
@@ -14,6 +14,7 @@ public sealed class EngineerFixButton : TownOfUsRoleButton<EngineerTouRole>, ILe
     public override float Cooldown => Math.Clamp(MapCooldown, 0.01f, 120f);
     public override float EffectDuration => Math.Clamp(OptionGroupSingleton<EngineerOptions>.Instance.FixDelay.Value, 0.01f, 120f);
     public override int MaxUses => (int)OptionGroupSingleton<EngineerOptions>.Instance.MaxFixes;
+    public override bool ZeroIsInfinite { get; set; } = true;
     public override LoadableAsset<Sprite> Sprite => LegacyAssets.IsLegacy ? LegacyCrewAssets.FixButtonSprite : TouCrewAssets.FixButtonSprite;
     public override bool ShouldPauseInVent => false;
     public int ExtraUses { get; set; }
