@@ -2,9 +2,11 @@
 
 **1.1.1 · Windows · Steam / Epic Games**
 
-[Download launcher](https://github.com/marmoladka2137/Marmo-Town-of-Us/releases/download/v1.1.1/MTOU-Launcher-1.1.1.zip) · [Download without launcher](https://github.com/marmoladka2137/Marmo-Town-of-Us/releases/download/v1.1.1/MTOU-Steam-1.1.1.zip) · [All releases](https://github.com/marmoladka2137/Marmo-Town-of-Us/releases) · [Discord](https://dc.gg/mtou)
+[Download launcher](https://github.com/marmoladka2137/Marmo-Town-of-Us/releases/download/launcher-v1.2.0/MTOU-Launcher-1.2.0.zip) · [Download without launcher](https://github.com/marmoladka2137/Marmo-Town-of-Us/releases/download/v1.1.1/MTOU-Steam-1.1.1.zip) · [All releases](https://github.com/marmoladka2137/Marmo-Town-of-Us/releases) · [Discord](https://dc.gg/mtou)
 
 Marmo Town of Us is an independent community modification based on Town of Us: Mira. It adds roles, modifiers and configurable mechanics to Among Us. Every player needs the same MTOU build. Do not combine it with a separate TownOfUsMira.dll.
+
+Launcher **1.2.0** supports selecting published MTOU versions. Choose Latest for automatic mod updates or pin a version to a separate installation.
 
 ## Roles and modifiers
 

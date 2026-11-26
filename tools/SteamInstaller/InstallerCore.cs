@@ -250,7 +250,7 @@ namespace Marmo.SteamInstaller
                 throw new IOException("Steam's Among Us installation manifest does not match this folder.");
             string assembly = Path.Combine(source, "GameAssembly.dll");
             if (!File.Exists(assembly) || !Hash(assembly).Equals(Manifest.GameAssemblySha256, StringComparison.OrdinalIgnoreCase))
-                throw new IOException("This game build is not the MTOU 1.1.0 Beta reference build. No files were changed. Check the supported version in the README.");
+                throw new IOException("This game build does not match the supported Among Us build. No files were changed. Check the supported version in the README.");
         }
         public static void ValidateDestination(string source, string destination, string packageRoot)
         {

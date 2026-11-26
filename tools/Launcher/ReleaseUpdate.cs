@@ -162,7 +162,7 @@ namespace Marmo.Launcher
                 if (!file.Path.StartsWith("BepInEx/", StringComparison.OrdinalIgnoreCase)
                     && !file.Path.StartsWith("CorsacCosmetics/", StringComparison.OrdinalIgnoreCase)
                     && !file.Path.StartsWith("MTOU Notices/", StringComparison.OrdinalIgnoreCase)
-                    && !new[] { "winhttp.dll", "doorstop_config.ini", ".doorstop_version" }.Contains(file.Path))
+                    && !new[] { "winhttp.dll", "doorstop_config.ini", ".doorstop_version", "CREDITS.txt", "LICENSE.txt" }.Contains(file.Path))
                     throw new IOException("Unexpected file in mod package: " + file.Path);
                 if (file.Path.EndsWith("TownOfUsMira.dll", StringComparison.OrdinalIgnoreCase))
                     throw new IOException("The release contains a conflicting standalone ToU plugin.");

@@ -25,6 +25,12 @@ The launcher runs as the current user and requests no administrator elevation. B
 
 For launcher-only releases, Refresh-Bootstrap.py updates the app and its pin in a verified existing bootstrap while retaining the original mod manifest and dependency pins. Test-Setup.ps1 checks setup states using isolated profiles and synthetic store fixtures.
 
-## Version
+## Independent versions
 
-Game and launcher display **1.1.0 Beta**. Build.ps1 reads InformationalVersion and AssemblyVersion from TOU-Marmo.csproj and generates LauncherVersion.cs and the native manifest. Installed game version is shown separately; numeric revisions remain available in the tooltip for update comparisons.
+Launcher 1.2.0 uses `launcher-version.json`; it no longer derives its own version from the mod project. The mod remains 1.1.1.
+
+MTOU VERSION selects Latest (automatic updates) or an explicitly published version. Pinned versions use separate `%LOCALAPPDATA%/MTOU/Versions/<tag>/<store>` folders, preserve their selected revision and do not automatically upgrade. Latest keeps its existing destination. Store preferences are independent for each selected version.
+
+The public release catalog and validated version manifests are cached. Offline selection works for cached versions; a new installation still requires downloaded dependencies. Modern releases supply mtou-release.json and MTOU-Mods-Windows.zip. Legacy Steam packages are accepted only with SHA256SUMS.txt; their verified plugins are converted into a mod-only payload. Unsupported or incomplete releases are omitted.
+
+Tests: Test-Versions.ps1 covers catalog parsing, pins, separate destinations, manifest caching, legacy checksum verification and actual WinForms selection events in isolated profiles. These tests do not launch Among Us or certify gameplay/Steam/Epic authentication.

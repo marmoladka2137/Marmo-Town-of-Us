@@ -20,6 +20,9 @@ namespace Marmo.Launcher
         readonly Button detect = new Button(), chooseSource = new Button();
         readonly LinkLabel useDefault = new LinkLabel();
         readonly ToolTip tips = new ToolTip();
+        readonly ComboBox versions = new ComboBox();
+        bool fillingVersions;
+        VersionChoice pinned;
         readonly ComboBox platform = new ComboBox();
         readonly TextBox gamePath = new TextBox();
         readonly Label status = new Label(), installed = new Label();
@@ -35,7 +38,7 @@ namespace Marmo.Launcher
             preferences = profileDirectory ?? Path.Combine(localData,"MTOU","Launcher");
             saved = Path.Combine(preferences,"game-path.txt");
             discover = installations ?? (epic => epic ? InstallerCore.FindEpicGames(InstallerCore.EpicManifestRoot) : InstallerCore.FindSteamGames());
-            Text = "Marmo Town of Us " + LauncherVersion.DisplayVersion; ClientSize = new Size(1040, 710); MinimumSize = new Size(940, 700);
+            Text = "MTOU Launcher " + LauncherVersion.DisplayVersion; ClientSize = new Size(1040, 710); MinimumSize = new Size(940, 700);
             FormBorderStyle = FormBorderStyle.FixedSingle; MaximizeBox = false;
             AutoScaleMode = AutoScaleMode.Dpi; StartPosition = FormStartPosition.CenterScreen;
             Font = new Font("Segoe UI", 10); BackColor = Color.FromArgb(17, 20, 29); ForeColor = Color.WhiteSmoke;
@@ -47,7 +50,7 @@ namespace Marmo.Launcher
                 Bounds = new Rectangle(750, 46, 188, 140) }; Controls.Add(mark);
             AddLabel("MARMO", 724, 204, 280, 44, 26, true);
             AddLabel("TOWN OF US", 727, 252, 280, 32, 17, true);
-            AddLabel(LauncherVersion.DisplayVersion, 729, 295, 260, 28, 12, false).ForeColor = Color.FromArgb(242, 96, 110);
+            AddLabel("Launcher " + LauncherVersion.DisplayVersion, 729, 295, 260, 28, 12, false).ForeColor = Color.FromArgb(242, 96, 110);
             AddLabel("Steam  ·  Epic Games", 729, 338, 280, 27, 11, false);
             var line = new Panel { Bounds = new Rectangle(28, 390, 984, 1), BackColor = Color.FromArgb(53, 58, 75) };
             line.Anchor = AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Top; Controls.Add(line);
@@ -62,7 +65,7 @@ namespace Marmo.Launcher
             Configure(chooseSource,"Choose .exe…",847,441,163); chooseSource.Height=36; chooseSource.Click += ChooseSource;
             AddLabel("MTOU COPY — original game stays unchanged",30,480,600,24,10,true).ForeColor=Color.FromArgb(153,164,188);
             useDefault.Text="Use default"; useDefault.LinkColor=Color.FromArgb(147,165,255); useDefault.SetBounds(715,479,115,24);
-            useDefault.LinkClicked += delegate { SetTarget(LauncherCore.DefaultDestination(localData,IsEpic)); }; Controls.Add(useDefault);
+            useDefault.LinkClicked += delegate { SetTarget(pinned==null?LauncherCore.DefaultDestination(localData,IsEpic):VersionLibrary.Destination(localData,IsEpic,pinned.Tag)); }; Controls.Add(useDefault);
             gamePath.SetBounds(30,509,800,31);gamePath.BackColor=Color.FromArgb(29,34,47);gamePath.ForeColor=ForeColor;
             gamePath.ReadOnly=true;gamePath.BorderStyle=BorderStyle.FixedSingle;gamePath.Enter += delegate { gamePath.SelectAll(); };Controls.Add(gamePath);
             Configure(browse,"Choose folder…",847,506,163);browse.Height=36;browse.Click+=Browse;
@@ -72,19 +75,26 @@ namespace Marmo.Launcher
             Configure(play, "PLAY MTOU", 30, 613, 280); play.BackColor = Color.FromArgb(183, 31, 60);
             Configure(install, "INSTALL MTOU", 326, 613, 236);
             Configure(updates, "Check updates", 579, 613, 220);
-            play.Click += Play; install.Click += Install; updates.Click += async delegate { await CheckUpdates(true); };
+            play.Click += Play; install.Click += Install; updates.Click += async delegate { await LoadVersions(); };
             var discord = new LinkLabel { Text = "dc.gg/mtou  ↗", LinkColor = Color.FromArgb(147, 165, 255),
                 ActiveLinkColor = Color.White, VisitedLinkColor = Color.FromArgb(147, 165, 255),
                 Bounds = new Rectangle(831, 673, 180, 27), TextAlign = ContentAlignment.MiddleRight };
             discord.LinkClicked += delegate { Open("https://dc.gg/mtou"); }; Controls.Add(discord);
             status.SetBounds(30, 673, 780, 28); status.AutoEllipsis = true; Controls.Add(status);
             gamePath.TextChanged += delegate { ShowRevision(); };
+            // Keep the native installation controls intact; add a dedicated version row.
+            foreach(Control control in Controls)if(control.Top>=399)control.Top+=48;
+            ClientSize=new Size(1040,758);MinimumSize=new Size(940,748);
+            AddLabel("MTOU VERSION",30,402,175,27,10,true);
+            versions.DropDownStyle=ComboBoxStyle.DropDownList;versions.SetBounds(220,400,790,32);
+            versions.Items.Add(new VersionChoice {Automatic=true});versions.SelectedIndex=0;Controls.Add(versions);
+            versions.SelectedIndexChanged+=delegate {if(!fillingVersions && !busy)BeginInvoke((Action)(async delegate {if(!fillingVersions && !busy)await SelectVersion();}));};
             string preferred=ReadPreference("platform.txt");
             if(LauncherCore.IsModdedGame(root))preferred=LauncherCore.MatchesStore(root,true)?"Epic":"Steam";
             if(preferred=="Epic" || (preferred==null && SafeDiscover(false).Length==0 && SafeDiscover(true).Length>0)) platform.SelectedIndex=1;
             LoadPlatform(true);
-            platform.SelectedIndexChanged += delegate { LoadPlatform(true); WritePreference("platform.txt",IsEpic?"Epic":"Steam"); };
-            Shown += async delegate { ShowRevision(); if(checkForUpdates) await CheckUpdates(false); };
+            platform.SelectedIndexChanged += delegate { LoadPlatform(true); if(pinned!=null)SetTarget(VersionLibrary.Destination(localData,IsEpic,pinned.Tag)); WritePreference("platform.txt",IsEpic?"Epic":"Steam"); };
+            Shown += async delegate { ShowRevision(); if(checkForUpdates)await LoadVersions(); };
             FormClosed += delegate { tips.Dispose(); };
             FormClosing += delegate(object sender, FormClosingEventArgs e) { if (busy) e.Cancel = true; };
         }
@@ -116,7 +126,7 @@ namespace Marmo.Launcher
             catch (UnauthorizedAccessException) { return ""; }
         }
         bool IsEpic { get { return platform.SelectedIndex==1; } }
-        string StoreFile(string name) { return name+"-"+(IsEpic?"epic":"steam")+".txt"; }
+        string StoreFile(string name) { return name+(name=="destination" && pinned!=null?"-"+pinned.Tag:"")+"-"+(IsEpic?"epic":"steam")+".txt"; }
         string ReadPreference(string name)
         {
             try { string file=Path.Combine(preferences,name);return File.Exists(file)?File.ReadAllText(file).Trim():null; }
@@ -183,9 +193,14 @@ namespace Marmo.Launcher
         }
         void Busy(bool value)
         {
-            busy=value;
-            foreach(Control control in new Control[]{play,install,updates,browse,platform,gamePath,autoUpdate,sourceGame,detect,chooseSource,useDefault})control.Enabled=!value;
-            ShowRevision();
+            bool previousFill=fillingVersions;fillingVersions=true;
+            try
+            {
+                busy=value;
+                foreach(Control control in new Control[]{play,install,updates,browse,platform,gamePath,autoUpdate,sourceGame,detect,chooseSource,useDefault,versions})control.Enabled=!value;
+                ShowRevision();autoUpdate.Enabled=!value && pinned==null;
+            }
+            finally {fillingVersions=previousFill;}
         }
         void ChooseSource(object sender,EventArgs e)
         {
@@ -221,9 +236,49 @@ namespace Marmo.Launcher
             WritePreference(StoreFile("destination"),gamePath.Text);
             string source=SelectedSource();if(source!=null)WritePreference(StoreFile("source"),source);
         }
+        async Task LoadVersions()
+        {
+            if(busy)return;Busy(true);
+            try
+            {
+                string cache=Path.Combine(preferences,"release-catalog.json");
+                string json;
+                try{json=await Task.Run(()=>System.Text.Encoding.UTF8.GetString(ReleaseUpdate.Download(ReleaseUpdate.Feed)));Directory.CreateDirectory(preferences);File.WriteAllText(cache,json);}
+                catch{if(!File.Exists(cache))throw;json=File.ReadAllText(cache);}
+                var choices=VersionLibrary.Parse(json);
+                string keep=pinned==null?ReadPreference("selected-version.txt"):pinned.Tag;
+                fillingVersions=true;versions.Items.Clear();versions.Items.Add(new VersionChoice {Automatic=true});
+                foreach(var choice in choices)versions.Items.Add(choice);
+                versions.SelectedIndex=0;
+                for(int i=1;i<versions.Items.Count;i++)if(((VersionChoice)versions.Items[i]).Tag==keep)versions.SelectedIndex=i;
+                fillingVersions=false;
+            }
+            catch(Exception error){status.Text="Version list unavailable: "+error.Message;}
+            finally{fillingVersions=false;Busy(false);}
+            await SelectVersion();
+        }
+        async Task SelectVersion()
+        {
+            if(busy)return;
+            var selected=versions.SelectedItem as VersionChoice;
+            pinned=selected==null||selected.Automatic?null:selected;release=null;latest=null;
+            WritePreference("selected-version.txt",pinned==null?"latest":pinned.Tag);
+            if(pinned==null){LoadPlatform(true);autoUpdate.Enabled=true;await CheckUpdates(false);return;}
+            SetTarget(VersionLibrary.Destination(localData,IsEpic,pinned.Tag));
+            Busy(true);status.Text="Loading MTOU "+pinned.Name+"…";
+            try
+            {
+                var selectedVersion=pinned;
+                release=await Task.Run(()=>VersionLibrary.Load(selectedVersion,Path.Combine(localData,"MTOU","VersionCache")));
+                latest=new PublicRelease {Tag=pinned.Tag,ManifestUrl=pinned.ManifestUrl,ArchiveUrl=pinned.ArchiveUrl};
+                status.Text="Selected MTOU "+release.Version+". Installed separately; automatic upgrades are disabled.";
+            }
+            catch(Exception error){status.Text="Could not load version: "+error.Message;}
+            finally{Busy(false);}
+        }
         async Task CheckUpdates(bool explicitClick)
         {
-            if (busy) return; Busy(true); status.Text = "Checking public GitHub releases…";
+            if (busy || pinned!=null) return; Busy(true); status.Text = "Checking public GitHub releases…";
             try
             {
                 latest = await Task.Run(() => ReleaseUpdate.Latest());
@@ -248,9 +303,10 @@ namespace Marmo.Launcher
         async void Play(object sender, EventArgs e)
         {
             if (busy) return;
-            if (autoUpdate.Checked) await CheckUpdates(false);
+            if (autoUpdate.Checked && pinned==null) await CheckUpdates(false);
             try
             {
+                if(pinned!=null && (release==null || Revision()!=release.Revision))throw new IOException("Install the selected version first. Other versions will stay unchanged.");
                 if (!LauncherCore.IsModdedGame(gamePath.Text)) throw new IOException("Select a completed MTOU installation first.");
                 if (!LauncherCore.IsRunning(gamePath.Text))
                 {
@@ -283,11 +339,14 @@ namespace Marmo.Launcher
                 core.Progress = delegate(int percent, string message) { BeginInvoke((Action)(() => status.Text = percent + "%  " + message)); };
                 core.ValidateSource(source); InstallerCore.ValidateDestination(source, destination, root);
                 var updateManifest = new JavaScriptSerializer().Deserialize<ReleaseManifest>(File.ReadAllText(Path.Combine(root, "mtou-release.json")));
-                if (release != null && ReleaseUpdate.Newer(release.Revision, updateManifest.Revision)) updateManifest = release;
+                if (pinned!=null) {if(release==null)throw new IOException("Load the selected version before installing.");updateManifest=release;}
+                else if (release != null && ReleaseUpdate.Newer(release.Revision, updateManifest.Revision)) updateManifest = release;
                 ReleaseUpdate.Validate(updateManifest);
-                ReleaseUpdate.AlignInstaller(manifest, updateManifest);
+                VersionLibrary.PrepareInstaller(manifest, updateManifest);
                 status.Text = "Preparing verified mod files…";
-                string localArchive = Path.Combine(root, "MTOU-Mods-Windows.zip");
+                string versionCache=Path.Combine(localData,"MTOU","VersionCache");
+                string legacyArchive=Path.Combine(versionCache,updateManifest.ArchiveSha256+"-mods.zip");
+                string localArchive=File.Exists(legacyArchive)?legacyArchive:Path.Combine(root,"MTOU-Mods-Windows.zip");
                 byte[] modArchive = await Task.Run(() => File.Exists(localArchive) && String.Equals(InstallerCore.Hash(localArchive), updateManifest.ArchiveSha256, StringComparison.OrdinalIgnoreCase)
                     ? File.ReadAllBytes(localArchive) : ReleaseUpdate.DownloadArchive(updateManifest, updateManifest == release && latest != null ? latest.ArchiveUrl : ReleaseUpdate.Channel().ArchiveUrl));
                 if (!String.Equals(ReleaseUpdate.Hash(modArchive), updateManifest.ArchiveSha256, StringComparison.OrdinalIgnoreCase))
