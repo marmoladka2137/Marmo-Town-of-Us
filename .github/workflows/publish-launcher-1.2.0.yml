@@ -1,0 +1,80 @@
+name: Publish MTOU Launcher 1.2.0
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/publish-launcher-1.2.0.yml']
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Publish verified launcher and corresponding source
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PACKAGE_URL: https://letter-accordance-problems-around.trycloudflare.com
+          ASSET_PINS: "{\"MTOU-Launcher-1.2.0.zip\": \"6a27118b02f65065c878498e471f83d8d53069d004d66a110660f376f95bea2a\", \"MTOU-Launcher-1.2.0-source.zip\": \"39c192e9e20d5af91f037dce22c2e5fe7fda77a2c1a0d836d00ca8c2073ec255\", \"SHA256SUMS.txt\": \"0558153ca14c43b54b4d02a22a308d4f6b03f8a4d537a78f2a41490812f809c1\"}"
+        shell: python
+        run: |
+          import os,json,hashlib,urllib.request,urllib.parse,zipfile,subprocess,io
+          from pathlib import Path
+          repo=os.environ['GITHUB_REPOSITORY'];token=os.environ['GH_TOKEN'];root=Path.cwd()
+          def api(path,data=None,method=None):
+           req=urllib.request.Request('https://api.github.com/repos/'+repo+path,data=None if data is None else json.dumps(data).encode(),method=method,headers={'Authorization':'Bearer '+token,'Accept':'application/vnd.github+json','User-Agent':'MTOU-Launcher-Publication'})
+           with urllib.request.urlopen(req,timeout=180) as response:return json.load(response)
+          def download(url):
+           with urllib.request.urlopen(urllib.request.Request(url,headers={'User-Agent':'MTOU-Launcher-Publication'}),timeout=180) as response:return response.read()
+          pins=json.loads(os.environ['ASSET_PINS']);assets={}
+          for name,sha in pins.items():
+           data=download(os.environ['PACKAGE_URL']+'/'+name)
+           assert hashlib.sha256(data).hexdigest()==sha,name
+           assets[name]=data
+          with zipfile.ZipFile(io.BytesIO(assets['MTOU-Launcher-1.2.0.zip'])) as z:
+           assert set(z.namelist())=={'Marmo Town of Us.exe','installer-manifest.json','mtou-release.json','LICENSE.txt','CREDITS.txt'}
+           manifest=json.loads(z.read('installer-manifest.json'))
+           assert manifest['Version']=='1.1.1'
+           assert hashlib.sha256(z.read('Marmo Town of Us.exe')).hexdigest().upper()==manifest['Launcher']['Sha256']
+          with zipfile.ZipFile(io.BytesIO(assets['MTOU-Launcher-1.2.0-source.zip'])) as z:
+           for entry in z.infolist():
+            parts=Path(entry.filename).parts
+            assert not Path(entry.filename).is_absolute() and '..' not in parts
+            if not entry.is_dir() and entry.filename.startswith(('tools/Launcher/','tools/SteamInstaller/')):
+             p=root/entry.filename;p.parent.mkdir(parents=True,exist_ok=True);p.write_bytes(z.read(entry))
+          readme=root/'README.md';text=readme.read_text()
+          old='releases/download/v1.1.1/MTOU-Launcher-1.1.1.zip'
+          assert old in text
+          text=text.replace(old,'releases/download/launcher-v1.2.0/MTOU-Launcher-1.2.0.zip')
+          text=text.replace('## Roles and modifiers','Launcher **1.2.0** supports selecting published MTOU versions. Choose Latest for automatic mod updates or pin a version to a separate installation.\n\n## Roles and modifiers',1)
+          readme.write_text(text)
+          subprocess.run(['git','config','user.name','Marmo release'],check=True)
+          subprocess.run(['git','config','user.email','249504836+marmoladka2137@users.noreply.github.com'],check=True)
+          subprocess.run(['git','rm','.github/workflows/publish-launcher-1.2.0.yml'],check=True)
+          subprocess.run(['git','add','tools/Launcher','tools/SteamInstaller','README.md'],check=True)
+          subprocess.run(['git','commit','-m','Release launcher 1.2.0 with independent mod version selection'],check=True)
+          commit=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()
+          subprocess.run(['git','push','origin','HEAD:main'],check=True)
+          body="""## MTOU Launcher 1.2.0
+          
+          **[Download launcher](https://github.com/marmoladka2137/Marmo-Town-of-Us/releases/download/launcher-v1.2.0/MTOU-Launcher-1.2.0.zip)** — Windows x64, Steam / Epic Games.
+          
+          - Choose a published MTOU version, or Latest for automatic mod updates.
+          - New supported GitHub releases appear when the launcher opens or you check updates.
+          - Selected versions use separate installations and are not automatically upgraded.
+          - Launcher and mod versions are independent. The current mod remains 1.1.1.
+          
+          Extract the ZIP and open Marmo Town of Us.exe. Requires your own compatible Among Us installation. Mod files download from GitHub; the base game is not included.
+          
+          Corresponding launcher source is available separately below and in tools/Launcher. Previous releases remain available. 114 automated checks passed; Among Us gameplay and multiplayer were not run for this launcher release.
+          """
+          release=api('/releases',dict(tag_name='launcher-v1.2.0',target_commitish=commit,name='MTOU Launcher 1.2.0',body=body,draft=True,prerelease=False))
+          for name,data in assets.items():
+           url=release['upload_url'].split('{')[0]+'?name='+urllib.parse.quote(name)
+           req=urllib.request.Request(url,data=data,method='POST',headers={'Authorization':'Bearer '+token,'Content-Type':'application/octet-stream','User-Agent':'MTOU-Launcher-Publication'})
+           with urllib.request.urlopen(req,timeout=180) as response:result=json.load(response)
+           assert result['size']==len(data)
+           print('Uploaded '+name,flush=True)
+          api('/releases/'+str(release['id']),dict(draft=False,make_latest='false'),'PATCH')
+          print('PUBLISHED '+release['html_url']+' source='+commit,flush=True)
+
