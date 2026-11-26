@@ -1,0 +1,71 @@
+name: Finalize prepared MTOU 1.1.1
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/finalize-1.1.1.yml']
+permissions:
+  contents: write
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Finalize release and public updater channel
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MANUAL_URL: https://plates-complicated-grocery-encyclopedia.trycloudflare.com/MTOU-Steam-1.1.1.zip
+          MANUAL_SHA: 400d41906c614c48c80ffcea5accd78dc33b493f29abae3b9db62eed51498045
+        shell: python
+        run: |
+          import urllib.request,urllib.parse,os,json,hashlib,zipfile,subprocess
+          from pathlib import Path
+          repo=os.environ['GITHUB_REPOSITORY'];token=os.environ['GH_TOKEN'];root=Path.cwd()
+          def api(path,data=None,method=None):
+           req=urllib.request.Request('https://api.github.com/repos/'+repo+path,data=None if data is None else json.dumps(data).encode(),method=method,headers={'Authorization':'Bearer '+token,'Accept':'application/vnd.github+json','User-Agent':'MTOU-1.1.1'})
+           with urllib.request.urlopen(req,timeout=300) as r:return json.load(r)
+          def download(url):
+           with urllib.request.urlopen(urllib.request.Request(url,headers={'User-Agent':'MTOU-1.1.1'}),timeout=300) as r:return r.read()
+          release=api('/releases/tags/v1.1.1')
+          old={a['name']:a for a in release['assets']}
+          manual=download(os.environ['MANUAL_URL']);assert hashlib.sha256(manual).hexdigest()==os.environ['MANUAL_SHA']
+          from io import BytesIO
+          with zipfile.ZipFile(BytesIO(manual)) as z:
+           assert z.testzip() is None and z.read('steam_appid.txt')==b'945360\n'
+           assert not any(n in z.namelist() for n in ['Among Us.exe','GameAssembly.dll','UnityPlayer.dll'])
+          # DELETE has no JSON response body.
+          req=urllib.request.Request('https://api.github.com/repos/'+repo+'/releases/assets/'+str(old['MTOU-Steam-1.1.1.zip']['id']),method='DELETE',headers={'Authorization':'Bearer '+token,'User-Agent':'MTOU-1.1.1'})
+          with urllib.request.urlopen(req):pass
+          def upload(name,data):
+           req=urllib.request.Request(release['upload_url'].split('{')[0]+'?name='+urllib.parse.quote(name),data=data,method='POST',headers={'Authorization':'Bearer '+token,'Content-Type':'application/octet-stream','User-Agent':'MTOU-1.1.1'})
+           with urllib.request.urlopen(req,timeout=300) as r:result=json.load(r)
+           assert result['size']==len(data)
+          upload('MTOU-Steam-1.1.1.zip',manual)
+          feed=json.loads(download(old['mtou-release.json']['browser_download_url']))
+          mods=download(old['MTOU-Mods-Windows.zip']['browser_download_url']);assert hashlib.sha256(mods).hexdigest().upper()==feed['ArchiveSha256']
+          subprocess.run(['git','fetch','origin','downloads'],check=True)
+          channel=root.parent/'mtou-public-channel'
+          subprocess.run(['git','worktree','add','-B','downloads',str(channel),'FETCH_HEAD'],check=True)
+          feed['ArchiveParts']=[]
+          for i,start in enumerate(range(0,len(mods),20*1024*1024),1):
+           name=f'MTOU-Mods-Windows.zip.part{i:02}';data=mods[start:start+20*1024*1024]
+           (channel/name).write_bytes(data)
+           feed['ArchiveParts'].append(dict(Path=name,Bytes=len(data),Sha256=hashlib.sha256(data).hexdigest().upper()))
+          (channel/'mtou-release.json').write_text(json.dumps(feed,indent=2))
+          (channel/'README.md').write_text('# Marmo Town of Us 1.1.1\n\n[Downloads](https://github.com/'+repo+'/releases/tag/v1.1.1)\n\nPublic update payload. Previous releases remain available on the releases page.\n')
+          subprocess.run(['git','config','user.name','Marmo release'],check=True)
+          subprocess.run(['git','config','user.email','249504836+marmoladka2137@users.noreply.github.com'],check=True)
+          subprocess.run(['git','-C',str(channel),'add','-A'],check=True)
+          subprocess.run(['git','-C',str(channel),'commit','-m','Update public launcher channel to 1.1.1'],check=True)
+          subprocess.run(['git','-C',str(channel),'push','origin','HEAD:downloads'],check=True)
+          hashes={n:download(a['browser_download_url']) for n,a in old.items() if n not in ['MTOU-Steam-1.1.1.zip','SHA256SUMS.txt']}
+          hashes['MTOU-Steam-1.1.1.zip']=manual
+          sums=''.join(hashlib.sha256(v).hexdigest().upper()+'  '+n+'\n' for n,v in sorted(hashes.items())).encode()
+          req=urllib.request.Request('https://api.github.com/repos/'+repo+'/releases/assets/'+str(old['SHA256SUMS.txt']['id']),method='DELETE',headers={'Authorization':'Bearer '+token,'User-Agent':'MTOU-1.1.1'})
+          with urllib.request.urlopen(req):pass
+          upload('SHA256SUMS.txt',sums)
+          subprocess.run(['git','rm','.github/workflows/finalize-1.1.1.yml'],check=True)
+          subprocess.run(['git','commit','-m','Complete 1.1.1 publication'],check=True)
+          subprocess.run(['git','push','origin','HEAD:main'],check=True)
+          print('VERIFIED 1.1.1 Steam runtime configuration and public launcher fallback channel updated.')
+
